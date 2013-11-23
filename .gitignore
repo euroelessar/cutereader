@@ -1,0 +1,14 @@
+CMakeLists.txt.user
+.directory
+.DS_Store
+*.kde4
+qtcreator-build
+*.user
+*.pro.user.*
+build
+android
+libs
+debian_harmattan/qutim
+debian_harmattan/qutim-dbg
+*-debug
+*-release
