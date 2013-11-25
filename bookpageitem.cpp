@@ -51,9 +51,6 @@ QVariantMap BookPageItem::nextPage() const
     const QList<BookTextBlock::Ptr> blocks = m_book->blocks();
     QPointF position(0, 0);
     for (int i = m_block; i < blocks.size(); ++i) {
-        if (position.y() > height() || qFuzzyCompare(position.y(), height()))
-            break;
-        
         const BookTextBlock::Ptr &block = blocks[i];
         block->setWidth(width());
         qreal tmp = height() - position.y();
@@ -82,9 +79,6 @@ QVariantMap BookPageItem::previousPage() const
     const QList<BookTextBlock::Ptr> blocks = m_book->blocks();
     QPointF position(0, height());
     for (int i = m_block; i >= 0; --i) {
-        if (position.y() < 0 || qFuzzyIsNull(position.y()))
-            break;
-        
         const BookTextBlock::Ptr &block = blocks[i];
         block->setWidth(width());
         qreal tmp = position.y();
@@ -108,6 +102,9 @@ QVariantMap BookPageItem::previousPage() const
         }
     }
     
+    if (m_block == 0 && m_blockPosition == 0)
+        return QVariantMap();
+    
     result[QStringLiteral("block")] = 0;
     result[QStringLiteral("blockPosition")] = 0;
     
@@ -127,6 +124,7 @@ void BookPageItem::setBook(BookItem *book)
     if (m_book != book) {
         m_book = book;
         emit bookChanged(book);
+        update();
     }
 }
 
