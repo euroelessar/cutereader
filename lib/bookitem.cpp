@@ -5,6 +5,7 @@
 #include <functional>
 #include <QElapsedTimer>
 #include <QDebug>
+#include "bookpageitem.h"
 
 struct FB2FormatDescription
 {
@@ -148,4 +149,10 @@ void BookItem::setSource(const QUrl &source)
 QUrl BookItem::source() const
 {
     return m_source;
+}
+
+void BookItem::registerQmlTypes()
+{
+    qmlRegisterType<BookItem>("org.qutim", 0, 3, "Book");
+    qmlRegisterType<BookPageItem>("org.qutim", 0, 3, "BookPage");
 }

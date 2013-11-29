@@ -14,6 +14,8 @@ public:
     QList<BookTextBlock::Ptr> blocks() const;
     
     QUrl source() const;
+
+    static void registerQmlTypes();
     
 signals:
     void sourceChanged(const QUrl &source);

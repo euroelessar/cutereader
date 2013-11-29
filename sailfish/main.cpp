@@ -36,22 +36,6 @@
 #include <sailfishapp.h>
 
 #include "lib/bookitem.h"
-#include "lib/bookpageitem.h"
-
-#include <QResource>
-
-class Resource : public QResource
-{
-public:
-    Resource() : QResource("/books/")
-    {
-    }
-
-    void dump()
-    {
-        qDebug() << children();
-    }
-};
 
 int main(int argc, char *argv[])
 {
@@ -66,10 +50,7 @@ int main(int argc, char *argv[])
 
     QGuiApplication *app = SailfishApp::application(argc, argv);
 
-    Resource().dump();
-
-    qmlRegisterType<BookItem>("org.qutim", 0, 3, "Book");
-    qmlRegisterType<BookPageItem>("org.qutim", 0, 3, "BookPage");
+    BookItem::registerQmlTypes();
 
     QQuickView *view = SailfishApp::createView();
     view->setSource(SailfishApp::pathTo("qml/cutereader.qml"));
