@@ -170,6 +170,8 @@ void BookPageItem::setPositionValue(const QVariantMap &positionValue)
 
 void BookPageItem::componentComplete()
 {
+    QQuickPaintedItem::componentComplete();
+
     auto component = new QQmlComponent(qmlEngine(this), this);
     component->setData("import QtQuick 2.0\n\nImage {}\n",
                        QUrl::fromUserInput(QStringLiteral("bpi://noop/image.qml")));
@@ -177,8 +179,6 @@ void BookPageItem::componentComplete()
     
     connect(this, &BookPageItem::widthChanged, this, &BookPageItem::recreateSubItems);
     connect(this, &BookPageItem::heightChanged, this, &BookPageItem::recreateSubItems);
-    
-    QQuickPaintedItem::componentComplete();
 }
 
 void BookPageItem::recreateSubItems()

@@ -9,20 +9,20 @@ QT += concurrent
 CONFIG += c++11
 
 # The .cpp file which was generated for your project. Feel free to hack it.
-SOURCES += $$PWD/booktextblock.cpp \
-    $$PWD/booktextfragment.cpp \
-    $$PWD/bookblockitem.cpp \
-    $$PWD/bookpageitem.cpp \
-    $$PWD/bookitem.cpp \
-    $$PWD/bookblock.cpp \
-    $$PWD/bookimageblock.cpp \
-    $$PWD/fb2imageprovider.cpp
+SOURCES += ../lib/booktextblock.cpp \
+    ../lib/booktextfragment.cpp \
+    ../lib/bookblockitem.cpp \
+    ../lib/bookpageitem.cpp \
+    ../lib/bookitem.cpp \
+    ../lib/bookblock.cpp \
+    ../lib/bookimageblock.cpp \
+    ../lib/fb2imageprovider.cpp
 
-HEADERS += $$PWD/booktextblock.h \
-    $$PWD/booktextfragment.h \
-    $$PWD/bookblockitem.h \
-    $$PWD/bookpageitem.h \
-    $$PWD/bookitem.h \
-    $$PWD/bookblock.h \
-    $$PWD/bookimageblock.h \
-    $$PWD/fb2imageprovider.h
+HEADERS += ../lib/booktextblock.h \
+    ../lib/booktextfragment.h \
+    ../lib/bookblockitem.h \
+    ../lib/bookpageitem.h \
+    ../lib/bookitem.h \
+    ../lib/bookblock.h \
+    ../lib/bookimageblock.h \
+    ../lib/fb2imageprovider.h

@@ -38,69 +38,17 @@ ApplicationWindow
     id: application
     property Book book: rootBook
 
-    property Component previousPageComponent: ColorPage {
-        number: -1
-    }
-    property Component currentPageComponent: ColorPage {
-        number: 0
-    }
-    property Component nextPageComponent: ColorPage {
-        number: 1
-    }
-
     Book {
         id: rootBook
-        source: {
-            console.log(Qt.resolvedUrl("../books/the_three_musketeers.fb2"))
-            return Qt.resolvedUrl("../books/the_three_musketeers.fb2")
-        }
+        source: Qt.resolvedUrl("../books/the_three_musketeers.fb2")
     }
 
-    property ColorPage previousPage
-    property ColorPage currentPage
-    property ColorPage nextPage
-
-    initialPage: previousPageComponent
+    initialPage: Component {
+        BookPageItem {
+        }
+    }
 
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
-
-    Component.onCompleted: {
-        previousPage = pageStack.currentPage
-        currentPage = pageStack.pushAttached(currentPageComponent);
-        pageStack.navigateForward(PageStackAction.Immediate);
-        nextPage = pageStack.pushAttached(nextPageComponent);
-    }
-
-    Connections {
-        target: pageStack
-        onBusyChanged: {
-            if (application.previousPage === undefined || application.nextPage === undefined || pageStack.busy)
-                return;
-
-            var number = application.currentPage.number;
-
-            if (pageStack.currentPage === application.previousPage) {
-                number--;
-                application.currentPage.number = number;
-                application.nextPage.number = number + 1;
-
-                pageStack.navigateForward(PageStackAction.Immediate);
-
-                application.previousPage.number = number - 1;
-            } else if (pageStack.currentPage === application.nextPage) {
-                number++;
-                application.currentPage.number = number;
-                application.previousPage.number = number - 1;
-
-                pageStack.navigateBack(PageStackAction.Immediate);
-
-                application.nextPage.number = number + 1;
-            }
-        }
-
-        onCurrentPageChanged: {
-        }
-    }
 }
 
 

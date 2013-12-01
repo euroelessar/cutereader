@@ -95,7 +95,9 @@ bool BookImageBlock::isEnoughtHeight(qreal height) const
 void BookImageBlock::doSetSize(const QSizeF &size)
 {
     if (m_size.isValid()) {
-        m_imageSize = m_size.scaled(size.width(), size.height(), Qt::KeepAspectRatio);
+        m_imageSize = m_size.scaled(qMin<int>(m_size.width(), size.width()),
+                                    qMin<int>(m_size.height(), size.height()),
+                                    Qt::KeepAspectRatio);
     } else {
         m_imageSize = QSize(0, 0);
     }

@@ -7,7 +7,8 @@
 #include <QFile>
 
 FB2ImageProvider::FB2ImageProvider()
-    : QQuickImageProvider(QQuickImageProvider::Image, QQuickImageProvider::ForceAsynchronousImageLoading)
+    : QQuickImageProvider(QQuickImageProvider::Image,
+                          QQuickImageProvider::ForceAsynchronousImageLoading)
 {
 }
 
@@ -58,19 +59,4 @@ QImage FB2ImageProvider::requestImage(const QString &id, QSize *size, const QSiz
     }
     
     return QImage();
-    
-//    qDebug() << imagePath << imageId << *size << requestedSize;
-    
-//    int width = 100;
-//    int height = 100;
-    
-//    if (size) {
-//        *size = QSize(width, height);
-//    }
-//    QImage image(requestedSize.width() > 0 ? requestedSize.width() : width,
-//                  requestedSize.height() > 0 ? requestedSize.height() : height,
-//                 QImage::Format_ARGB32);
-//    image.fill(Qt::red);
-
-//    return image;
 }

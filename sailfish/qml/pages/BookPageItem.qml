@@ -34,7 +34,6 @@ import org.qutim 0.3
 
 Page {
     id: page
-    property int number: 0
 
     // To enable PullDownMenu, place our content in a SilicaFlickable
     SilicaFlickable {
@@ -50,12 +49,6 @@ Page {
 
         // Tell SilicaFlickable the height of its content.
         contentHeight: bookPage.height
-//        contentWidth: bookPage.width
-
-        ViewPlaceholder {
-            enabled: true
-            text: number.toString()
-        }
 
         Rectangle {
             width: page.width
@@ -67,6 +60,18 @@ Page {
                 anchors.fill: parent
                 anchors.margins: 5
                 book: application.book
+            }
+
+            MouseArea {
+                anchors.fill: parent
+
+                onClicked: {
+                    if (mouseX < width / 2) {
+                        bookPage.positionValue = bookPage.previousPage();
+                    } else {
+                        bookPage.positionValue = bookPage.nextPage();
+                    }
+                }
             }
         }
     }

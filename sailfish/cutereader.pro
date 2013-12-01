@@ -18,10 +18,10 @@ OTHER_FILES += qml/cutereader.qml \
     qml/cover/CoverPage.qml \
     qml/pages/FirstPage.qml \
     qml/pages/SecondPage.qml \
-    qml/pages/ColorPage.qml \
     cutereader.spec \
     cutereader.yaml \
-    cutereader.desktop
+    cutereader.desktop \
+    qml/pages/BookPageItem.qml
 
 INCLUDEPATH += ../
 
