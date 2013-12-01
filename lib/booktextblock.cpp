@@ -4,12 +4,18 @@
 #include <QPainter>
 
 BookTextBlock::BookTextBlock(const QString &text, const QFont &font, const QList<QTextLayout::FormatRange> &formats)
-    : m_textLayout(text, font), m_lineWidth(-1), m_height(0)
+    : m_textLayout(text, font), m_height(0)
 {
     QTextOption textOption;
     textOption.setAlignment(Qt::AlignJustify);
+    textOption.setWrapMode(QTextOption::WordWrap);
     m_textLayout.setAdditionalFormats(formats);
     m_textLayout.setTextOption(textOption);
+    static bool first = true;
+    if (first) {
+        first = false;
+        qDebug() << m_textLayout.textOption().wrapMode();
+    }
 }
 
 qreal BookTextBlock::height() const
@@ -17,31 +23,10 @@ qreal BookTextBlock::height() const
     return m_height;
 }
 
-void BookTextBlock::setWidth(qreal lineWidth)
-{
-    QMutexLocker locker(&m_mutex);
-    if (qFuzzyCompare(m_lineWidth, lineWidth))
-        return;
-    m_lineWidth = lineWidth;
-    
-    ensureLines();
-}
-
-qreal BookTextBlock::width() const
-{
-    return m_lineWidth;
-}
-
 int BookTextBlock::lineFor(int position) const
 {
     QMutexLocker locker(&m_mutex);
     return m_textLayout.lineForTextPosition(position).lineNumber();
-}
-
-void BookTextBlock::draw(QPainter *painter, const QPointF &position) const
-{
-    QMutexLocker locker(&m_mutex);
-    m_textLayout.draw(painter, position);
 }
 
 void BookTextBlock::draw(QPainter *painter, const QPointF &position, int fromPos, qreal *height) const
@@ -65,6 +50,25 @@ void BookTextBlock::draw(QPainter *painter, const QPointF &position, int fromPos
         QTextLine line = m_textLayout.lineAt(i);
         line.draw(painter, startPosition);
     }
+}
+
+QList<BookBlock::ItemInfo> BookTextBlock::createItems(const QPointF &position, int fromPos, qreal *height) const
+{
+    Q_UNUSED(position);
+    
+    QMutexLocker locker(&m_mutex);
+    if (m_textLayout.lineCount() == 0)
+        return QList<ItemInfo>();
+    
+    qreal visibleLinesHeight = *height;
+    int lastVisibleLine = m_textLayout.lineCount() - 1;
+    
+    checkBorders(fromPos, &visibleLinesHeight, &lastVisibleLine);
+    
+    if (lastVisibleLine == m_textLayout.lineCount() - 1)
+        *height = visibleLinesHeight;
+    
+    return QList<ItemInfo>();
 }
 
 int BookTextBlock::lastVisiblePosition(int fromPos, qreal *height, bool *lastPosition)
@@ -200,17 +204,7 @@ void BookTextBlock::inverseCheckBorders(int fromPos, qreal *height, int *lastVis
         *lastVisibleLine = i + 1;
 }
 
-struct CharInfo
-{
-    const BookTextFragment *fragment;
-    QChar ch;
-    int position;
-    qreal width;
-    
-    bool isSpace() const { return ch.isSpace(); }
-};
-
-void BookTextBlock::ensureLines()
+void BookTextBlock::doSetSize(const QSizeF &size)
 {
     QFontMetrics fontMetrics(m_textLayout.font());
     m_height = 0;
@@ -223,7 +217,7 @@ void BookTextBlock::ensureLines()
         if (!line.isValid())
             break;
     
-        line.setLineWidth(m_lineWidth);
+        line.setLineWidth(size.width());
         m_height += leading;
         line.setPosition(QPointF(0, m_height));
         m_height += line.height();

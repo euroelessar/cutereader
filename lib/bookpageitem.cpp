@@ -1,8 +1,11 @@
 #include "bookpageitem.h"
+#include <QQmlContext>
+#include <QThread>
 
 BookPageItem::BookPageItem(QQuickItem *parent) :
     QQuickPaintedItem(parent), m_book(NULL), m_block(0), m_blockPosition(0)
 {
+    qRegisterMetaType<QList<BookBlock::ItemInfo>>();
 }
 
 void BookPageItem::paint(QPainter *painter)
@@ -11,14 +14,14 @@ void BookPageItem::paint(QPainter *painter)
         return;
     }
     
-    const QList<BookTextBlock::Ptr> blocks = m_book->blocks();
+    const QList<BookBlock::Ptr> blocks = m_book->blocks();
     QPointF position(0, 0);
     for (int i = m_block; i < blocks.size(); ++i) {
         if (position.y() > height() || qFuzzyCompare(position.y(), height()))
             break;
         
-        const BookTextBlock::Ptr &block = blocks[i];
-        block->setWidth(width());
+        const BookBlock::Ptr &block = blocks[i];
+        block->setSize(QSizeF(width(), height()));
         qreal tmp = height() - position.y();
         block->draw(painter, position, i == m_block ? m_blockPosition : 0, &tmp);
         position.ry() += tmp;
@@ -48,11 +51,11 @@ QVariantMap BookPageItem::nextPage() const
     
     QVariantMap result;
     
-    const QList<BookTextBlock::Ptr> blocks = m_book->blocks();
+    const QList<BookBlock::Ptr> blocks = m_book->blocks();
     QPointF position(0, 0);
     for (int i = m_block; i < blocks.size(); ++i) {
-        const BookTextBlock::Ptr &block = blocks[i];
-        block->setWidth(width());
+        const BookBlock::Ptr &block = blocks[i];
+        block->setSize(QSizeF(width(), height()));
         qreal tmp = height() - position.y();
         bool lastPosition = false;
         int blockPosition = block->lastVisiblePosition(i == m_block ? m_blockPosition : 0, &tmp, &lastPosition);
@@ -76,11 +79,11 @@ QVariantMap BookPageItem::previousPage() const
     
     QVariantMap result;
     
-    const QList<BookTextBlock::Ptr> blocks = m_book->blocks();
+    const QList<BookBlock::Ptr> blocks = m_book->blocks();
     QPointF position(0, height());
     for (int i = m_block; i >= 0; --i) {
-        const BookTextBlock::Ptr &block = blocks[i];
-        block->setWidth(width());
+        const BookBlock::Ptr &block = blocks[i];
+        block->setSize(QSizeF(width(), height()));
         qreal tmp = position.y();
         bool lastPosition = false;
         bool afterLastPosition = false;
@@ -160,5 +163,70 @@ void BookPageItem::setPositionValue(const QVariantMap &positionValue)
         emit blockChanged(m_block);
         emit blockPositionChanged(m_blockPosition);
         update();
+        
+        recreateSubItems();
+    }
+}
+
+void BookPageItem::componentComplete()
+{
+    auto component = new QQmlComponent(qmlEngine(this), this);
+    component->setData("import QtQuick 2.0\n\nImage {}\n",
+                       QUrl::fromUserInput(QStringLiteral("bpi://noop/image.qml")));
+    m_components.insert(QStringLiteral("image"), component);
+    
+    connect(this, &BookPageItem::widthChanged, this, &BookPageItem::recreateSubItems);
+    connect(this, &BookPageItem::heightChanged, this, &BookPageItem::recreateSubItems);
+    
+    QQuickPaintedItem::componentComplete();
+}
+
+void BookPageItem::recreateSubItems()
+{
+    if (!m_book) {
+        return;
+    }
+    
+    QList<BookBlock::ItemInfo> items;
+    
+    const QList<BookBlock::Ptr> blocks = m_book->blocks();
+    QPointF position(0, 0);
+    for (int i = m_block; i < blocks.size(); ++i) {
+        if (position.y() > height() || qFuzzyCompare(position.y(), height()))
+            break;
+        
+        const BookBlock::Ptr &block = blocks[i];
+        block->setSize(QSizeF(width(), height()));
+        qreal tmp = height() - position.y();
+        items << block->createItems(position, i == m_block ? m_blockPosition : 0, &tmp);
+        position.ry() += tmp;
+    }
+    
+    handleSubItems(items);
+}
+
+void BookPageItem::handleSubItems(const QList<BookBlock::ItemInfo> &infos)
+{
+    QList<QObject *> subItems;
+    qSwap(m_subItems, subItems);
+    qDeleteAll(subItems);
+    
+    for (const BookBlock::ItemInfo &info : infos) {
+        auto it = m_components.find(info.type);
+        if (it == m_components.end()) {
+            qWarning() << "unknown component type:" << info.type;
+            continue;
+        }
+        
+        QQmlComponent *component = it.value();
+        QObject *subItem = component->beginCreate(qmlContext(this));
+        subItem->setProperty("parent", QVariant::fromValue(this));
+        subItem->setParent(this);
+        for (auto it = info.properties.begin(); it != info.properties.end(); ++it) {
+            subItem->setProperty(it.key().toLatin1(), it.value());
+        }
+        component->completeCreate();
+        
+        m_subItems << subItem;
     }
 }

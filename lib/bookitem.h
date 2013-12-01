@@ -2,6 +2,7 @@
 #define BOOKITEM_H
 
 #include <QObject>
+#include <QQmlEngine>
 #include "booktextblock.h"
 
 class BookItem : public QObject
@@ -11,11 +12,11 @@ class BookItem : public QObject
 public:
     explicit BookItem(QObject *parent = 0);
     
-    QList<BookTextBlock::Ptr> blocks() const;
+    QList<BookBlock::Ptr> blocks() const;
     
     QUrl source() const;
 
-    static void registerQmlTypes();
+    static void registerQmlTypes(QQmlEngine *engine);
     
 signals:
     void sourceChanged(const QUrl &source);
@@ -24,7 +25,7 @@ public slots:
     void setSource(const QUrl &source);
     
 private:
-    QList<BookTextBlock::Ptr> m_blocks;
+    QList<BookBlock::Ptr> m_blocks;
     QUrl m_source;
 };
 

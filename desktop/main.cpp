@@ -6,10 +6,10 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    
-    BookItem::registerQmlTypes();
 
     QtQuick2ApplicationViewer viewer;
+    
+    BookItem::registerQmlTypes(viewer.engine());
     viewer.setMainQmlFile(QStringLiteral("qml/cutereader/qml/main.qml"));
     viewer.showExpanded();
 

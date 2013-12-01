@@ -2,14 +2,15 @@
 #define BOOKPAGEITEM_H
 
 #include <QQuickPaintedItem>
+#include <QQmlComponent>
 #include "bookitem.h"
 
 class BookPageItem : public QQuickPaintedItem
 {
     Q_OBJECT
     Q_PROPERTY(BookItem *book READ book WRITE setBook NOTIFY bookChanged)
-    Q_PROPERTY(int block READ block WRITE setBlock NOTIFY blockChanged)
-    Q_PROPERTY(int blockPosition READ blockPosition WRITE setBlockPosition NOTIFY blockPositionChanged)
+    Q_PROPERTY(int block READ block NOTIFY blockChanged)
+    Q_PROPERTY(int blockPosition READ blockPosition NOTIFY blockPositionChanged)
     Q_PROPERTY(QVariantMap positionValue READ positionValue WRITE setPositionValue NOTIFY positionValueChanged)
 
 public:
@@ -37,10 +38,19 @@ public slots:
     
     void setPositionValue(const QVariantMap &positionValue);
     
+protected:
+    virtual void componentComplete();
+    
+protected slots:
+    void recreateSubItems();
+    void handleSubItems(const QList<BookBlock::ItemInfo> &infos);
+    
 private:
     BookItem *m_book;
     int m_block;
     int m_blockPosition;
+    QHash<QString, QQmlComponent*> m_components;
+    QList<QObject*> m_subItems;
 };
 
 #endif // BOOKPAGEITEM_H

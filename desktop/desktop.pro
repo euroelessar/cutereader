@@ -2,7 +2,6 @@ TEMPLATE = app
 TARGET = cutereader
 
 include(../lib/lib.pri)
-include(../karchive.pri)
 
 SOURCES += $$PWD/main.cpp
 

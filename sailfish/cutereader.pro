@@ -11,7 +11,6 @@ TARGET = cutereader
 CONFIG += sailfishapp
 
 include(../lib/lib.pri)
-include(../karchive.pri)
 
 SOURCES += main.cpp
 

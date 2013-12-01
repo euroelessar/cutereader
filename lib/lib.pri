@@ -3,21 +3,26 @@
 # CONFIG += mobility
 # MOBILITY +=
 
+include(../karchive.pri)
+
+QT += concurrent
+CONFIG += c++11
+
 # The .cpp file which was generated for your project. Feel free to hack it.
-SOURCES += $$PWD/booksurfaceitem.cpp \
-    $$PWD/booktextblock.cpp \
+SOURCES += $$PWD/booktextblock.cpp \
     $$PWD/booktextfragment.cpp \
     $$PWD/bookblockitem.cpp \
     $$PWD/bookpageitem.cpp \
-    $$PWD/bookitem.cpp
+    $$PWD/bookitem.cpp \
+    $$PWD/bookblock.cpp \
+    $$PWD/bookimageblock.cpp \
+    $$PWD/fb2imageprovider.cpp
 
-CONFIG += c++11
-QT += concurrent
-
-HEADERS += \
-    $$PWD/booksurfaceitem.h \
-    $$PWD/booktextblock.h \
+HEADERS += $$PWD/booktextblock.h \
     $$PWD/booktextfragment.h \
     $$PWD/bookblockitem.h \
     $$PWD/bookpageitem.h \
-    $$PWD/bookitem.h
+    $$PWD/bookitem.h \
+    $$PWD/bookblock.h \
+    $$PWD/bookimageblock.h \
+    $$PWD/fb2imageprovider.h

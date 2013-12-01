@@ -50,9 +50,9 @@ int main(int argc, char *argv[])
 
     QGuiApplication *app = SailfishApp::application(argc, argv);
 
-    BookItem::registerQmlTypes();
-
     QQuickView *view = SailfishApp::createView();
+
+    BookItem::registerQmlTypes(view->engine());
     view->setSource(SailfishApp::pathTo("qml/cutereader.qml"));
     view->show();
     int code = app->exec();
