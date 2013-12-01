@@ -22,3 +22,5 @@ QML_IMPORT_PATH =
 # Please do not modify the following two lines. Required for deployment.
 include(../qtquick2applicationviewer/qtquick2applicationviewer.pri)
 qtcAddDeployment()
+
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android

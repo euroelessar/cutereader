@@ -11,7 +11,7 @@ SOURCES += $$PWD/booksurfaceitem.cpp \
     $$PWD/bookpageitem.cpp \
     $$PWD/bookitem.cpp
 
-QMAKE_CXXFLAGS += -std=c++0x
+CONFIG += c++11
 QT += concurrent
 
 HEADERS += \
