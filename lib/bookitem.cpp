@@ -20,9 +20,9 @@ struct FB2FormatDescription
 QList<BookBlock::Ptr> parse_fb2(const QString &path)
 {
     const QUrl baseUrl = [&path] () {
-        QUrl url = QUrl::fromLocalFile(path);
-        url.setScheme(QStringLiteral("image"));
-        url.setHost(QStringLiteral("fb2"));
+        QUrl url;
+        url = QUrl(QStringLiteral("image://fb2/") + path.toUtf8().toHex());
+        qDebug() << url;
         return url;
     }();
     QFile file(path);

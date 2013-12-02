@@ -22,19 +22,13 @@ public:
     
     qreal height() const;
     
-    int lineFor(int position) const;
-    
-    void draw(QPainter *painter, const QPointF &position, int fromPos, qreal *height) const;
-    QList<ItemInfo> createItems(const QPointF &position, int fromPos, qreal *height) const;
-    
-    int lastVisiblePosition(int fromPos, qreal *height, bool *lastPosition);
-    int inverseLastVisiblePosition(int fromPos, qreal *height, bool *lastPosition, bool *afterLastPosition);
+    void draw(QPainter *painter, const QPointF &position, int line) const;
     
     int linesCount() const;
+    int lineForPosition(int position);
+    LineInfo lineInfo(int line);
     
 private:
-    void checkBorders(int fromPos, qreal *height, int *lastVisibleLine) const;
-    void inverseCheckBorders(int fromPos, qreal *height, int *lastVisibleLine) const;
     void doSetSize(const QSizeF &size);
     
     QTextLayout m_textLayout;

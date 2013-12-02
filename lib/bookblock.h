@@ -27,12 +27,20 @@ public:
         QVariantMap properties;
     };
     
-    virtual void draw(QPainter *painter, const QPointF &position, int fromPos, qreal *height) const = 0;
-    virtual QList<ItemInfo> createItems(const QPointF &position, int fromPos, qreal *height) const = 0;
+    virtual void draw(QPainter *painter, const QPointF &position, int line) const = 0;
+    virtual QList<ItemInfo> createItems(const QPointF &position, int line) const;
     
-    virtual int lastVisiblePosition(int fromPos, qreal *height, bool *lastPosition) = 0;
-    virtual int inverseLastVisiblePosition(int fromPos, qreal *height, bool *lastPosition, bool *afterLastPosition) = 0;
     virtual void setImageSizes(const QHash<QUrl, QSize> &imageSizes);
+    
+    struct LineInfo {
+        qreal height;
+        int start;
+        int length;
+    };
+    
+    virtual int linesCount() const = 0;
+    virtual int lineForPosition(int position) = 0;
+    virtual LineInfo lineInfo(int line) = 0;
     
 protected:
     virtual void doSetSize(const QSizeF &size) = 0;

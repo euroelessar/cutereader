@@ -27,6 +27,13 @@ qreal BookBlock::pageWidth() const
     return m_pageSize.width();
 }
 
+QList<BookBlock::ItemInfo> BookBlock::createItems(const QPointF &position, int line) const
+{
+    Q_UNUSED(position);
+    Q_UNUSED(line);
+    return QList<BookBlock::ItemInfo>();
+}
+
 void BookBlock::setImageSizes(const QHash<QUrl, QSize> &imageSizes)
 {
     Q_UNUSED(imageSizes);

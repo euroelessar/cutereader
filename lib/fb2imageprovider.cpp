@@ -18,7 +18,7 @@ QImage FB2ImageProvider::requestImage(const QString &id, QSize *size, const QSiz
     Q_UNUSED(requestedSize);
     
     QString imageId = id.section(QLatin1Char('#'), 1);
-    QString imagePath = QLatin1Char('/') + id.section(QLatin1Char('#'), 0, 0);
+    QString imagePath = QString::fromUtf8(QByteArray::fromHex(id.section(QLatin1Char('#'), 0, 0).toLatin1()));
     
     QFile file(imagePath);
     file.open(QFile::ReadOnly);

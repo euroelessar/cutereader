@@ -11,73 +11,54 @@ qreal BookImageBlock::height() const
     return m_imageSize.height();
 }
 
-void BookImageBlock::draw(QPainter *painter, const QPointF &position, int fromPos, qreal *height) const
+void BookImageBlock::draw(QPainter *painter, const QPointF &position, int line) const
 {
     Q_UNUSED(painter);
     Q_UNUSED(position);
-    Q_UNUSED(fromPos);
-    if (isEnoughtHeight(*height)) {
-        *height = m_imageSize.height();
-    }
+    Q_UNUSED(line);
 }
 
-QList<BookBlock::ItemInfo> BookImageBlock::createItems(const QPointF &position, int fromPos, qreal *height) const
+QList<BookBlock::ItemInfo> BookImageBlock::createItems(const QPointF &position, int line) const
 {
-    Q_UNUSED(position);
-    Q_UNUSED(fromPos);
+    Q_UNUSED(line);
     
-    if (isEnoughtHeight(*height)) {
-        *height = m_imageSize.height();
-        
-        if (m_size.isValid()) {
-            ItemInfo info = {
-                QStringLiteral("image"),
-                {
-                    { "x", (pageWidth() - m_imageSize.width()) / 2 },
-                    { "y", position.y() },
-                    { "width", m_imageSize.width() },
-                    { "height", m_imageSize.height() },
-                    { "source", m_source }
-                }
-            };
-            return QList<ItemInfo>() << info;
-        }
+    if (m_size.isValid()) {
+        return QList<ItemInfo>() << ItemInfo {
+            QStringLiteral("image"),
+            {
+                { "x", (pageWidth() - m_imageSize.width()) / 2 },
+                { "y", position.y() },
+                { "width", m_imageSize.width() },
+                { "height", m_imageSize.height() },
+                { "source", m_source }
+            }
+        };
     }
     
     return QList<ItemInfo>();
 }
 
-int BookImageBlock::lastVisiblePosition(int fromPos, qreal *height, bool *lastPosition)
+int BookImageBlock::linesCount() const
 {
-    Q_UNUSED(fromPos);
-    
-    if (isEnoughtHeight(*height)) {
-        *height = m_imageSize.height();
-        *lastPosition = true;
-        return 10;
-    } else {
-        *lastPosition = false;
-        return 15;
-    }
+    if (m_imageSize.isValid())
+        return 1;
+    return 0;
 }
 
-int BookImageBlock::inverseLastVisiblePosition(int fromPos, qreal *height, bool *lastPosition, bool *afterLastPosition)
+int BookImageBlock::lineForPosition(int position)
 {
-    if (fromPos == 15) {
-        *height = 0;
-        *lastPosition = true;
-        *afterLastPosition = false;
-        return 0;
-    } else if (isEnoughtHeight(*height)) {
-        *lastPosition = !qFuzzyCompare(*height, m_imageSize.height());
-        *height = m_imageSize.height();
-        *afterLastPosition = false;
-        return 15;
-    } else {
-        *lastPosition = false;
-        *afterLastPosition = true;
-        return 20;
-    }
+    Q_UNUSED(position);
+    return 0;
+}
+
+BookBlock::LineInfo BookImageBlock::lineInfo(int line)
+{
+    Q_UNUSED(line);
+    return {
+        qreal(m_imageSize.isValid() ? m_imageSize.height() : 0),
+        0,
+        1
+    };
 }
 
 void BookImageBlock::setImageSizes(const QHash<QUrl, QSize> &imageSizes)
@@ -85,11 +66,6 @@ void BookImageBlock::setImageSizes(const QHash<QUrl, QSize> &imageSizes)
     auto it = imageSizes.find(m_source);
     if (it != imageSizes.end())
         m_size = it.value();
-}
-
-bool BookImageBlock::isEnoughtHeight(qreal height) const
-{
-    return m_imageSize.height() < height || qFuzzyCompare(height, m_imageSize.height());
 }
 
 void BookImageBlock::doSetSize(const QSizeF &size)

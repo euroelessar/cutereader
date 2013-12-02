@@ -8,23 +8,43 @@ BookPageItem::BookPageItem(QQuickItem *parent) :
     qRegisterMetaType<QList<BookBlock::ItemInfo>>();
 }
 
+static inline bool fuzzyEqual(qreal first, qreal second)
+{
+    return qFuzzyCompare(first, second);
+}
+
+static inline bool fuzzyLess(qreal first, qreal second)
+{
+    return first < second && !fuzzyEqual(first, second);
+}
+
+static inline bool fuzzyLessOrEqual(qreal first, qreal second)
+{
+    return first < second || fuzzyEqual(first, second);
+}
+
 void BookPageItem::paint(QPainter *painter)
 {
-    if (!m_book) {
+    if (!m_book)
         return;
-    }
+    
+    const QSizeF pageSize(width(), height());
     
     const QList<BookBlock::Ptr> blocks = m_book->blocks();
     QPointF position(0, 0);
     for (int i = m_block; i < blocks.size(); ++i) {
-        if (position.y() > height() || qFuzzyCompare(position.y(), height()))
-            break;
-        
         const BookBlock::Ptr &block = blocks[i];
-        block->setSize(QSizeF(width(), height()));
-        qreal tmp = height() - position.y();
-        block->draw(painter, position, i == m_block ? m_blockPosition : 0, &tmp);
-        position.ry() += tmp;
+        block->setSize(pageSize);
+        
+        int lineNumber = (m_block == i ? block->lineForPosition(m_blockPosition) : 0);
+        const int linesCount = block->linesCount();
+        for (int j = lineNumber; j < linesCount; ++j) {
+            const BookBlock::LineInfo info = block->lineInfo(j);
+            if (fuzzyLess(height() - position.y(), info.height))
+                return;
+            block->draw(painter, position, j);
+            position.ry() += info.height;
+        }
     }
 }
 
@@ -43,83 +63,105 @@ int BookPageItem::blockPosition() const
     return m_blockPosition;
 }
 
-QVariantMap BookPageItem::nextPage() const
+QVariantMap createPosition(int block, int blockPosition)
 {
-    if (!m_book) {
-        return QVariantMap();
+    QVariantMap result;
+    result[QStringLiteral("block")] = block;
+    result[QStringLiteral("blockPosition")] = blockPosition;
+    return result;
+}
+
+static QVariantMap nextLinePosition(const QList<BookBlock::Ptr> &blocks, const QSizeF &size, int block, int line)
+{
+    BookBlock::Ptr currentBlock = blocks[block];
+    if (line + 1 < currentBlock->linesCount())
+        return createPosition(block, currentBlock->lineInfo(line + 1).start);
+    
+    while (block + 1 < blocks.size()) {
+        ++block;
+        currentBlock = blocks[block];
+        currentBlock->setSize(size);
+        
+        if (currentBlock->linesCount() == 0)
+            continue;
+        return createPosition(block, currentBlock->lineInfo(0).start);
     }
     
-    QVariantMap result;
+    return QVariantMap();
+}
+
+QVariantMap BookPageItem::nextPage() const
+{
+    if (!m_book)
+        return QVariantMap();
+    
+    const QSizeF pageSize(width(), height());
     
     const QList<BookBlock::Ptr> blocks = m_book->blocks();
-    QPointF position(0, 0);
+    qreal heightDelta = height();
     for (int i = m_block; i < blocks.size(); ++i) {
         const BookBlock::Ptr &block = blocks[i];
-        block->setSize(QSizeF(width(), height()));
-        qreal tmp = height() - position.y();
-        bool lastPosition = false;
-        int blockPosition = block->lastVisiblePosition(i == m_block ? m_blockPosition : 0, &tmp, &lastPosition);
-        position.ry() += tmp;
+        block->setSize(pageSize);
         
-        if (!lastPosition) {
-            result[QStringLiteral("block")] = i;
-            result[QStringLiteral("blockPosition")] = blockPosition;
-            return result;
+        int lineNumber = (m_block == i ? block->lineForPosition(m_blockPosition) : 0);
+        const int linesCount = block->linesCount();
+        for (int j = lineNumber; j < linesCount; ++j) {
+            const BookBlock::LineInfo info = block->lineInfo(j);
+            if (fuzzyLess(heightDelta, info.height))
+                return createPosition(i, info.start);
+            heightDelta -= info.height;
         }
     }
     
-    return result;
+    return QVariantMap();
 }
 
 QVariantMap BookPageItem::previousPage() const
 {
-    if (!m_book) {
+    if (!m_book || (m_block == 0 && m_blockPosition == 0))
         return QVariantMap();
-    }
     
-    QVariantMap result;
+    const QSizeF pageSize(width(), height());
     
     const QList<BookBlock::Ptr> blocks = m_book->blocks();
-    QPointF position(0, height());
-    for (int i = m_block; i >= 0; --i) {
-        const BookBlock::Ptr &block = blocks[i];
-        block->setSize(QSizeF(width(), height()));
-        qreal tmp = position.y();
-        bool lastPosition = false;
-        bool afterLastPosition = false;
-        int blockPosition = block->inverseLastVisiblePosition(i == m_block ? m_blockPosition : std::numeric_limits<int>::max(),
-                                                              &tmp, &lastPosition, &afterLastPosition);
+    qreal heightDelta = height();
+    
+    blocks[m_block]->setSize(pageSize);
+    int startBlock = m_block;
+    int startLine = blocks[m_block]->lineForPosition(m_blockPosition);
+    
+    if (startLine == 0) {
+        --startBlock;
+        BookBlock::Ptr block = blocks[startBlock];
+        block->setSize(pageSize);
+        startLine = block->linesCount();
+    }
+    
+    for (int i = startBlock; i >= 0; --i) {
+        BookBlock::Ptr block = blocks[i];
+        block->setSize(pageSize);
         
-        if (afterLastPosition) {
-            result[QStringLiteral("block")] = i + 1;
-            result[QStringLiteral("blockPosition")] = 0;
-            return result;
+        int lineNumber = (startBlock == i ? startLine : block->linesCount()) - 1;
+        while (lineNumber < 0) {
+            --i;
+            BookBlock::Ptr block = blocks[i];
+            block->setSize(pageSize);
+            lineNumber = block->linesCount() - 1;
         }
-        
-        position.ry() -= tmp;
-        
-        if (!lastPosition) {
-            result[QStringLiteral("block")] = i;
-            result[QStringLiteral("blockPosition")] = blockPosition;
-            return result;
+        for (int j = lineNumber; j >= 0; --j) {
+            const BookBlock::LineInfo info = block->lineInfo(j);
+            if (fuzzyLess(heightDelta, info.height))
+                return nextLinePosition(blocks, pageSize, i, j);
+            heightDelta -= info.height;
         }
     }
     
-    if (m_block == 0 && m_blockPosition == 0)
-        return QVariantMap();
-    
-    result[QStringLiteral("block")] = 0;
-    result[QStringLiteral("blockPosition")] = 0;
-    
-    return result;
+    return createPosition(0, 0);
 }
 
 QVariantMap BookPageItem::positionValue() const
 {
-    QVariantMap result;
-    result[QStringLiteral("block")] = m_block;
-    result[QStringLiteral("blockPosition")] = m_blockPosition;
-    return result;
+    return createPosition(m_block, m_blockPosition);
 }
 
 void BookPageItem::setBook(BookItem *book)
@@ -183,23 +225,30 @@ void BookPageItem::componentComplete()
 
 void BookPageItem::recreateSubItems()
 {
-    if (!m_book) {
+    if (!m_book)
         return;
-    }
+    
+    const QSizeF pageSize(width(), height());
+    QPointF position(0, 0);
     
     QList<BookBlock::ItemInfo> items;
-    
     const QList<BookBlock::Ptr> blocks = m_book->blocks();
-    QPointF position(0, 0);
+    
     for (int i = m_block; i < blocks.size(); ++i) {
-        if (position.y() > height() || qFuzzyCompare(position.y(), height()))
-            break;
-        
         const BookBlock::Ptr &block = blocks[i];
-        block->setSize(QSizeF(width(), height()));
-        qreal tmp = height() - position.y();
-        items << block->createItems(position, i == m_block ? m_blockPosition : 0, &tmp);
-        position.ry() += tmp;
+        block->setSize(pageSize);
+        
+        int lineNumber = (m_block == i ? block->lineForPosition(m_blockPosition) : 0);
+        const int linesCount = block->linesCount();
+        for (int j = lineNumber; j < linesCount; ++j) {
+            const BookBlock::LineInfo info = block->lineInfo(j);
+            if (fuzzyLess(height() - position.y(), info.height)) {
+                handleSubItems(items);
+                return;
+            }
+            items << block->createItems(position, j);
+            position.ry() += info.height;
+        }
     }
     
     handleSubItems(items);

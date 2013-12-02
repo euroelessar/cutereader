@@ -11,11 +11,6 @@ BookTextBlock::BookTextBlock(const QString &text, const QFont &font, const QList
     textOption.setWrapMode(QTextOption::WordWrap);
     m_textLayout.setAdditionalFormats(formats);
     m_textLayout.setTextOption(textOption);
-    static bool first = true;
-    if (first) {
-        first = false;
-        qDebug() << m_textLayout.textOption().wrapMode();
-    }
 }
 
 qreal BookTextBlock::height() const
@@ -23,137 +18,10 @@ qreal BookTextBlock::height() const
     return m_height;
 }
 
-int BookTextBlock::lineFor(int position) const
+void BookTextBlock::draw(QPainter *painter, const QPointF &position, int line) const
 {
     QMutexLocker locker(&m_mutex);
-    return m_textLayout.lineForTextPosition(position).lineNumber();
-}
-
-void BookTextBlock::draw(QPainter *painter, const QPointF &position, int fromPos, qreal *height) const
-{
-    QMutexLocker locker(&m_mutex);
-    if (m_textLayout.lineCount() == 0)
-        return;
-    
-    QTextLine firstLine = m_textLayout.lineForTextPosition(fromPos);
-    qreal visibleLinesHeight = *height;
-    int lastVisibleLine = m_textLayout.lineCount() - 1;
-    
-    checkBorders(fromPos, &visibleLinesHeight, &lastVisibleLine);
-    
-    if (lastVisibleLine == m_textLayout.lineCount() - 1)
-        *height = visibleLinesHeight;
-    
-    QPointF startPosition = position - firstLine.position() + m_textLayout.lineAt(0).position();
-    
-    for (int i = firstLine.lineNumber(); i <= lastVisibleLine; ++i) {
-        QTextLine line = m_textLayout.lineAt(i);
-        line.draw(painter, startPosition);
-    }
-}
-
-QList<BookBlock::ItemInfo> BookTextBlock::createItems(const QPointF &position, int fromPos, qreal *height) const
-{
-    Q_UNUSED(position);
-    
-    QMutexLocker locker(&m_mutex);
-    if (m_textLayout.lineCount() == 0)
-        return QList<ItemInfo>();
-    
-    qreal visibleLinesHeight = *height;
-    int lastVisibleLine = m_textLayout.lineCount() - 1;
-    
-    checkBorders(fromPos, &visibleLinesHeight, &lastVisibleLine);
-    
-    if (lastVisibleLine == m_textLayout.lineCount() - 1)
-        *height = visibleLinesHeight;
-    
-    return QList<ItemInfo>();
-}
-
-int BookTextBlock::lastVisiblePosition(int fromPos, qreal *height, bool *lastPosition)
-{
-    QMutexLocker locker(&m_mutex);
-    if (m_textLayout.lineCount() == 0) {
-        *lastPosition = false;
-        *height = 0;
-        return fromPos;
-    }
-    
-    qreal visibleLinesHeight = *height;
-    int lastVisibleLine = m_textLayout.lineCount() - 1;
-    
-    checkBorders(fromPos, &visibleLinesHeight, &lastVisibleLine);
-    
-    if (lastVisibleLine < 0) {
-        *lastPosition = false;
-        return 0;
-    }
-    
-    if (lastVisibleLine == m_textLayout.lineCount() - 1) {
-        *height = visibleLinesHeight;
-        *lastPosition = true;
-    } else {
-        *lastPosition = false;
-    }
-    
-    QTextLine lastLine = m_textLayout.lineAt(lastVisibleLine);
-    return lastLine.textStart() + lastLine.textLength();
-}
-
-int BookTextBlock::inverseLastVisiblePosition(int fromPos, qreal *height, bool *lastPosition, bool *afterLastPosition)
-{
-    QMutexLocker locker(&m_mutex);
-    *afterLastPosition = false;
-    if (m_textLayout.lineCount() == 0) {
-        *lastPosition = false;
-        *height = 0;
-        return fromPos;
-    }
-    
-    int lineAfterLastNumber = m_textLayout.lineCount();
-    int firstPos = m_textLayout.text().length() - 1;
-    
-    if (fromPos < m_textLayout.text().length()) {
-        QTextLine lineAfterLast = m_textLayout.lineForTextPosition(fromPos);
-        if (lineAfterLast.lineNumber() == 0) {
-            *lastPosition = true;
-            *height = 0;
-            return 0;
-        }
-        
-        lineAfterLastNumber = lineAfterLast.lineNumber();
-        firstPos = m_textLayout.lineAt(lineAfterLastNumber - 1).textStart();
-//        firstPos = lineAfterLast.textStart();
-    }
-    
-    qreal visibleLinesHeight = *height;
-    int lastVisibleLine = 0;
-    
-    inverseCheckBorders(firstPos, &visibleLinesHeight, &lastVisibleLine);
-    
-    if (lastVisibleLine >= m_textLayout.lineCount()) {
-        *afterLastPosition = true;
-        return 0;
-    }
-    
-    if (lastVisibleLine < 0) {
-        *lastPosition = false;
-        return 0;
-    }
-    
-    int textStart = 0;
-    
-    if (lastVisibleLine == 0) {
-        *height = visibleLinesHeight;
-        *lastPosition = true;
-        textStart = 0;
-    } else {
-        *lastPosition = false;
-        textStart = m_textLayout.lineAt(lastVisibleLine).textStart();
-    }
-    
-    return textStart;
+    m_textLayout.lineAt(line).draw(painter, position);
 }
 
 int BookTextBlock::linesCount() const
@@ -162,46 +30,21 @@ int BookTextBlock::linesCount() const
     return m_textLayout.lineCount();
 }
 
-void BookTextBlock::checkBorders(int fromPos, qreal *height, int *lastVisibleLine) const
+int BookTextBlock::lineForPosition(int position)
 {
-    QTextLine firstLine = m_textLayout.lineForTextPosition(fromPos);
-    qreal startPos = firstLine.y();
-    qreal maxHeight = *height;
-    int i;
-    for (i = firstLine.lineNumber(); i < m_textLayout.lineCount(); ++i) {
-        QTextLine line = m_textLayout.lineAt(i);
-        qreal tmp = line.y() + line.height() - startPos;
-        if (tmp > *height) {
-            break;
-        } else {
-            maxHeight = tmp;
-        }
-    }
-    
-    *height = maxHeight;
-    if (lastVisibleLine)
-        *lastVisibleLine = i - 1;
+    QMutexLocker locker(&m_mutex);
+    return m_textLayout.lineForTextPosition(position).lineNumber();
 }
 
-void BookTextBlock::inverseCheckBorders(int fromPos, qreal *height, int *lastVisibleLine) const
+BookTextBlock::LineInfo BookTextBlock::lineInfo(int lineNumber)
 {
-    QTextLine firstLine = m_textLayout.lineForTextPosition(fromPos);
-    qreal startPos = firstLine.y() + firstLine.height();
-    qreal maxHeight = *height;
-    int i;
-    for (i = firstLine.lineNumber(); i >= 0; --i) {
-        QTextLine line = m_textLayout.lineAt(i);
-        qreal tmp = startPos - line.y();
-        if (tmp > *height) {
-            break;
-        } else {
-            maxHeight = tmp;
-        }
-    }
-    
-    *height = maxHeight;
-    if (lastVisibleLine)
-        *lastVisibleLine = i + 1;
+    QMutexLocker locker(&m_mutex);
+    QTextLine line = m_textLayout.lineAt(lineNumber);
+    return {
+        line.height(),
+        line.textStart(),
+        line.textLength()
+    };
 }
 
 void BookTextBlock::doSetSize(const QSizeF &size)
@@ -218,8 +61,9 @@ void BookTextBlock::doSetSize(const QSizeF &size)
             break;
     
         line.setLineWidth(size.width());
-        m_height += leading;
-        line.setPosition(QPointF(0, m_height));
+        if (!qFuzzyIsNull(m_height))
+            m_height += leading;
+        line.setPosition(QPointF(0, 0));
         m_height += line.height();
     }
     m_textLayout.endLayout();

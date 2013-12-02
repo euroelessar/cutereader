@@ -18,15 +18,16 @@ public:
     }
     
     virtual qreal height() const;
-    virtual void draw(QPainter *painter, const QPointF &position, int fromPos, qreal *height) const;
-    virtual QList<ItemInfo> createItems(const QPointF &position, int fromPos, qreal *height) const;
-    virtual int lastVisiblePosition(int fromPos, qreal *height, bool *lastPosition);
-    virtual int inverseLastVisiblePosition(int fromPos, qreal *height, bool *lastPosition, bool *afterLastPosition);
+    void draw(QPainter *painter, const QPointF &position, int line) const;
+    virtual QList<ItemInfo> createItems(const QPointF &position, int line) const;
+    
+    int linesCount() const;
+    int lineForPosition(int position);
+    LineInfo lineInfo(int line);
     
     virtual void setImageSizes(const QHash<QUrl, QSize> &imageSizes);
     
 protected:
-    bool isEnoughtHeight(qreal height) const;
     void doSetSize(const QSizeF &size);
     
 private:
