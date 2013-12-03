@@ -5,6 +5,7 @@
 #include <QElapsedTimer>
 #include <QXmlStreamReader>
 #include <QFile>
+#include "../archivereader.h"
 
 FB2ImageProvider::FB2ImageProvider()
     : QQuickImageProvider(QQuickImageProvider::Image,
@@ -20,9 +21,11 @@ QImage FB2ImageProvider::requestImage(const QString &id, QSize *size, const QSiz
     QString imageId = id.section(QLatin1Char('#'), 1);
     QString imagePath = QString::fromUtf8(QByteArray::fromHex(id.section(QLatin1Char('#'), 0, 0).toLatin1()));
     
-    QFile file(imagePath);
-    file.open(QFile::ReadOnly);
-    QXmlStreamReader in(&file);
+    ArchiveReader reader(imagePath);
+    if (!reader.open())
+        return QImage();
+    
+    QXmlStreamReader in(reader.device());
     
     bool inBinary = false;
     

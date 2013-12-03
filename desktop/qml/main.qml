@@ -13,7 +13,10 @@ Item {
         
         Book {
             id: rootBook
-            source: Qt.resolvedUrl("../../../books/the_three_musketeers.fb2")
+            source: {
+                console.log("../../../books/the_three_musketeers.fb2.zip:the_three_musketeers.fb2")
+                return Qt.resolvedUrl("../../../books/the_three_musketeers.fb2.zip:the_three_musketeers.fb2")
+            }
         }
         
         Tab {
