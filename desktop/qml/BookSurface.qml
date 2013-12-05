@@ -5,21 +5,21 @@ Item {
     id: root
     anchors.fill: parent
     property Book book
-    
+
     Rectangle {
         id: firstPageItem
         height: parent.height
         width: parent.width
         border.width: 1
         z: 1
-        
+
         BookPage {
             id: firstPage
             book: root.book
             anchors.fill: parent
             anchors.margins: 5
         }
-        
+
         Behavior on x {
             id: firstPageXBehavior
             PropertyAnimation {
@@ -29,21 +29,22 @@ Item {
             }
         }
     }
-    
+
     Rectangle {
         id: secondPageItem
         height: parent.height
         width: parent.width
         border.width: 1
-        
+
         BookPage {
             id: secondPage
             book: root.book
             anchors.fill: parent
             anchors.margins: 5
+            positionValue: firstPageItem.x > 0 ? firstPage.previousPage : firstPage.nextPage
         }
     }
-    
+
     MouseArea {
         id: dragMouseArea
         acceptedButtons: Qt.LeftButton
@@ -57,36 +58,36 @@ Item {
         property real maxX: 0
         readonly property real deltaX: Math.max(minX, Math.min(startX - mouseX, maxX))
         signal pageChanged
-        
+
         onPressed: {
             newPositionX = 0
             startX = mouseX
             previousX = mouseX
             previousTime = new Date().getTime()
-            
-            var previousResult = firstPage.previousPage()
+
+            var previousResult = firstPage.previousPage;
             if (previousResult.block !== undefined)
                 minX = -parent.width
             else
                 minX = 0
 
-            var nextResult = firstPage.nextPage()
+            var nextResult = firstPage.nextPage;
             if (nextResult.block !== undefined)
                 maxX = parent.width
             else
                 maxX = 0
-            
+
 //                        console.log(JSON.stringify([previousResult, nextResult]))
         }
         onReleased: {
             var distance = newPositionX - firstPageItem.x
             var animationTime = firstPageXAnimation.duration - Math.min(new Date().getTime() - previousTime, firstPageXAnimation.duration)
-            
+
             if (Math.abs(deltaX) > parent.width / 2
                     || (distance != 0 && Math.abs(distance * 1000 / animationTime / parent.width) > 1)) {
                 var resultX = -deltaX * parent.width / Math.abs(deltaX)
                 firstPageItem.x = resultX
-                
+
                 if (firstPageItem.x == resultX) {
                     dragMouseArea.pageChanged()
                 }
@@ -97,9 +98,9 @@ Item {
         onDeltaXChanged: {
             firstPageItem.x = -deltaX
             newPositionX = -deltaX
-            
+
             var time = new Date().getTime();
-            
+
             previousX = mouseX
             previousTime = time
         }
@@ -114,9 +115,6 @@ Item {
             onXChanged: {
                 if (!dragMouseArea.pressed && Math.abs(firstPageItem.x) == root.width) {
                     dragMouseArea.pageChanged()
-                } else {
-                    var result = (firstPageItem.x > 0 ? firstPage.previousPage() : firstPage.nextPage())
-                    secondPage.positionValue = result
                 }
             }
         }

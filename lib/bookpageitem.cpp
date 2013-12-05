@@ -27,15 +27,15 @@ void BookPageItem::paint(QPainter *painter)
 {
     if (!m_book)
         return;
-    
+
     const QSizeF pageSize(width(), height());
-    
+
     const QList<BookBlock::Ptr> blocks = m_book->blocks();
     QPointF position(0, 0);
     for (int i = m_block; i < blocks.size(); ++i) {
         const BookBlock::Ptr &block = blocks[i];
         block->setSize(pageSize);
-        
+
         int lineNumber = (m_block == i ? block->lineForPosition(m_blockPosition) : 0);
         const int linesCount = block->linesCount();
         for (int j = lineNumber; j < linesCount; ++j) {
@@ -76,33 +76,33 @@ static QVariantMap nextLinePosition(const QList<BookBlock::Ptr> &blocks, const Q
     BookBlock::Ptr currentBlock = blocks[block];
     if (line + 1 < currentBlock->linesCount())
         return createPosition(block, currentBlock->lineInfo(line + 1).start);
-    
+
     while (block + 1 < blocks.size()) {
         ++block;
         currentBlock = blocks[block];
         currentBlock->setSize(size);
-        
+
         if (currentBlock->linesCount() == 0)
             continue;
         return createPosition(block, currentBlock->lineInfo(0).start);
     }
-    
+
     return QVariantMap();
 }
 
-QVariantMap BookPageItem::nextPage() const
+QVariantMap BookPageItem::recalcNextPage() const
 {
     if (!m_book)
         return QVariantMap();
-    
+
     const QSizeF pageSize(width(), height());
-    
+
     const QList<BookBlock::Ptr> blocks = m_book->blocks();
     qreal heightDelta = height();
     for (int i = m_block; i < blocks.size(); ++i) {
         const BookBlock::Ptr &block = blocks[i];
         block->setSize(pageSize);
-        
+
         int lineNumber = (m_block == i ? block->lineForPosition(m_blockPosition) : 0);
         const int linesCount = block->linesCount();
         for (int j = lineNumber; j < linesCount; ++j) {
@@ -112,35 +112,35 @@ QVariantMap BookPageItem::nextPage() const
             heightDelta -= info.height;
         }
     }
-    
+
     return QVariantMap();
 }
 
-QVariantMap BookPageItem::previousPage() const
+QVariantMap BookPageItem::recalcPreviousPage() const
 {
     if (!m_book || (m_block == 0 && m_blockPosition == 0))
         return QVariantMap();
-    
+
     const QSizeF pageSize(width(), height());
-    
+
     const QList<BookBlock::Ptr> blocks = m_book->blocks();
     qreal heightDelta = height();
-    
+
     blocks[m_block]->setSize(pageSize);
     int startBlock = m_block;
     int startLine = blocks[m_block]->lineForPosition(m_blockPosition);
-    
+
     if (startLine == 0) {
         --startBlock;
         BookBlock::Ptr block = blocks[startBlock];
         block->setSize(pageSize);
         startLine = block->linesCount();
     }
-    
+
     for (int i = startBlock; i >= 0; --i) {
         BookBlock::Ptr block = blocks[i];
         block->setSize(pageSize);
-        
+
         int lineNumber = (startBlock == i ? startLine : block->linesCount()) - 1;
         while (lineNumber < 0) {
             --i;
@@ -155,8 +155,23 @@ QVariantMap BookPageItem::previousPage() const
             heightDelta -= info.height;
         }
     }
-    
+
     return createPosition(0, 0);
+}
+
+void BookPageItem::recalcPages()
+{
+    QVariantMap nextPage = recalcNextPage();
+    if (nextPage != m_nextPage) {
+        m_nextPage = nextPage;
+        emit nextPageChanged(m_nextPage);
+    }
+
+    QVariantMap previousPage = recalcPreviousPage();
+    if (previousPage != m_previousPage) {
+        m_previousPage = previousPage;
+        emit previousPageChanged(m_previousPage);
+    }
 }
 
 QVariantMap BookPageItem::positionValue() const
@@ -164,31 +179,26 @@ QVariantMap BookPageItem::positionValue() const
     return createPosition(m_block, m_blockPosition);
 }
 
+QVariantMap BookPageItem::nextPage() const
+{
+    return m_nextPage;
+}
+
+QVariantMap BookPageItem::previousPage() const
+{
+    return m_previousPage;
+}
+
 void BookPageItem::setBook(BookItem *book)
 {
     if (m_book != book) {
+        if (m_book)
+            disconnect(m_book, 0, this, 0);
+
         m_book = book;
+        connect(m_book, &BookItem::stateChanged, this, &BookPageItem::requestUpdate);
+
         emit bookChanged(book);
-        update();
-    }
-}
-
-void BookPageItem::setBlock(int block)
-{
-    if (m_block != block) {
-        m_block = block;
-        emit blockChanged(block);
-        emit positionValueChanged(positionValue());
-        update();
-    }
-}
-
-void BookPageItem::setBlockPosition(int blockPosition)
-{
-    if (m_blockPosition != blockPosition) {
-        m_blockPosition = blockPosition;
-        emit blockPositionChanged(blockPosition);
-        emit positionValueChanged(positionValue());
         update();
     }
 }
@@ -197,15 +207,15 @@ void BookPageItem::setPositionValue(const QVariantMap &positionValue)
 {
     int block = positionValue[QStringLiteral("block")].toInt();
     int blockPosition = positionValue[QStringLiteral("blockPosition")].toInt();
-    
+
     if (m_block != block || m_blockPosition != blockPosition) {
         m_block = block;
         m_blockPosition = blockPosition;
         emit positionValueChanged(positionValue);
         emit blockChanged(m_block);
         emit blockPositionChanged(m_blockPosition);
-        update();
-        
+        requestUpdate();
+
         recreateSubItems();
     }
 }
@@ -218,26 +228,32 @@ void BookPageItem::componentComplete()
     component->setData("import QtQuick 2.0\n\nImage {}\n",
                        QUrl::fromUserInput(QStringLiteral("bpi://noop/image.qml")));
     m_components.insert(QStringLiteral("image"), component);
-    
+
     connect(this, &BookPageItem::widthChanged, this, &BookPageItem::recreateSubItems);
     connect(this, &BookPageItem::heightChanged, this, &BookPageItem::recreateSubItems);
+}
+
+void BookPageItem::requestUpdate()
+{
+    recalcPages();
+    update();
 }
 
 void BookPageItem::recreateSubItems()
 {
     if (!m_book)
         return;
-    
+
     const QSizeF pageSize(width(), height());
     QPointF position(0, 0);
-    
+
     QList<BookBlock::ItemInfo> items;
     const QList<BookBlock::Ptr> blocks = m_book->blocks();
-    
+
     for (int i = m_block; i < blocks.size(); ++i) {
         const BookBlock::Ptr &block = blocks[i];
         block->setSize(pageSize);
-        
+
         int lineNumber = (m_block == i ? block->lineForPosition(m_blockPosition) : 0);
         const int linesCount = block->linesCount();
         for (int j = lineNumber; j < linesCount; ++j) {
@@ -250,7 +266,7 @@ void BookPageItem::recreateSubItems()
             position.ry() += info.height;
         }
     }
-    
+
     handleSubItems(items);
 }
 
@@ -259,14 +275,14 @@ void BookPageItem::handleSubItems(const QList<BookBlock::ItemInfo> &infos)
     QList<QObject *> subItems;
     qSwap(m_subItems, subItems);
     qDeleteAll(subItems);
-    
+
     for (const BookBlock::ItemInfo &info : infos) {
         auto it = m_components.find(info.type);
         if (it == m_components.end()) {
             qWarning() << "unknown component type:" << info.type;
             continue;
         }
-        
+
         QQmlComponent *component = it.value();
         QObject *subItem = component->beginCreate(qmlContext(this));
         subItem->setProperty("parent", QVariant::fromValue(this));
@@ -275,7 +291,7 @@ void BookPageItem::handleSubItems(const QList<BookBlock::ItemInfo> &infos)
             subItem->setProperty(it.key().toLatin1(), it.value());
         }
         component->completeCreate();
-        
+
         m_subItems << subItem;
     }
 }
