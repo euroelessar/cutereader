@@ -2,16 +2,26 @@
 #define FB2READER_H
 
 #include "../../bookblock.h"
+#include "../../bookinfo.h"
+#include <QMimeType>
 
 class FB2Reader
 {
 public:
-    FB2Reader(const QUrl &source);
-    
-    QList<BookBlock::Ptr> read(QIODevice *device);
-    
+    enum Flag {
+        Info        = 0x01,
+        Text        = 0x02,
+        ImageSizes  = 0x04,
+        All         = 0xff
+    };
+    Q_DECLARE_FLAGS(Flags, Flag)
+
+    FB2Reader();
+
+    bool canRead(const QMimeType &mimeType) const;
+    BookInfo read(const QUrl &source, QIODevice *device, Flags flags);
+
 private:
-    QUrl m_source;
 };
 
 #endif // FB2READER_H

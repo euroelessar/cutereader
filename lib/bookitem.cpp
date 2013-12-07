@@ -38,13 +38,10 @@ public:
             if (reader.open()) {
                 QMimeDatabase mimeDataBase;
                 QMimeType mime = mimeDataBase.mimeTypeForFileNameAndData(reader.fileName(), reader.device());
-//                reader.device()->seek(0);
-                if (mime.inherits(QStringLiteral("application/x-fictionbook"))) {
-                    const QUrl baseUrl(QStringLiteral("image://fb2/") + m_source.toLocalFile().toUtf8().toHex());
-
-                    FB2Reader fb2Reader(baseUrl);
-                    QList<BookBlock::Ptr> blocks = fb2Reader.read(reader.device());
-                    send_result(blocks);
+                FB2Reader fb2Reader;
+                if (fb2Reader.canRead(mime)) {
+                    BookInfo book = fb2Reader.read(m_source, reader.device(), FB2Reader::All);
+                    send_result(book);
                 } else {
                     send_error();
                 }
@@ -58,9 +55,9 @@ public:
         }
     }
 
-    void send_result(const QList<BookBlock::Ptr> &blocks)
+    void send_result(const BookInfo &book)
     {
-        QMetaObject::invokeMethod(m_book.data(), "setBlocks", Q_ARG(QUrl, m_source), Q_ARG(QList<BookBlock::Ptr>, blocks));
+        QMetaObject::invokeMethod(m_book.data(), "setBookInfo", Q_ARG(BookInfo, book));
     }
 
     void send_error()
@@ -86,10 +83,10 @@ void BookItem::setSource(const QUrl &source)
     }
 }
 
-void BookItem::setBlocks(const QUrl &source, const QList<BookBlock::Ptr> &blocks)
+void BookItem::setBookInfo(const BookInfo &book)
 {
-    if (source == m_source) {
-        m_blocks = blocks;
+    if (book.source == m_source) {
+        m_blocks = book.blocks;
         m_state = Ready;
         emit stateChanged(m_state);
     }
@@ -110,7 +107,7 @@ QUrl BookItem::source() const
 
 void BookItem::registerQmlTypes(QQmlEngine *engine)
 {
-    qRegisterMetaType<QList<BookBlock::Ptr>>();
+    qRegisterMetaType<BookInfo>();
     engine->addImageProvider("fb2", new FB2ImageProvider);
     qmlRegisterType<BookItem>("org.qutim", 0, 3, "Book");
     qmlRegisterType<BookPageItem>("org.qutim", 0, 3, "BookPage");

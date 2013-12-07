@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QQmlEngine>
 #include "booktextblock.h"
+#include "bookinfo.h"
 
 class BookItem : public QObject
 {
@@ -37,7 +38,7 @@ public slots:
     void setSource(const QUrl &source);
 
 protected slots:
-    void setBlocks(const QUrl &source, const QList<BookBlock::Ptr> &blocks);
+    void setBookInfo(const BookInfo &book);
     void setError(const QUrl &source);
 
 private:

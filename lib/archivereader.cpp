@@ -20,35 +20,35 @@ bool ArchiveReader::open()
 {
     if (m_files.isEmpty())
         return false;
-    
+
     QIODevice *device = NULL;
-    
+
     {
         QScopedPointer<QFile> file(new QFile(m_files.first()));
         if (!file->open(QFile::ReadOnly))
             return false;
-        
+
         m_objects << file.data();
         device = file.take();
     }
-    
+
     for (int i = 0; i + 1 < m_files.size(); ++i) {
         QScopedPointer<KArchive> archive(create(m_files[i], device));
         if (!archive->open(QIODevice::ReadOnly))
             return false;
-        
+
         const KArchiveEntry *entry = archive->directory()->entry(m_files[i + 1]);
         if (!entry || !entry->isFile())
             return false;
-        
+
         const KArchiveFile *file = static_cast<const KArchiveFile *>(entry);
-        
+
         device = file->createDevice();
         QScopedPointer<QIODevice> holder(device);
         m_archives << archive.take();
         m_objects << holder.take();
     }
-    
+
     m_device = device;
     m_fileName = m_files.last();
     return true;
@@ -68,11 +68,10 @@ KArchive *ArchiveReader::create(const QString &fileName, QIODevice *data)
 {
     QMimeDatabase dataBase;
     QMimeType type = dataBase.mimeTypeForFileNameAndData(fileName, data);
-    
+
     if (type.inherits(QStringLiteral("application/zip"))) {
-        data->seek(0);
         return new KZip(data);
     }
-    
+
     return NULL;
 }
