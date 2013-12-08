@@ -33,5 +33,8 @@ Item {
                 source: "http://flibusta.net/opds/"
             }
         }
+        LocalBookCollection {
+            baseDir: "file:///home/elessar/.books/"
+        }
     }
 }

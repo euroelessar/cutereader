@@ -34,8 +34,9 @@ bool ArchiveReader::open()
 
     for (int i = 0; i + 1 < m_files.size(); ++i) {
         QScopedPointer<KArchive> archive(create(m_files[i], device));
-        if (!archive->open(QIODevice::ReadOnly))
+        if (!archive || !archive->open(QIODevice::ReadOnly)) {
             return false;
+        }
 
         const KArchiveEntry *entry = archive->directory()->entry(m_files[i + 1]);
         if (!entry || !entry->isFile())
@@ -67,9 +68,14 @@ QIODevice *ArchiveReader::device() const
 KArchive *ArchiveReader::create(const QString &fileName, QIODevice *data)
 {
     QMimeDatabase dataBase;
-    QMimeType type = dataBase.mimeTypeForFileNameAndData(fileName, data);
+    const QMimeType mimeType = dataBase.mimeTypeForFileNameAndData(fileName, data);
 
-    if (type.inherits(QStringLiteral("application/zip"))) {
+    return create(mimeType, data);
+}
+
+KArchive *ArchiveReader::create(const QMimeType &mimeType, QIODevice *data)
+{
+    if (mimeType.inherits(QStringLiteral("application/zip"))) {
         return new KZip(data);
     }
 

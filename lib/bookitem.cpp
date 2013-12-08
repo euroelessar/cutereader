@@ -7,6 +7,7 @@
 #include "providers/fb2imageprovider.h"
 #include "formats/fb2/fb2reader.h"
 #include "archivereader.h"
+#include "localbookcollection.h"
 #include <QRunnable>
 #include <QThreadPool>
 #include <QPointer>
@@ -109,11 +110,15 @@ QUrl BookItem::source() const
 
 void BookItem::registerQmlTypes(QQmlEngine *engine)
 {
+    QMimeDatabase dataBase;
+    Q_UNUSED(dataBase.allMimeTypes());
     qRegisterMetaType<BookInfo>();
+    qRegisterMetaType<QList<BookInfo>>();
     engine->addImageProvider("fb2", new FB2ImageProvider);
     qmlRegisterUncreatableType<BookInfoItem>("org.qutim", 0, 3, "BookInfo", "This object is always Book property");
     qmlRegisterType<BookItem>("org.qutim", 0, 3, "Book");
     qmlRegisterType<BookPageItem>("org.qutim", 0, 3, "BookPage");
+    qmlRegisterType<LocalBookCollection>("org.qutim", 0, 3, "LocalBookCollection");
 }
 
 BookItem::State BookItem::state() const

@@ -3,23 +3,24 @@
 
 #include <QString>
 #include <QFile>
+#include <QMimeType>
 #include "../karchive/src/karchive.h"
 
 class ArchiveReader
 {
 public:
     ArchiveReader(const QString &filePath);
-    
+
     ~ArchiveReader();
-    
+
     bool open();
-    
+
     QString fileName() const;
     QIODevice *device() const;
-    
-protected:
-    KArchive *create(const QString &fileName, QIODevice *data);
-    
+
+    static KArchive *create(const QString &fileName, QIODevice *data);
+    static KArchive *create(const QMimeType &mimeType, QIODevice *data);
+
 private:
     QStringList m_files;
     QString m_fileName;

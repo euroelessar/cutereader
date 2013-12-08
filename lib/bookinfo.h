@@ -14,5 +14,6 @@ struct BookInfo
 };
 
 Q_DECLARE_METATYPE(BookInfo)
+Q_DECLARE_METATYPE(QList<BookInfo>)
 
 #endif // BOOKINFO_H
