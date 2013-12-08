@@ -34,7 +34,7 @@ BookInfo FB2Reader::read(const QUrl &source, QIODevice *device, Flags flags)
     const QUrl baseUrl(QStringLiteral("image://fb2/") + source.toLocalFile().toUtf8().toHex());
     QXmlStreamReader in(device);
 
-    QList<BookBlock::Ptr> &blocks = result.blocks;
+    QList<BookBlock::Ptr> *blocks = NULL;
 
     FB2FormatDescription descriptions[] = {
         {
@@ -69,8 +69,10 @@ BookInfo FB2Reader::read(const QUrl &source, QIODevice *device, Flags flags)
     int p_depth = -1;
     bool inTitle = false;
     bool inBinary = false;
+    bool inTitleInfo = false;
 
     QString binaryId;
+    QString currentTitleInfo;
 
     while (in.readNext()) {
         if (in.tokenType() == QXmlStreamReader::Invalid)
@@ -84,7 +86,18 @@ BookInfo FB2Reader::read(const QUrl &source, QIODevice *device, Flags flags)
                 binaryId = in.attributes().value(QStringLiteral("id")).toString();
             }
 
-            if (!inP && in.name() == QStringLiteral("p") && (flags & Text)) {
+            if (inTitleInfo && in.name() == QStringLiteral("annotation") && (flags & Info)) {
+                blocks = &result.annotation;
+            }
+
+            if (in.name() == QStringLiteral("body") && (flags & Text)) {
+                blocks = &result.blocks;
+                const auto &attributes = in.attributes();
+                if (!attributes.isEmpty())
+                    qDebug() << attributes.first().name() << attributes.first().value();
+            }
+
+            if (blocks && !inP && in.name() == QStringLiteral("p")) {
                 inP = true;
                 p_depth = depth;
             }
@@ -95,10 +108,22 @@ BookInfo FB2Reader::read(const QUrl &source, QIODevice *device, Flags flags)
             if (in.name() == QStringLiteral("section"))
                 ++sectionsDepth;
 
-            if (in.name() == QStringLiteral("image") && (flags & Text)) {
+            if (in.name() == QStringLiteral("image")) {
                 const QString xlink = QStringLiteral("http://www.w3.org/1999/xlink");
-                QString href = in.attributes().value(xlink, QStringLiteral("href")).toString();
-                blocks << BookImageBlock::create(baseUrl.resolved(QUrl(href)));
+                const QString href = in.attributes().value(xlink, QStringLiteral("href")).toString();
+                const QUrl url = baseUrl.resolved(QUrl(href));
+
+                if (blocks) {
+                    (*blocks) << BookImageBlock::create(url);
+                } else if (currentTitleInfo == QStringLiteral("coverpage")) {
+                    result.cover = url;
+                }
+            }
+
+            if (in.name() == QStringLiteral("title-info") && (flags & Info)) {
+                inTitleInfo = true;
+            } else if (inTitleInfo) {
+                currentTitleInfo = in.name().toString();
             }
 
             if (inP) {
@@ -109,13 +134,14 @@ BookInfo FB2Reader::read(const QUrl &source, QIODevice *device, Flags flags)
             break;
         case QXmlStreamReader::EndElement:
             if (inP && p_depth == depth) {
+                Q_ASSERT(blocks);
                 if (inTitle) {
                     QTextCharFormat format;
                     format.setFontWeight(QFont::Bold);
                     QTextLayout::FormatRange range = { 0, text.size(), format };
                     formats.append(range);
                 }
-                blocks << BookTextBlock::create(text, qApp->font(), formats);
+                (*blocks) << BookTextBlock::create(text, qApp->font(), formats);
                 text.clear();
                 formats.clear();
                 inP = false;
@@ -128,6 +154,17 @@ BookInfo FB2Reader::read(const QUrl &source, QIODevice *device, Flags flags)
             if (in.name() == QStringLiteral("binary")) {
                 inBinary = false;
             }
+            if (in.name() == QStringLiteral("title-info")) {
+                inTitleInfo = false;
+            }
+            if (in.name() == QStringLiteral("annotation")) {
+                blocks = NULL;
+            }
+            if (in.name() == QStringLiteral("body")) {
+                blocks = NULL;
+            }
+            currentTitleInfo.clear();
+
             if (inP) {
                 if (FB2FormatDescription *description = find_description(in.name())) {
                     QTextCharFormat format;
@@ -153,13 +190,16 @@ BookInfo FB2Reader::read(const QUrl &source, QIODevice *device, Flags flags)
             if (inP) {
                 text += in.text();
             }
+            if (inTitleInfo && currentTitleInfo == QStringLiteral("book-title")) {
+                result.title = in.text().toString();
+            }
             break;
         default:
             break;
         }
     }
 
-    for (BookBlock::Ptr block : blocks)
+    for (BookBlock::Ptr block : result.blocks + result.annotation)
         block->setImageSizes(imageSizes);
 
     return result;

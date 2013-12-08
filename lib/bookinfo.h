@@ -7,6 +7,9 @@
 struct BookInfo
 {
     QUrl source;
+    QString title;
+    QUrl cover;
+    QList<BookBlock::Ptr> annotation;
     QList<BookBlock::Ptr> blocks;
 };
 

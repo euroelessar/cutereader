@@ -10,7 +10,7 @@ Item {
         anchors.fill: parent
         anchors.margins: 5
         id: root
-        
+
         Book {
             id: rootBook
             source: {
@@ -18,10 +18,10 @@ Item {
                 return Qt.resolvedUrl("../../../books/the_three_musketeers.fb2.zip:the_three_musketeers.fb2")
             }
         }
-        
+
         Tab {
-            title: "Book"
-            
+            title: rootBook.info.title
+
             BookSurface {
                 book: rootBook
             }

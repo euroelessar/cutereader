@@ -12,7 +12,7 @@
 #include <QPointer>
 
 BookItem::BookItem(QObject *parent) :
-    QObject(parent), m_state(Null)
+    QObject(parent), m_state(Null), m_info(new BookInfoItem(this))
 {
 }
 
@@ -86,8 +86,10 @@ void BookItem::setSource(const QUrl &source)
 void BookItem::setBookInfo(const BookInfo &book)
 {
     if (book.source == m_source) {
-        m_blocks = book.blocks;
+        m_bookInfo = book;
+        m_blocks = book.annotation + book.blocks;
         m_state = Ready;
+        m_info->setBookInfo(book);
         emit stateChanged(m_state);
     }
 }
@@ -109,6 +111,7 @@ void BookItem::registerQmlTypes(QQmlEngine *engine)
 {
     qRegisterMetaType<BookInfo>();
     engine->addImageProvider("fb2", new FB2ImageProvider);
+    qmlRegisterUncreatableType<BookInfoItem>("org.qutim", 0, 3, "BookInfo", "This object is always Book property");
     qmlRegisterType<BookItem>("org.qutim", 0, 3, "Book");
     qmlRegisterType<BookPageItem>("org.qutim", 0, 3, "BookPage");
 }
@@ -116,4 +119,9 @@ void BookItem::registerQmlTypes(QQmlEngine *engine)
 BookItem::State BookItem::state() const
 {
     return m_state;
+}
+
+BookInfoItem *BookItem::info() const
+{
+    return m_info;
 }
