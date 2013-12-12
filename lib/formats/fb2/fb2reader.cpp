@@ -1,6 +1,6 @@
 #include "fb2reader.h"
-#include "../lib/bookimageblock.h"
-#include "../lib/booktextblock.h"
+#include "../lib/bookimageblockfactory.h"
+#include "../lib/booktextblockfactory.h"
 
 #include <QXmlStreamReader>
 #include <QTextLayout>
@@ -34,7 +34,7 @@ BookInfo FB2Reader::read(const QUrl &source, QIODevice *device, Flags flags)
     const QUrl baseUrl(QStringLiteral("image://fb2/") + source.toLocalFile().toUtf8().toHex());
     QXmlStreamReader in(device);
 
-    QList<BookBlock::Ptr> *blocks = NULL;
+    QList<BookBlockFactory::Ptr> *blocks = NULL;
 
     FB2FormatDescription descriptions[] = {
         {
@@ -114,7 +114,7 @@ BookInfo FB2Reader::read(const QUrl &source, QIODevice *device, Flags flags)
                 const QUrl url = baseUrl.resolved(QUrl(href));
 
                 if (blocks) {
-                    (*blocks) << BookImageBlock::create(url);
+                    (*blocks) << BookImageBlockFactory::create(url);
                 } else if (currentTitleInfo == QStringLiteral("coverpage")) {
                     result.cover = url;
                 }
@@ -141,7 +141,7 @@ BookInfo FB2Reader::read(const QUrl &source, QIODevice *device, Flags flags)
                     QTextLayout::FormatRange range = { 0, text.size(), format };
                     formats.append(range);
                 }
-                (*blocks) << BookTextBlock::create(text, qApp->font(), formats);
+                (*blocks) << BookTextBlockFactory::create(text, qApp->font(), formats);
                 text.clear();
                 formats.clear();
                 inP = false;
@@ -199,7 +199,7 @@ BookInfo FB2Reader::read(const QUrl &source, QIODevice *device, Flags flags)
         }
     }
 
-    for (BookBlock::Ptr block : result.blocks + result.annotation)
+    for (BookBlockFactory::Ptr block : result.blocks + result.annotation)
         block->setImageSizes(imageSizes);
 
     return result;

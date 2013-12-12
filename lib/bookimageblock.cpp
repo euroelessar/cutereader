@@ -2,13 +2,16 @@
 #include <QQuickView>
 #include <QDebug>
 
-BookImageBlock::BookImageBlock(const QUrl &source) : m_source(source), m_imageSize(0, 0)
+BookImageBlock::BookImageBlock(const BookImageBlockData::Ptr &data, const QSizeF &size, const QWeakPointer<BookBlockFactory> &factory)
+    : BookBlock(size, factory), m_data(data)
 {
-}
-
-qreal BookImageBlock::height() const
-{
-    return m_imageSize.height();
+    if (data->size.isValid()) {
+        m_imageSize = m_data->size.scaled(qMin<int>(m_data->size.width(), size.width()),
+                                    qMin<int>(m_data->size.height(), size.height()),
+                                    Qt::KeepAspectRatio);
+    } else {
+        m_imageSize = QSize(0, 0);
+    }
 }
 
 void BookImageBlock::draw(QPainter *painter, const QPointF &position, int line) const
@@ -21,8 +24,8 @@ void BookImageBlock::draw(QPainter *painter, const QPointF &position, int line) 
 QList<BookBlock::ItemInfo> BookImageBlock::createItems(const QPointF &position, int line) const
 {
     Q_UNUSED(line);
-    
-    if (m_size.isValid()) {
+
+    if (m_data->size.isValid()) {
         return QList<ItemInfo>() << ItemInfo {
             QStringLiteral("image"),
             {
@@ -30,11 +33,11 @@ QList<BookBlock::ItemInfo> BookImageBlock::createItems(const QPointF &position, 
                 { "y", position.y() },
                 { "width", m_imageSize.width() },
                 { "height", m_imageSize.height() },
-                { "source", m_source }
+                { "source", m_data->source }
             }
         };
     }
-    
+
     return QList<ItemInfo>();
 }
 
@@ -63,16 +66,16 @@ BookBlock::LineInfo BookImageBlock::lineInfo(int line)
 
 void BookImageBlock::setImageSizes(const QHash<QUrl, QSize> &imageSizes)
 {
-    auto it = imageSizes.find(m_source);
+    auto it = imageSizes.find(m_data->source);
     if (it != imageSizes.end())
-        m_size = it.value();
+        m_data->size = it.value();
 }
 
 void BookImageBlock::doSetSize(const QSizeF &size)
 {
-    if (m_size.isValid()) {
-        m_imageSize = m_size.scaled(qMin<int>(m_size.width(), size.width()),
-                                    qMin<int>(m_size.height(), size.height()),
+    if (m_data->size.isValid()) {
+        m_imageSize = m_data->size.scaled(qMin<int>(m_data->size.width(), size.width()),
+                                    qMin<int>(m_data->size.height(), size.height()),
                                     Qt::KeepAspectRatio);
     } else {
         m_imageSize = QSize(0, 0);

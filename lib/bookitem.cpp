@@ -17,7 +17,7 @@ BookItem::BookItem(QObject *parent) :
 {
 }
 
-QList<BookBlock::Ptr> BookItem::blocks() const
+QList<BookBlockFactory::Ptr> BookItem::blocks() const
 {
     return m_blocks;
 }

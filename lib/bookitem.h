@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QQmlEngine>
-#include "booktextblock.h"
+#include "bookblockfactory.h"
 #include "bookinfoitem.h"
 #include "bookinfo.h"
 
@@ -24,7 +24,7 @@ public:
 
     explicit BookItem(QObject *parent = 0);
 
-    QList<BookBlock::Ptr> blocks() const;
+    QList<BookBlockFactory::Ptr> blocks() const;
 
     QUrl source() const;
 
@@ -46,7 +46,7 @@ protected slots:
     void setError(const QUrl &source);
 
 private:
-    QList<BookBlock::Ptr> m_blocks;
+    QList<BookBlockFactory::Ptr> m_blocks;
     QUrl m_source;
     State m_state;
     BookInfo m_bookInfo;

@@ -7,20 +7,27 @@
 #include <QSharedPointer>
 #include <QMutex>
 
+struct BookTextBlockData
+{
+    typedef QSharedPointer<BookTextBlockData> Ptr;
+
+    QString text;
+    QFont font;
+    QList<QTextLayout::FormatRange> formats;
+};
+
 class BookTextBlock : public BookBlock
 {
 public:
     typedef QSharedPointer<BookTextBlock> Ptr;
 
-    BookTextBlock(const QString &text, const QFont &font, const QList<QTextLayout::FormatRange> &formats);
+    BookTextBlock(const BookTextBlockData::Ptr &data, const QSizeF &size, const QWeakPointer<BookBlockFactory> &factory);
 
     template <typename... Args>
     static Ptr create(Args &&...args)
     {
         return Ptr::create(std::forward<Args>(args)...);
     }
-
-    qreal height() const;
 
     void draw(QPainter *painter, const QPointF &position, int line) const;
 
@@ -29,10 +36,9 @@ public:
     LineInfo lineInfo(int line);
 
 private:
-    void doSetSize(const QSizeF &size);
+    void buildLayout(const QSizeF &size);
 
     QTextLayout m_textLayout;
-
     qreal m_height;
 };
 

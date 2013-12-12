@@ -21,7 +21,10 @@ SOURCES += ../lib/booktextblock.cpp \
     ../lib/archivereader.cpp \
     ../lib/bookinfo.cpp \
     ../lib/bookinfoitem.cpp \
-    ../lib/localbookcollection.cpp
+    ../lib/localbookcollection.cpp \
+    ../lib/bookblockfactory.cpp \
+    ../lib/booktextblockfactory.cpp \
+    ../lib/bookimageblockfactory.cpp
 
 HEADERS += ../lib/booktextblock.h \
     ../lib/booktextfragment.h \
@@ -35,4 +38,7 @@ HEADERS += ../lib/booktextblock.h \
     ../lib/archivereader.h \
     ../lib/bookinfo.h \
     ../lib/bookinfoitem.h \
-    ../lib/localbookcollection.h
+    ../lib/localbookcollection.h \
+    ../lib/bookblockfactory.h \
+    ../lib/booktextblockfactory.h \
+    ../lib/bookimageblockfactory.h

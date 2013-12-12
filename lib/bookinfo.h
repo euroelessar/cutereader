@@ -2,15 +2,15 @@
 #define BOOKINFO_H
 
 #include <QMetaType>
-#include "bookblock.h"
+#include "bookblockfactory.h"
 
 struct BookInfo
 {
     QUrl source;
     QString title;
     QUrl cover;
-    QList<BookBlock::Ptr> annotation;
-    QList<BookBlock::Ptr> blocks;
+    QList<BookBlockFactory::Ptr> annotation;
+    QList<BookBlockFactory::Ptr> blocks;
 };
 
 Q_DECLARE_METATYPE(BookInfo)

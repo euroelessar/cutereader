@@ -1,20 +1,16 @@
 #include "bookblock.h"
+#include "bookblockfactory.h"
 
-BookBlock::BookBlock()
+BookBlock::BookBlock(const QSizeF &size, const QWeakPointer<BookBlockFactory> &factory)
+    : m_pageSize(size), m_factory(factory)
 {
+    Q_ASSERT(m_factory);
 }
 
 BookBlock::~BookBlock()
 {
-}
-
-void BookBlock::setSize(const QSizeF &size)
-{
-    QMutexLocker locker(&m_mutex);
-    if (m_pageSize == size)
-        return;
-    m_pageSize = size;
-    doSetSize(size);
+    if (auto factory = m_factory.toStrongRef())
+        factory->clearDeadBlocks();
 }
 
 qreal BookBlock::pageHeight() const

@@ -3,42 +3,36 @@
 #include <QDebug>
 #include <QPainter>
 
-BookTextBlock::BookTextBlock(const QString &text, const QFont &font, const QList<QTextLayout::FormatRange> &formats)
-    : m_textLayout(text, font), m_height(0)
+BookTextBlock::BookTextBlock(const BookTextBlockData::Ptr &data, const QSizeF &size, const QWeakPointer<BookBlockFactory> &factory)
+    : BookBlock(size, factory), m_textLayout(data->text, data->font), m_height(0)
 {
     QTextOption textOption;
     textOption.setAlignment(Qt::AlignJustify);
     textOption.setWrapMode(QTextOption::WordWrap);
-    m_textLayout.setAdditionalFormats(formats);
-    m_textLayout.setTextOption(textOption);
-}
 
-qreal BookTextBlock::height() const
-{
-    return m_height;
+    m_textLayout.setAdditionalFormats(data->formats);
+    m_textLayout.setTextOption(textOption);
+
+    buildLayout(size);
 }
 
 void BookTextBlock::draw(QPainter *painter, const QPointF &position, int line) const
 {
-    QMutexLocker locker(&m_mutex);
     m_textLayout.lineAt(line).draw(painter, position);
 }
 
 int BookTextBlock::linesCount() const
 {
-    QMutexLocker locker(&m_mutex);
     return m_textLayout.lineCount();
 }
 
 int BookTextBlock::lineForPosition(int position)
 {
-    QMutexLocker locker(&m_mutex);
     return m_textLayout.lineForTextPosition(position).lineNumber();
 }
 
 BookTextBlock::LineInfo BookTextBlock::lineInfo(int lineNumber)
 {
-    QMutexLocker locker(&m_mutex);
     QTextLine line = m_textLayout.lineAt(lineNumber);
     return {
         line.height(),
@@ -47,19 +41,19 @@ BookTextBlock::LineInfo BookTextBlock::lineInfo(int lineNumber)
     };
 }
 
-void BookTextBlock::doSetSize(const QSizeF &size)
+void BookTextBlock::buildLayout(const QSizeF &size)
 {
     QFontMetrics fontMetrics(m_textLayout.font());
     m_height = 0;
     int leading = fontMetrics.leading();
-    
+
     m_textLayout.setCacheEnabled(true);
     m_textLayout.beginLayout();
     forever {
         QTextLine line = m_textLayout.createLine();
         if (!line.isValid())
             break;
-    
+
         line.setLineWidth(size.width());
         if (!qFuzzyIsNull(m_height))
             m_height += leading;

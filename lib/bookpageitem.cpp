@@ -30,11 +30,10 @@ void BookPageItem::paint(QPainter *painter)
 
     const QSizeF pageSize(width(), height());
 
-    const QList<BookBlock::Ptr> blocks = m_book->blocks();
+    const QList<BookBlockFactory::Ptr> blocks = m_book->blocks();
     QPointF position(0, 0);
     for (int i = m_block; i < blocks.size(); ++i) {
-        const BookBlock::Ptr &block = blocks[i];
-        block->setSize(pageSize);
+        const BookBlock::Ptr &block = blocks[i]->item(pageSize);
 
         int lineNumber = (m_block == i ? block->lineForPosition(m_blockPosition) : 0);
         const int linesCount = block->linesCount();
@@ -71,16 +70,24 @@ QVariantMap createPosition(int block, int blockPosition)
     return result;
 }
 
-static QVariantMap nextLinePosition(const QList<BookBlock::Ptr> &blocks, const QSizeF &size, int block, int line)
+static BookBlock::Ptr fetchBlock(int index, const QList<BookBlockFactory::Ptr> &factories, const QSizeF &size, QList<BookBlock::Ptr> &cache)
 {
-    BookBlock::Ptr currentBlock = blocks[block];
+    BookBlock::Ptr block = factories[index]->item(size);
+    cache << block;
+    return block;
+}
+
+static QVariantMap nextLinePosition(const QList<BookBlockFactory::Ptr> &factories,
+                                    QList<BookBlock::Ptr> &cache,
+                                    const QSizeF &size, int block, int line)
+{
+    BookBlock::Ptr currentBlock = fetchBlock(block, factories, size, cache);
     if (line + 1 < currentBlock->linesCount())
         return createPosition(block, currentBlock->lineInfo(line + 1).start);
 
-    while (block + 1 < blocks.size()) {
+    while (block + 1 < factories.size()) {
         ++block;
-        currentBlock = blocks[block];
-        currentBlock->setSize(size);
+        currentBlock = fetchBlock(block, factories, size, cache);
 
         if (currentBlock->linesCount() == 0)
             continue;
@@ -90,18 +97,17 @@ static QVariantMap nextLinePosition(const QList<BookBlock::Ptr> &blocks, const Q
     return QVariantMap();
 }
 
-QVariantMap BookPageItem::recalcNextPage() const
+QVariantMap BookPageItem::recalcNextPage(QList<BookBlock::Ptr> &cache) const
 {
     if (!m_book)
         return QVariantMap();
 
     const QSizeF pageSize(width(), height());
 
-    const QList<BookBlock::Ptr> blocks = m_book->blocks();
+    const QList<BookBlockFactory::Ptr> blocks = m_book->blocks();
     qreal heightDelta = height();
     for (int i = m_block; i < blocks.size(); ++i) {
-        const BookBlock::Ptr &block = blocks[i];
-        block->setSize(pageSize);
+        const BookBlock::Ptr &block = fetchBlock(i, blocks, pageSize, cache);
 
         int lineNumber = (m_block == i ? block->lineForPosition(m_blockPosition) : 0);
         const int linesCount = block->linesCount();
@@ -116,42 +122,38 @@ QVariantMap BookPageItem::recalcNextPage() const
     return QVariantMap();
 }
 
-QVariantMap BookPageItem::recalcPreviousPage() const
+QVariantMap BookPageItem::recalcPreviousPage(QList<BookBlock::Ptr> &cache) const
 {
     if (!m_book || (m_block == 0 && m_blockPosition == 0))
         return QVariantMap();
 
     const QSizeF pageSize(width(), height());
 
-    const QList<BookBlock::Ptr> blocks = m_book->blocks();
+    const QList<BookBlockFactory::Ptr> blocks = m_book->blocks();
     qreal heightDelta = height();
 
-    blocks[m_block]->setSize(pageSize);
     int startBlock = m_block;
-    int startLine = blocks[m_block]->lineForPosition(m_blockPosition);
+    int startLine = fetchBlock(m_block, blocks, pageSize, cache)->lineForPosition(m_blockPosition);
 
     if (startLine == 0) {
         --startBlock;
-        BookBlock::Ptr block = blocks[startBlock];
-        block->setSize(pageSize);
+        BookBlock::Ptr block = fetchBlock(startBlock, blocks, pageSize, cache);
         startLine = block->linesCount();
     }
 
     for (int i = startBlock; i >= 0; --i) {
-        BookBlock::Ptr block = blocks[i];
-        block->setSize(pageSize);
+        BookBlock::Ptr block = fetchBlock(i, blocks, pageSize, cache);
 
         int lineNumber = (startBlock == i ? startLine : block->linesCount()) - 1;
         while (lineNumber < 0) {
             --i;
-            BookBlock::Ptr block = blocks[i];
-            block->setSize(pageSize);
+            BookBlock::Ptr block = fetchBlock(i, blocks, pageSize, cache);
             lineNumber = block->linesCount() - 1;
         }
         for (int j = lineNumber; j >= 0; --j) {
             const BookBlock::LineInfo info = block->lineInfo(j);
             if (fuzzyLess(heightDelta, info.height))
-                return nextLinePosition(blocks, pageSize, i, j);
+                return nextLinePosition(blocks, cache, pageSize, i, j);
             heightDelta -= info.height;
         }
     }
@@ -161,17 +163,24 @@ QVariantMap BookPageItem::recalcPreviousPage() const
 
 void BookPageItem::recalcPages()
 {
-    QVariantMap nextPage = recalcNextPage();
+    QList<BookBlock::Ptr> cache;
+
+    QVariantMap nextPage = recalcNextPage(cache);
     if (nextPage != m_nextPage) {
         m_nextPage = nextPage;
         emit nextPageChanged(m_nextPage);
     }
 
-    QVariantMap previousPage = recalcPreviousPage();
+    QVariantMap previousPage = recalcPreviousPage(cache);
     if (previousPage != m_previousPage) {
         m_previousPage = previousPage;
         emit previousPageChanged(m_previousPage);
     }
+
+    QMutexLocker locker(&m_cacheLock);
+    m_cache << cache;
+    if (m_cache.size() > 3)
+        m_cache.removeFirst();
 }
 
 QVariantMap BookPageItem::positionValue() const
@@ -248,11 +257,10 @@ void BookPageItem::recreateSubItems()
     QPointF position(0, 0);
 
     QList<BookBlock::ItemInfo> items;
-    const QList<BookBlock::Ptr> blocks = m_book->blocks();
+    const QList<BookBlockFactory::Ptr> blocks = m_book->blocks();
 
     for (int i = m_block; i < blocks.size(); ++i) {
-        const BookBlock::Ptr &block = blocks[i];
-        block->setSize(pageSize);
+        const BookBlock::Ptr &block = blocks[i]->item(pageSize);
 
         int lineNumber = (m_block == i ? block->lineForPosition(m_blockPosition) : 0);
         const int linesCount = block->linesCount();

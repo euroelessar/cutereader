@@ -27,8 +27,8 @@ public:
     QVariantMap nextPage() const;
     QVariantMap previousPage() const;
 
-    QVariantMap recalcNextPage() const;
-    QVariantMap recalcPreviousPage() const;
+    QVariantMap recalcNextPage(QList<BookBlock::Ptr> &cache) const;
+    QVariantMap recalcPreviousPage(QList<BookBlock::Ptr> &cache) const;
     void recalcPages();
 
 signals:
@@ -59,6 +59,9 @@ private:
     QList<QObject*> m_subItems;
     QVariantMap m_nextPage;
     QVariantMap m_previousPage;
+
+    QMutex m_cacheLock;
+    QList<BookBlock::Ptr> m_cache;
 };
 
 #endif // BOOKPAGEITEM_H

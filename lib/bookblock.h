@@ -6,19 +6,19 @@
 #include <QPainter>
 #include <QQuickItem>
 
+class BookBlockFactory;
+
 class BookBlock
 {
 public:
     typedef QSharedPointer<BookBlock> Ptr;
+    typedef QWeakPointer<BookBlock> WeakPtr;
 
-    BookBlock();
+    BookBlock(const QSizeF &size, const QWeakPointer<BookBlockFactory> &factory);
     virtual ~BookBlock();
     BookBlock(const BookBlock &other) = delete;
     BookBlock &operator =(const BookBlock &other) = delete;
 
-
-    virtual qreal height() const = 0;
-    void setSize(const QSizeF &size);
     qreal pageHeight() const;
     qreal pageWidth() const;
 
@@ -42,13 +42,9 @@ public:
     virtual int lineForPosition(int position) = 0;
     virtual LineInfo lineInfo(int line) = 0;
 
-protected:
-    virtual void doSetSize(const QSizeF &size) = 0;
-
-    mutable QMutex m_mutex;
-
 private:
     QSizeF m_pageSize;
+    QWeakPointer<BookBlockFactory> m_factory;
 };
 
 Q_DECLARE_METATYPE(QList<BookBlock::ItemInfo>)
