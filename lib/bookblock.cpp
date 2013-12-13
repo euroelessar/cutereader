@@ -29,8 +29,3 @@ QList<BookBlock::ItemInfo> BookBlock::createItems(const QPointF &position, int l
     Q_UNUSED(line);
     return QList<BookBlock::ItemInfo>();
 }
-
-void BookBlock::setImageSizes(const QHash<QUrl, QSize> &imageSizes)
-{
-    Q_UNUSED(imageSizes);
-}

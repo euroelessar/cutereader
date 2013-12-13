@@ -29,10 +29,8 @@ public:
     virtual QList<ItemInfo> createItems(const QPointF &position, int line) const;
 
     int linesCount() const;
-    int lineForPosition(int position);
-    LineInfo lineInfo(int line);
-
-    virtual void setImageSizes(const QHash<QUrl, QSize> &imageSizes);
+    int lineForPosition(int position) const;
+    LineInfo lineInfo(int line) const;
 
 protected:
     void doSetSize(const QSizeF &size);

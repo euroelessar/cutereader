@@ -27,12 +27,12 @@ int BookTextBlock::linesCount() const
     return m_textLayout.lineCount();
 }
 
-int BookTextBlock::lineForPosition(int position)
+int BookTextBlock::lineForPosition(int position) const
 {
     return m_textLayout.lineForTextPosition(position).lineNumber();
 }
 
-BookTextBlock::LineInfo BookTextBlock::lineInfo(int lineNumber)
+BookTextBlock::LineInfo BookTextBlock::lineInfo(int lineNumber) const
 {
     QTextLine line = m_textLayout.lineAt(lineNumber);
     return {

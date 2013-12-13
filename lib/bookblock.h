@@ -30,8 +30,6 @@ public:
     virtual void draw(QPainter *painter, const QPointF &position, int line) const = 0;
     virtual QList<ItemInfo> createItems(const QPointF &position, int line) const;
 
-    virtual void setImageSizes(const QHash<QUrl, QSize> &imageSizes);
-
     struct LineInfo {
         qreal height;
         int start;
@@ -39,8 +37,8 @@ public:
     };
 
     virtual int linesCount() const = 0;
-    virtual int lineForPosition(int position) = 0;
-    virtual LineInfo lineInfo(int line) = 0;
+    virtual int lineForPosition(int position) const = 0;
+    virtual LineInfo lineInfo(int line) const = 0;
 
 private:
     QSizeF m_pageSize;

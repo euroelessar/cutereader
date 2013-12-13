@@ -48,13 +48,13 @@ int BookImageBlock::linesCount() const
     return 0;
 }
 
-int BookImageBlock::lineForPosition(int position)
+int BookImageBlock::lineForPosition(int position) const
 {
     Q_UNUSED(position);
     return 0;
 }
 
-BookBlock::LineInfo BookImageBlock::lineInfo(int line)
+BookBlock::LineInfo BookImageBlock::lineInfo(int line) const
 {
     Q_UNUSED(line);
     return {
@@ -62,13 +62,6 @@ BookBlock::LineInfo BookImageBlock::lineInfo(int line)
         0,
         1
     };
-}
-
-void BookImageBlock::setImageSizes(const QHash<QUrl, QSize> &imageSizes)
-{
-    auto it = imageSizes.find(m_data->source);
-    if (it != imageSizes.end())
-        m_data->size = it.value();
 }
 
 void BookImageBlock::doSetSize(const QSizeF &size)

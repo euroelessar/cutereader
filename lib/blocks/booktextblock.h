@@ -32,8 +32,8 @@ public:
     void draw(QPainter *painter, const QPointF &position, int line) const;
 
     int linesCount() const;
-    int lineForPosition(int position);
-    LineInfo lineInfo(int line);
+    int lineForPosition(int position) const;
+    LineInfo lineInfo(int line) const;
 
 private:
     void buildLayout(const QSizeF &size);
