@@ -2,6 +2,7 @@
 #include <QFontMetricsF>
 #include <QDebug>
 #include <QPainter>
+#include <QElapsedTimer>
 
 BookTextBlock::BookTextBlock(const BookTextBlockData::Ptr &data, const QSizeF &size, const QWeakPointer<BookBlockFactory> &factory)
     : BookBlock(size, factory), m_textLayout(data->text, data->font), m_height(0)

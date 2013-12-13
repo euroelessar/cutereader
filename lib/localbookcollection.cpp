@@ -4,9 +4,62 @@
 #include <QDebug>
 #include <QMimeDatabase>
 #include <QStringBuilder>
+#include <QStandardPaths>
+#include <QElapsedTimer>
 
 #include "formats/fb2/fb2reader.h"
 #include "archivereader.h"
+
+
+struct LocalBookCollectionData
+{
+    const static constexpr int VERSION = 1;
+
+    struct Dir
+    {
+        QDateTime mtime;
+        QList<BookInfo> books;
+    };
+
+    QHash<QString, Dir> directories;
+};
+
+QDataStream &operator<<(QDataStream &out, const BookInfo &book)
+{
+    out << book.source << book.title << book.cover;
+    return out;
+}
+
+QDataStream &operator>>(QDataStream &in, BookInfo &book)
+{
+    in >> book.source >> book.title >> book.cover;
+    return in;
+}
+
+QDataStream &operator<<(QDataStream &out, const LocalBookCollectionData::Dir &dir)
+{
+    out << dir.mtime << dir.books;
+    return out;
+}
+
+QDataStream &operator>>(QDataStream &in, LocalBookCollectionData::Dir &dir)
+{
+    in >> dir.mtime >> dir.books;
+    return in;
+}
+
+QDataStream &operator<<(QDataStream &out, const LocalBookCollectionData &data)
+{
+    out << data.directories;
+    return out;
+}
+
+QDataStream &operator>>(QDataStream &in, LocalBookCollectionData &data)
+{
+    in >> data.directories;
+    return in;
+}
+
 
 class LocalBookScanner : public QRunnable
 {
@@ -18,6 +71,26 @@ public:
 
     void run()
     {
+        QElapsedTimer timer;
+        timer.start();
+
+        QSet<QString> listedFiles;
+        QString cachePath = QStandardPaths::locate(QStandardPaths::CacheLocation, QStringLiteral("local.cache"));
+        LocalBookCollectionData cachedData;
+        if (!cachePath.isEmpty()) {
+            QFile file(cachePath);
+            if (file.open(QFile::ReadOnly)) {
+                QDataStream in(&file);
+                int version;
+                in >> version;
+
+                if (version == LocalBookCollectionData::VERSION)
+                    in >> cachedData;
+            }
+        }
+
+        bool anyChanged = false;
+
         QDirIterator it(m_baseDir, QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
         while (it.hasNext()) {
             it.next();
@@ -27,16 +100,55 @@ public:
             if (fileInfo.isDir())
                 continue;
 
-            const QString filePath = fileInfo.filePath();
+            const QString filePath = fileInfo.canonicalFilePath();
+            listedFiles << filePath;
+
+            auto it = cachedData.directories.find(filePath);
+            if (it != cachedData.directories.end() && it.value().mtime == fileInfo.lastModified())
+                continue;
 
             QFile file(filePath);
             if (!file.open(QFile::ReadOnly))
                 continue;
 
             process(filePath, &file);
+
+            LocalBookCollectionData::Dir dir;
+            dir.mtime = fileInfo.lastModified();
+            qSwap(dir.books, m_books);
+
+            cachedData.directories.insert(filePath, dir);
+            anyChanged = true;
         }
 
-        QMetaObject::invokeMethod(m_notifier, "setBooks", Qt::QueuedConnection, Q_ARG(QList<BookInfo>, m_books));
+        QList<BookInfo> books;
+
+        QMutableHashIterator<QString, LocalBookCollectionData::Dir> jt(cachedData.directories);
+        while (jt.hasNext()) {
+            if (!listedFiles.contains(jt.next().key())) {
+                anyChanged = true;
+                jt.remove();
+            } else {
+                books << jt.value().books;
+            }
+        }
+
+        QMetaObject::invokeMethod(m_notifier, "setBooks", Qt::QueuedConnection, Q_ARG(QList<BookInfo>, books));
+
+        if (!anyChanged)
+            return;
+
+        QDir dir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+        if (!dir.exists())
+            dir.mkpath(dir.absolutePath());
+
+        QFile file(dir.filePath(QStringLiteral("local.cache")));
+        if (file.open(QFile::WriteOnly)) {
+            QDataStream out(&file);
+            out << LocalBookCollectionData::VERSION << cachedData;
+        } else {
+            qWarning() << "Can't open" << file.fileName() << "for writing";
+        }
     }
 
     void process(const QString &filePath, QIODevice *device)
@@ -102,16 +214,9 @@ void LocalBookCollection::setBaseDir(QUrl baseDir)
     if (m_baseDir != baseDir) {
         m_baseDir = baseDir;
 
-        if (m_baseDir.isLocalFile()) {
-            m_state = Loading;
-            QThreadPool::globalInstance()->start(
-                        new LocalBookScanner(new LocalBookNotifier(this),
-                                             m_baseDir.toLocalFile()));
-        } else {
-            m_state = Error;
+        if (m_state != Creating) {
+            loadBooks();
         }
-
-        emit stateChanged(m_state);
         emit baseDirChanged(baseDir);
     }
 }
@@ -125,6 +230,30 @@ void LocalBookCollection::setBooks(const QUrl &baseDir, const QList<BookInfo> &b
     }
 }
 
+void LocalBookCollection::classBegin()
+{
+    m_state = Creating;
+}
+
+void LocalBookCollection::componentComplete()
+{
+    if (!m_baseDir.isEmpty())
+        loadBooks();
+}
+
+void LocalBookCollection::loadBooks()
+{
+    if (m_baseDir.isLocalFile()) {
+        m_state = Loading;
+        QThreadPool::globalInstance()->start(
+                    new LocalBookScanner(new LocalBookNotifier(this),
+                                         m_baseDir.toLocalFile()));
+    } else {
+        m_state = Error;
+    }
+
+    emit stateChanged(m_state);
+}
 
 LocalBookNotifier::LocalBookNotifier(LocalBookCollection *collection)
     : m_collection(collection),

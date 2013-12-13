@@ -6,10 +6,11 @@
 #include <QPointer>
 #include "bookinfo.h"
 
-class LocalBookCollection : public QObject
+class LocalBookCollection : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
     Q_ENUMS(State)
+    Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
     Q_PROPERTY(QUrl baseDir READ baseDir WRITE setBaseDir NOTIFY baseDirChanged)
 public:
@@ -17,7 +18,8 @@ public:
         Null,
         Ready,
         Loading,
-        Error
+        Error,
+        Creating
     };
 
     explicit LocalBookCollection(QObject *parent = 0);
@@ -26,16 +28,24 @@ public:
 
     QUrl baseDir() const;
     void setBaseDir(QUrl baseDir);
+
     void setBooks(const QUrl &baseDir, const QList<BookInfo> &books);
+
+    void classBegin();
+    void componentComplete();
 
 signals:
     void stateChanged(State state);
     void baseDirChanged(const QUrl &baseDir);
 
+protected:
+    void loadBooks();
+
 private:
     State m_state;
     QUrl m_baseDir;
     QList<BookInfo> m_books;
+    QUrl m_cacheDir;
 };
 
 class LocalBookNotifier : public QObject
