@@ -5,7 +5,7 @@
 #include <QElapsedTimer>
 
 BookTextBlock::BookTextBlock(const BookTextBlockData::Ptr &data, const QSizeF &size, const QWeakPointer<BookBlockFactory> &factory)
-    : BookBlock(size, factory), m_textLayout(data->text, data->font), m_height(0)
+    : BookBlock(size, factory), m_textLayout(data->text, data->font), m_height(0), m_formats(data->formats)
 {
     QTextOption textOption;
     textOption.setAlignment(Qt::AlignJustify);
@@ -20,6 +20,40 @@ BookTextBlock::BookTextBlock(const BookTextBlockData::Ptr &data, const QSizeF &s
 void BookTextBlock::draw(QPainter *painter, const QPointF &position, int line) const
 {
     m_textLayout.lineAt(line).draw(painter, position);
+}
+
+QList<BookBlock::ItemInfo> BookTextBlock::createItems(const QPointF &position, int line) const
+{
+    QList<ItemInfo> result;
+    const QTextLine textLine = m_textLayout.lineAt(line);
+    const int begin = textLine.textStart();
+    const int end = begin + textLine.textLength();
+
+    for (const QTextLayout::FormatRange &range : m_formats) {
+        const int rangeBegin = qMax(begin, range.start);
+        const int rangeEnd = qMin(end, range.start + range.length);
+        if (rangeBegin >= rangeEnd || range.format.anchorHref().isEmpty())
+            continue;
+
+        const qreal xBegin = position.x() + textLine.cursorToX(rangeBegin);
+        const qreal xEnd = position.x() + textLine.cursorToX(rangeEnd);
+        const qreal delta = textLine.height() / 2;
+
+        ItemInfo info = {
+            QStringLiteral("link"),
+            {
+                { "x", xBegin - delta },
+                { "y", position.y() - delta },
+                { "width", xEnd - xBegin + 2 * delta },
+                { "height", textLine.height() + 2 * delta },
+                { "href", range.format.anchorHref() }
+            }
+        };
+
+        result << info;
+    }
+
+    return result;
 }
 
 int BookTextBlock::linesCount() const

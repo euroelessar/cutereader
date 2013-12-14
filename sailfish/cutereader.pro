@@ -21,7 +21,8 @@ OTHER_FILES += qml/cutereader.qml \
     cutereader.spec \
     cutereader.yaml \
     cutereader.desktop \
-    qml/pages/BookPageItem.qml
+    qml/pages/BookPageItem.qml \
+    qml/pages/BookPage.qml
 
 INCLUDEPATH += ../
 

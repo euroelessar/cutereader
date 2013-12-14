@@ -59,6 +59,7 @@ FB2Reader::FB2Reader()
                     format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
                 format.setVerticalAlignment(QTextCharFormat::AlignSuperScript);
                 format.setForeground(QColor(isLocalLink ? Qt::blue : Qt::red));
+                format.setAnchorHref(href.toString());
             }
         }
     };

@@ -16,9 +16,9 @@ BookItem::BookItem(QObject *parent) :
 {
 }
 
-QList<BookBlockFactory::Ptr> BookItem::blocks() const
+QList<BookBlockFactory::Ptr> BookItem::blocks(int body) const
 {
-    return m_blocks;
+    return m_bookInfo.bodies.value(body).blocks;
 }
 
 class BookLoader : public QRunnable
@@ -73,7 +73,7 @@ private:
 void BookItem::setSource(const QUrl &source)
 {
     if (m_source != source) {
-        m_blocks.clear();
+        m_bookInfo = BookInfo();
         m_source = source;
         m_state = Loading;
         emit stateChanged(m_state);
@@ -87,7 +87,6 @@ void BookItem::setBookInfo(const BookInfo &book)
 {
     if (book.source == m_source) {
         m_bookInfo = book;
-        m_blocks = m_bookInfo.bodies.first().blocks;
         m_state = Ready;
         m_info->setBookInfo(book);
         emit stateChanged(m_state);
@@ -116,7 +115,7 @@ void BookItem::registerQmlTypes(QQmlEngine *engine)
     engine->addImageProvider("fb2", new FB2ImageProvider);
     qmlRegisterUncreatableType<BookInfoItem>("org.qutim", 0, 3, "BookInfo", "This object is always Book property");
     qmlRegisterType<BookItem>("org.qutim", 0, 3, "Book");
-    qmlRegisterType<BookPageItem>("org.qutim", 0, 3, "BookPage");
+    qmlRegisterType<BookPageItem>("org.qutim", 0, 3, "BaseBookPage");
     qmlRegisterType<LocalBookCollection>("org.qutim", 0, 3, "LocalBookCollection");
 }
 
@@ -128,4 +127,23 @@ BookItem::State BookItem::state() const
 BookInfoItem *BookItem::info() const
 {
     return m_info;
+}
+
+BookTextPosition BookItem::positionForId(const QString &id) const
+{
+    for (int i = 0; i < m_bookInfo.bodies.size(); ++i) {
+        const BodyInfo &info = m_bookInfo.bodies[i];
+        auto it = info.references.find(id);
+        if (it != info.references.end()) {
+            return BookTextPosition {
+                i,
+                it->block,
+                it->position
+            };
+        }
+    }
+
+    return BookTextPosition {
+        -1, -1, -1
+    };
 }

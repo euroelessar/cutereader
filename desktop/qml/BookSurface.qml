@@ -18,6 +18,7 @@ Item {
             book: root.book
             anchors.fill: parent
             anchors.margins: 5
+            positionValue: JSON.parse('{"block":113,"blockPosition":47,"body":0}')
         }
 
         Behavior on x {

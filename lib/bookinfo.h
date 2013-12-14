@@ -17,6 +17,13 @@ struct BodyPosition
     int position;
 };
 
+struct BookTextPosition
+{
+    int body;
+    int block;
+    int position;
+};
+
 struct BodyInfo
 {
     QString name;

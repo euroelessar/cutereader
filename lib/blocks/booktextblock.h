@@ -30,6 +30,7 @@ public:
     }
 
     void draw(QPainter *painter, const QPointF &position, int line) const;
+    QList<ItemInfo> createItems(const QPointF &position, int line) const;
 
     int linesCount() const;
     int lineForPosition(int position) const;
@@ -40,6 +41,7 @@ private:
 
     QTextLayout m_textLayout;
     qreal m_height;
+    const QList<QTextLayout::FormatRange> m_formats;
 };
 
 #endif // BOOKTEXTBLOCK_H
