@@ -4,6 +4,9 @@
 #include "../../bookblock.h"
 #include "../../bookinfo.h"
 #include <QMimeType>
+#include <QTextCharFormat>
+
+class QXmlStreamReader;
 
 class FB2Reader
 {
@@ -22,6 +25,25 @@ public:
     BookInfo read(const QUrl &source, QIODevice *device, Flags flags);
 
 private:
+    struct ImageInfo
+    {
+        QUrl source;
+
+        BookBlockFactory::Ptr toFactory();
+    };
+
+    void readDescription(QXmlStreamReader &in, BookInfo &info, const QUrl &baseUrl);
+    BookBlockFactory::Ptr readParagraph(QXmlStreamReader &in, const QList<QTextCharFormat> &baseFormats);
+    ImageInfo readImage(QXmlStreamReader &in, const QUrl &baseUrl);
+    QList<BookBlockFactory::Ptr> readBody(QXmlStreamReader &in, const QUrl &baseUrl);
+
+    struct FormatDescription
+    {
+        QString name;
+        std::function<void (QTextCharFormat &)> change;
+    };
+
+    QList<FormatDescription> m_descriptions;
 };
 
 #endif // FB2READER_H

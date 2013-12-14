@@ -17,18 +17,18 @@ FB2ImageProvider::FB2ImageProvider()
 QImage FB2ImageProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize)
 {
     Q_UNUSED(requestedSize);
-    
+
     QString imageId = id.section(QLatin1Char('#'), 1);
     QString imagePath = QString::fromUtf8(QByteArray::fromHex(id.section(QLatin1Char('#'), 0, 0).toLatin1()));
-    
+
     ArchiveReader reader(imagePath);
     if (!reader.open())
         return QImage();
-    
+
     QXmlStreamReader in(reader.device());
-    
+
     bool inBinary = false;
-    
+
     while (in.readNext()) {
         if (in.tokenType() == QXmlStreamReader::Invalid)
             break;
@@ -48,11 +48,10 @@ QImage FB2ImageProvider::requestImage(const QString &id, QSize *size, const QSiz
                 QBuffer buffer(&binary);
                 buffer.open(QIODevice::ReadOnly);
                 QImageReader reader(&buffer);
-                
-                if (size) {
+
+                if (size)
                     *size = reader.size();
-                }
-                
+
                 return reader.read();
             }
             break;
@@ -60,6 +59,6 @@ QImage FB2ImageProvider::requestImage(const QString &id, QSize *size, const QSiz
             break;
         }
     }
-    
+
     return QImage();
 }

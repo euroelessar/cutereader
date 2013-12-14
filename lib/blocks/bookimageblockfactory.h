@@ -1,7 +1,7 @@
 #ifndef BOOKIMAGEBLOCKFACTORY_H
 #define BOOKIMAGEBLOCKFACTORY_H
 
-#include "bookblockfactory.h"
+#include "../bookblockfactory.h"
 #include "bookimageblock.h"
 
 class BookImageBlockFactory : public BookBlockFactory

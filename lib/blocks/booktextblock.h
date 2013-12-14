@@ -1,7 +1,7 @@
 #ifndef BOOKTEXTBLOCK_H
 #define BOOKTEXTBLOCK_H
 
-#include "bookblock.h"
+#include "../bookblock.h"
 #include <QStringList>
 #include <QTextLayout>
 #include <QSharedPointer>

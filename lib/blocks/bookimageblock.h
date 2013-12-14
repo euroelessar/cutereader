@@ -1,7 +1,7 @@
 #ifndef BOOKIMAGEBLOCK_H
 #define BOOKIMAGEBLOCK_H
 
-#include "bookblock.h"
+#include "../bookblock.h"
 #include <QUrl>
 
 struct BookImageBlockData

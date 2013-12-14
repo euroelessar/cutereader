@@ -3,7 +3,6 @@
 #include <QDebug>
 #include <QMimeDatabase>
 #include "bookpageitem.h"
-#include "bookimageblock.h"
 #include "providers/fb2imageprovider.h"
 #include "formats/fb2/fb2reader.h"
 #include "archivereader.h"

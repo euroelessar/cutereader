@@ -13,7 +13,7 @@
 
 struct LocalBookCollectionData
 {
-    const static constexpr int VERSION = 1;
+    const static int VERSION = 1;
 
     struct Dir
     {

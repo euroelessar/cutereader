@@ -67,9 +67,9 @@ Page {
 
                 onClicked: {
                     if (mouseX < width / 2) {
-                        bookPage.positionValue = bookPage.previousPage();
+                        bookPage.positionValue = bookPage.previousPage;
                     } else {
-                        bookPage.positionValue = bookPage.nextPage();
+                        bookPage.positionValue = bookPage.nextPage;
                     }
                 }
             }

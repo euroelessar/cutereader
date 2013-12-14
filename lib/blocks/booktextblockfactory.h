@@ -1,7 +1,7 @@
 #ifndef BOOKTEXTBLOCKFACTORY_H
 #define BOOKTEXTBLOCKFACTORY_H
 
-#include "bookblockfactory.h"
+#include "../bookblockfactory.h"
 #include "booktextblock.h"
 
 class BookTextBlockFactory : public BookBlockFactory
