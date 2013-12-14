@@ -19,7 +19,7 @@ struct BodyPosition
 
 struct BodyInfo
 {
-    QString type;
+    QString name;
     QList<BookBlockFactory::Ptr> blocks;
     QHash<QString, BodyPosition> references;
 };
@@ -31,8 +31,8 @@ struct BookInfo
     AuthorInfo author;
     QStringList genres;
     QUrl cover;
-    QList<BookBlockFactory::Ptr> annotation;
-    QList<BookBlockFactory::Ptr> blocks;
+    BodyInfo annotation;
+    QList<BodyInfo> bodies;
 };
 
 Q_DECLARE_METATYPE(BookInfo)

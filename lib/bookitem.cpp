@@ -87,7 +87,7 @@ void BookItem::setBookInfo(const BookInfo &book)
 {
     if (book.source == m_source) {
         m_bookInfo = book;
-        m_blocks = book.annotation + book.blocks;
+        m_blocks = m_bookInfo.bodies.first().blocks;
         m_state = Ready;
         m_info->setBookInfo(book);
         emit stateChanged(m_state);
