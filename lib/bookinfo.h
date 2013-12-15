@@ -43,12 +43,19 @@ struct BodyInfo
     QHash<QString, BodyPosition> references;
 };
 
+struct SequenceInfo
+{
+    QString name;
+    int number;
+};
+
 struct BookInfo
 {
     QUrl source;
     QString title;
     QList<AuthorInfo> authors;
     QStringList genres;
+    QList<SequenceInfo> sequences;
     QUrl cover;
     BodyInfo annotation;
     QList<BodyInfo> bodies;
@@ -58,6 +65,15 @@ struct BookInfo
         QStringList result;
         for (const AuthorInfo &author : authors)
             result << author.toString();
+        std::sort(result.begin(), result.end());
+        return result;
+    }
+
+    QStringList sequencesList() const
+    {
+        QStringList result;
+        for (const SequenceInfo &sequence : sequences)
+            result << sequence.name;
         std::sort(result.begin(), result.end());
         return result;
     }

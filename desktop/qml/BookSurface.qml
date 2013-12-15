@@ -8,6 +8,15 @@ Item {
 
     signal linkClicked(variant linkPosition)
 
+    Config {
+        id: config
+        path: "books." + Qt.md5(root.book.source.toString())
+
+        property string positionValue
+    }
+
+    onPositionValueChanged: config.positionValue = JSON.stringify(positionValue)
+
     Rectangle {
         id: firstPageItem
         height: parent.height
@@ -20,9 +29,10 @@ Item {
             book: root.book
             anchors.fill: parent
             anchors.margins: 5
-            positionValue: JSON.parse('{"block":113,"blockPosition":47,"body":0}')
-            onLinkClicked: {
-                root.linkClicked(linkPosition)
+            onLinkClicked: root.linkClicked(linkPosition)
+            positionValue: {
+                console.log(config.path, config.positionValue)
+                return config.positionValue.length == 0 ? {} : JSON.parse(config.positionValue)
             }
         }
 

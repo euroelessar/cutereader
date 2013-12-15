@@ -32,6 +32,8 @@ QVariant LocalBookModel::data(const QModelIndex &index, int role) const
         return info.authorsList();
     case BookGenres:
         return info.genres;
+    case BookSequences:
+        return info.sequencesList();
     default:
         return QVariant();
     }
@@ -50,7 +52,8 @@ QHash<int, QByteArray> LocalBookModel::createRoleNames()
         { BookSource, "source" },
         { BookCover, "coverSource" },
         { BookAuthors, "authors" },
-        { BookGenres, "genres" }
+        { BookGenres, "genres" },
+        { BookSequences, "series" }
     };
 }
 

@@ -14,7 +14,7 @@
 
 struct LocalBookCollectionData
 {
-    const static int VERSION = 3;
+    const static int VERSION = 4;
 
     struct Dir
     {
@@ -37,15 +37,27 @@ QDataStream &operator>>(QDataStream &in, AuthorInfo &author)
     return in;
 }
 
+QDataStream &operator<<(QDataStream &out, const SequenceInfo &sequence)
+{
+    out << sequence.name << sequence.number;
+    return out;
+}
+
+QDataStream &operator>>(QDataStream &in, SequenceInfo &sequence)
+{
+    in >> sequence.name >> sequence.number;
+    return in;
+}
+
 QDataStream &operator<<(QDataStream &out, const BookInfo &book)
 {
-    out << book.source << book.title << book.cover << book.authors << book.genres;
+    out << book.source << book.title << book.cover << book.authors << book.genres << book.sequences;
     return out;
 }
 
 QDataStream &operator>>(QDataStream &in, BookInfo &book)
 {
-    in >> book.source >> book.title >> book.cover >> book.authors >> book.genres;
+    in >> book.source >> book.title >> book.cover >> book.authors >> book.genres >> book.sequences;
     return in;
 }
 

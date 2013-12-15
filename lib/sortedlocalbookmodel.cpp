@@ -28,6 +28,8 @@ bool SortedLocalBookModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
             role = BookAuthors;
         else if (type == QStringLiteral("genre"))
             role = BookGenres;
+        else if (type == QStringLiteral("sequence"))
+            role = BookSequences;
         else
             continue;
 

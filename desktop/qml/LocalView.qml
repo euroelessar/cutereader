@@ -3,7 +3,12 @@ import org.qutim 0.3
 import QtQuick.Controls 1.0
 
 Item {
+    id: root
+
     property alias source: bookCollection.baseDir
+    property Book book
+
+    signal bookRequested(url source)
 
     LocalBookCollection {
         id: bookCollection
@@ -22,6 +27,13 @@ Item {
                 }
 
                 delegate: BookDelegate {
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            root.bookRequested(source);
+                        }
+                    }
                 }
             }
         }
@@ -44,17 +56,6 @@ Item {
                         anchors.fill: parent
 
                         onClicked: {
-//                            var filter = {};
-//                            switch (bookModel.type) {
-//                            case CategoriesBookModel.Authors:
-//                                filter['author'] = title;
-//                                break;
-//                            default:
-//                                break;
-//                            }
-
-                            console.log('filter:', JSON.stringify(filter))
-
                             stackView.push({
                                 item: booksView,
                                 properties: {
@@ -97,6 +98,14 @@ Item {
                                 component: categorizedView,
                                 properties: {
                                     type: CategoriesBookModel.Genres
+                                }
+                            });
+                            append({
+                                title: qsTr("Series"),
+                                subtitle: qsTr("Books categorized by series"),
+                                component: categorizedView,
+                                properties: {
+                                    type: CategoriesBookModel.Series
                                 }
                             });
                             append({

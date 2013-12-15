@@ -8,6 +8,13 @@ Item {
     height: 360
     visible: true
 
+    Config {
+        id: genericConfig
+        path: "generic"
+
+        property url book
+    }
+
     Component {
         id: bookSurfaceComponent
 
@@ -28,10 +35,7 @@ Item {
 
         Book {
             id: rootBook
-            source: {
-                console.log("../../../books/the_three_musketeers.fb2.zip:the_three_musketeers.fb2")
-                return Qt.resolvedUrl("../../../books/the_three_musketeers.fb2.zip:the_three_musketeers.fb2")
-            }
+            source: genericConfig.book
         }
 
         Tab {
@@ -78,7 +82,14 @@ Item {
             title: "Library"
             clip: true
             LocalView {
+                book: rootBook
                 source: "file:///home/elessar/.books/"
+                onBookRequested: {
+                    var book = bookStackTab.item;
+                    book.stackView.clear();
+                    genericConfig.book = source;
+                    book.stackView.push(bookSurfaceComponent);
+                }
             }
         }
     }

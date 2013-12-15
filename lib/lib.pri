@@ -29,7 +29,8 @@ SOURCES += ../lib/blocks/booktextblock.cpp \
     ../lib/localbookmodel.cpp \
     ../lib/localbookmodelbytitle.cpp \
     ../lib/sortedlocalbookmodel.cpp \
-    ../lib/bookcategoriesmodel.cpp
+    ../lib/bookcategoriesmodel.cpp \
+    ../lib/config.cpp
 
 HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/bookblockitem.h \
@@ -51,4 +52,5 @@ HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/localbookmodel.h \
     ../lib/localbookmodelbytitle.h \
     ../lib/sortedlocalbookmodel.h \
-    ../lib/bookcategoriesmodel.h
+    ../lib/bookcategoriesmodel.h \
+    ../lib/config.h

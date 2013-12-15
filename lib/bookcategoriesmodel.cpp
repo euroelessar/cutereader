@@ -92,6 +92,18 @@ void BookCategoriesModel::rebuildModel()
         break;
     }
     case Series: {
+        for (const BookInfo &book : books) {
+            for (const SequenceInfo &sequence : book.sequences) {
+                TypeInfo &info = categories[sequence.name];
+                info.books << book.title;
+
+                if (info.filter.isEmpty()) {
+                    info.filter = {
+                        { QStringLiteral("sequence-match"), sequence.name }
+                    };
+                }
+            }
+        }
         break;
     }
     }

@@ -9,6 +9,7 @@
 #include "localbookcollection.h"
 #include "sortedlocalbookmodel.h"
 #include "bookcategoriesmodel.h"
+#include "config.h"
 #include <QRunnable>
 #include <QThreadPool>
 #include <QPointer>
@@ -121,6 +122,7 @@ void BookItem::registerQmlTypes(QQmlEngine *engine)
     qmlRegisterType<LocalBookCollection>("org.qutim", 0, 3, "LocalBookCollection");
     qmlRegisterType<SortedLocalBookModel>("org.qutim", 0, 3, "LocalBookModel");
     qmlRegisterType<BookCategoriesModel>("org.qutim", 0, 3, "CategoriesBookModel");
+    qmlRegisterType<Config>("org.qutim", 0, 3, "Config");
 }
 
 BookItem::State BookItem::state() const
