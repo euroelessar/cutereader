@@ -6,6 +6,8 @@
 #include <QPointer>
 #include "bookinfo.h"
 
+class QAbstractListModel;
+
 class LocalBookCollection : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
@@ -30,9 +32,12 @@ public:
     void setBaseDir(QUrl baseDir);
 
     void setBooks(const QUrl &baseDir, const QList<BookInfo> &books);
+    QList<BookInfo> books() const;
 
     void classBegin();
     void componentComplete();
+
+    QAbstractListModel *model() const;
 
 signals:
     void stateChanged(State state);
@@ -46,6 +51,7 @@ private:
     QUrl m_baseDir;
     QList<BookInfo> m_books;
     QUrl m_cacheDir;
+    QAbstractListModel *m_model;
 };
 
 class LocalBookNotifier : public QObject

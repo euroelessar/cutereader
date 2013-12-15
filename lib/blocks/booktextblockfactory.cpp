@@ -10,7 +10,9 @@ BookTextBlockFactory::BookTextBlockFactory(const QString &text, const QFont &fon
 
 BookBlockFactory::Ptr BookTextBlockFactory::create(const QString &text, const QFont &font, const QList<QTextLayout::FormatRange> &formats)
 {
-    auto result = QSharedPointer<BookTextBlockFactory>::create(text, font, formats);
+    QFont tmp = font;
+    tmp.setFamily("Ubuntu");
+    auto result = QSharedPointer<BookTextBlockFactory>::create(text, tmp, formats);
     result->m_pointer = result.toWeakRef();
     return result;
 }

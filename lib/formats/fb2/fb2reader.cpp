@@ -97,6 +97,7 @@ void FB2Reader::readDescription(QXmlStreamReader &in, BookInfo &info, const QUrl
                 } else if (in.name() == QStringLiteral("coverpage")) {
                     inCoverPage = true;
                 } else if (in.name() == QStringLiteral("author")) {
+                    info.authors.append(AuthorInfo());
                     inAuthor = true;
                 }
             } else if (depth == 4 && inCoverPage && in.name() == QStringLiteral("image")) {
@@ -107,11 +108,11 @@ void FB2Reader::readDescription(QXmlStreamReader &in, BookInfo &info, const QUrl
                 --depth;
 
                 if (in.name() == QStringLiteral("first-name"))
-                    info.author.firstName = text;
+                    info.authors.last().firstName = text;
                 else if (in.name() == QStringLiteral("last-name"))
-                    info.author.lastName = text;
+                    info.authors.last().lastName = text;
                 else if (in.name() == QStringLiteral("middle-name"))
-                    info.author.middleName = text;
+                    info.authors.last().middleName = text;
             }
 
             break;

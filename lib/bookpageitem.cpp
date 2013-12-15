@@ -349,8 +349,6 @@ void BookPageItem::handleSubItems(const QList<BookBlock::ItemInfo> &infos)
         else
             qWarning() << "unknown component type:" << info.type;
 
-        qDebug() << info.type << component << component->url();
-
         if (!component)
             continue;
 

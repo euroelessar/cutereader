@@ -7,6 +7,8 @@
 #include "formats/fb2/fb2reader.h"
 #include "archivereader.h"
 #include "localbookcollection.h"
+#include "sortedlocalbookmodel.h"
+#include "bookcategoriesmodel.h"
 #include <QRunnable>
 #include <QThreadPool>
 #include <QPointer>
@@ -117,6 +119,8 @@ void BookItem::registerQmlTypes(QQmlEngine *engine)
     qmlRegisterType<BookItem>("org.qutim", 0, 3, "Book");
     qmlRegisterType<BookPageItem>("org.qutim", 0, 3, "BaseBookPage");
     qmlRegisterType<LocalBookCollection>("org.qutim", 0, 3, "LocalBookCollection");
+    qmlRegisterType<SortedLocalBookModel>("org.qutim", 0, 3, "LocalBookModel");
+    qmlRegisterType<BookCategoriesModel>("org.qutim", 0, 3, "CategoriesBookModel");
 }
 
 BookItem::State BookItem::state() const

@@ -25,7 +25,11 @@ SOURCES += ../lib/blocks/booktextblock.cpp \
     ../lib/blocks/booktextblockfactory.cpp \
     ../lib/blocks/bookimageblockfactory.cpp \
     ../lib/opdsbookcollection.cpp \
-    ../lib/opdsbookmodel.cpp
+    ../lib/opdsbookmodel.cpp \
+    ../lib/localbookmodel.cpp \
+    ../lib/localbookmodelbytitle.cpp \
+    ../lib/sortedlocalbookmodel.cpp \
+    ../lib/bookcategoriesmodel.cpp
 
 HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/bookblockitem.h \
@@ -43,4 +47,8 @@ HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/blocks/booktextblockfactory.h \
     ../lib/blocks/bookimageblockfactory.h \
     ../lib/opdsbookcollection.h \
-    ../lib/opdsbookmodel.h
+    ../lib/opdsbookmodel.h \
+    ../lib/localbookmodel.h \
+    ../lib/localbookmodelbytitle.h \
+    ../lib/sortedlocalbookmodel.h \
+    ../lib/bookcategoriesmodel.h

@@ -9,11 +9,12 @@
 
 #include "formats/fb2/fb2reader.h"
 #include "archivereader.h"
+#include "localbookmodel.h"
 
 
 struct LocalBookCollectionData
 {
-    const static int VERSION = 1;
+    const static int VERSION = 3;
 
     struct Dir
     {
@@ -24,15 +25,27 @@ struct LocalBookCollectionData
     QHash<QString, Dir> directories;
 };
 
+QDataStream &operator<<(QDataStream &out, const AuthorInfo &author)
+{
+    out << author.firstName << author.middleName << author.lastName;
+    return out;
+}
+
+QDataStream &operator>>(QDataStream &in, AuthorInfo &author)
+{
+    in >> author.firstName >> author.middleName >> author.lastName;
+    return in;
+}
+
 QDataStream &operator<<(QDataStream &out, const BookInfo &book)
 {
-    out << book.source << book.title << book.cover;
+    out << book.source << book.title << book.cover << book.authors << book.genres;
     return out;
 }
 
 QDataStream &operator>>(QDataStream &in, BookInfo &book)
 {
-    in >> book.source >> book.title >> book.cover;
+    in >> book.source >> book.title >> book.cover >> book.authors >> book.genres;
     return in;
 }
 
@@ -195,7 +208,7 @@ private:
 };
 
 LocalBookCollection::LocalBookCollection(QObject *parent) :
-    QObject(parent), m_state(Null)
+    QObject(parent), m_state(Null), m_model(new LocalBookModel(this))
 {
 }
 
@@ -230,6 +243,11 @@ void LocalBookCollection::setBooks(const QUrl &baseDir, const QList<BookInfo> &b
     }
 }
 
+QList<BookInfo> LocalBookCollection::books() const
+{
+    return m_books;
+}
+
 void LocalBookCollection::classBegin()
 {
     m_state = Creating;
@@ -239,6 +257,11 @@ void LocalBookCollection::componentComplete()
 {
     if (!m_baseDir.isEmpty())
         loadBooks();
+}
+
+QAbstractListModel *LocalBookCollection::model() const
+{
+    return m_model;
 }
 
 void LocalBookCollection::loadBooks()

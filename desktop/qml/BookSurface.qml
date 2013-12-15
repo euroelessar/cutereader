@@ -3,8 +3,10 @@ import org.qutim 0.3
 
 Item {
     id: root
-    anchors.fill: parent
     property Book book
+    property alias positionValue: firstPage.positionValue
+
+    signal linkClicked(variant linkPosition)
 
     Rectangle {
         id: firstPageItem
@@ -19,6 +21,9 @@ Item {
             anchors.fill: parent
             anchors.margins: 5
             positionValue: JSON.parse('{"block":113,"blockPosition":47,"body":0}')
+            onLinkClicked: {
+                root.linkClicked(linkPosition)
+            }
         }
 
         Behavior on x {

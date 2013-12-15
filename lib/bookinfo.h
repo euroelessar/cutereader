@@ -9,6 +9,18 @@ struct AuthorInfo
     QString firstName;
     QString lastName;
     QString middleName;
+
+    QString toString() const
+    {
+        QStringList result = QStringList()
+                << lastName
+                << firstName
+                << middleName;
+
+        result.removeAll(QString());
+
+        return result.join(QLatin1Char(' '));
+    }
 };
 
 struct BodyPosition
@@ -35,11 +47,20 @@ struct BookInfo
 {
     QUrl source;
     QString title;
-    AuthorInfo author;
+    QList<AuthorInfo> authors;
     QStringList genres;
     QUrl cover;
     BodyInfo annotation;
     QList<BodyInfo> bodies;
+
+    QStringList authorsList() const
+    {
+        QStringList result;
+        for (const AuthorInfo &author : authors)
+            result << author.toString();
+        std::sort(result.begin(), result.end());
+        return result;
+    }
 };
 
 Q_DECLARE_METATYPE(BookInfo)
