@@ -7,8 +7,8 @@
 #include <QStandardPaths>
 #include <QElapsedTimer>
 
-#include "formats/fb2/fb2reader.h"
-#include "archivereader.h"
+#include "../formats/fb2/fb2reader.h"
+#include "../archivereader.h"
 #include "localbookmodel.h"
 
 

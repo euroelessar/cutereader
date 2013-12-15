@@ -6,9 +6,9 @@
 #include "providers/fb2imageprovider.h"
 #include "formats/fb2/fb2reader.h"
 #include "archivereader.h"
-#include "localbookcollection.h"
-#include "sortedlocalbookmodel.h"
-#include "bookcategoriesmodel.h"
+#include "models/localbookcollection.h"
+#include "models/sortedlocalbookmodel.h"
+#include "models/bookcategoriesmodel.h"
 #include "config.h"
 #include <QRunnable>
 #include <QThreadPool>

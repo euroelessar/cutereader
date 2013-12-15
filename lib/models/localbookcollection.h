@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QUrl>
 #include <QPointer>
-#include "bookinfo.h"
+#include "../bookinfo.h"
 
 class QAbstractListModel;
 

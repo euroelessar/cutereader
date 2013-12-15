@@ -20,16 +20,15 @@ SOURCES += ../lib/blocks/booktextblock.cpp \
     ../lib/archivereader.cpp \
     ../lib/bookinfo.cpp \
     ../lib/bookinfoitem.cpp \
-    ../lib/localbookcollection.cpp \
+    ../lib/models/localbookcollection.cpp \
     ../lib/bookblockfactory.cpp \
     ../lib/blocks/booktextblockfactory.cpp \
     ../lib/blocks/bookimageblockfactory.cpp \
-    ../lib/opdsbookcollection.cpp \
-    ../lib/opdsbookmodel.cpp \
-    ../lib/localbookmodel.cpp \
-    ../lib/localbookmodelbytitle.cpp \
-    ../lib/sortedlocalbookmodel.cpp \
-    ../lib/bookcategoriesmodel.cpp \
+    ../lib/models/opdsbookcollection.cpp \
+    ../lib/models/opdsbookmodel.cpp \
+    ../lib/models/localbookmodel.cpp \
+    ../lib/models/sortedlocalbookmodel.cpp \
+    ../lib/models/bookcategoriesmodel.cpp \
     ../lib/config.cpp
 
 HEADERS += ../lib/blocks/booktextblock.h \
@@ -43,14 +42,13 @@ HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/archivereader.h \
     ../lib/bookinfo.h \
     ../lib/bookinfoitem.h \
-    ../lib/localbookcollection.h \
+    ../lib/models/localbookcollection.h \
     ../lib/bookblockfactory.h \
     ../lib/blocks/booktextblockfactory.h \
     ../lib/blocks/bookimageblockfactory.h \
-    ../lib/opdsbookcollection.h \
-    ../lib/opdsbookmodel.h \
-    ../lib/localbookmodel.h \
-    ../lib/localbookmodelbytitle.h \
-    ../lib/sortedlocalbookmodel.h \
-    ../lib/bookcategoriesmodel.h \
+    ../lib/models/opdsbookcollection.h \
+    ../lib/models/opdsbookmodel.h \
+    ../lib/models/localbookmodel.h \
+    ../lib/models/sortedlocalbookmodel.h \
+    ../lib/models/bookcategoriesmodel.h \
     ../lib/config.h
