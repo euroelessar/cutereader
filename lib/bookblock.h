@@ -5,8 +5,81 @@
 #include <QMutex>
 #include <QPainter>
 #include <QQuickItem>
+#include <QTextCharFormat>
 
 class BookBlockFactory;
+
+struct Format
+{
+    enum Type {
+        InvalidType,
+        Strong,
+        Emphasis,
+        StrikeThrough,
+        Sub,
+        Sup,
+        Title,
+        InternalAnchor,
+        NoteAnchor,
+        ExternalAnchor
+    };
+
+    Format() : type(InvalidType)
+    {
+    }
+
+    Format(Type type) : type(type)
+    {
+    }
+
+    Format(Type type, const QString &href) : type(type), href(href)
+    {
+    }
+
+    Type type;
+    QString href;
+};
+
+struct FormatRange
+{
+    int start;
+    int length;
+    Format format;
+};
+
+struct BookStyle
+{
+    int generation;
+    QMap<Format::Type, QTextCharFormat> formats;
+    QTextCharFormat baseFormat;
+
+    static BookStyle defaultStyle()
+    {
+        BookStyle style;
+        style.generation = 1;
+        style.formats[Format::Strong].setFontWeight(QFont::Bold);
+        style.formats[Format::Emphasis].setFontItalic(true);
+        style.formats[Format::StrikeThrough].setFontItalic(true);
+        style.formats[Format::Emphasis].setFontStrikeOut(true);
+        style.formats[Format::Sub].setVerticalAlignment(QTextCharFormat::AlignSubScript);
+        style.formats[Format::Sup].setVerticalAlignment(QTextCharFormat::AlignSuperScript);
+        style.formats[Format::Title].setFontWeight(QFont::Bold);
+
+        QTextCharFormat &internalAnchor = style.formats[Format::InternalAnchor];
+        internalAnchor.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+        internalAnchor.setForeground(QColor(Qt::blue));
+
+        QTextCharFormat &externalAnchor = style.formats[Format::ExternalAnchor];
+        externalAnchor.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+        externalAnchor.setForeground(QColor(Qt::red));
+
+        QTextCharFormat &noteAnchor = style.formats[Format::NoteAnchor];
+        noteAnchor.setForeground(QColor(Qt::blue));
+        noteAnchor.setVerticalAlignment(QTextCharFormat::AlignSuperScript);
+
+        return style;
+    }
+};
 
 class BookBlock
 {

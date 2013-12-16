@@ -10,22 +10,22 @@ static bool isEqual(const QSizeF &first, const QSizeF &second)
             && qFuzzyCompare(first.height(), second.height());
 }
 
-BookBlock::Ptr BookBlockFactory::item(const QSizeF &size)
+BookBlock::Ptr BookBlockFactory::item(const QSizeF &size, const BookStyle &style)
 {
     {
         QMutexLocker locker(&m_lock);
-        if (auto block = findBlockNolock(size))
+        if (auto block = findBlockNolock(size, style))
             return block;
     }
 
-    auto block = doCreate(size);
+    auto block = doCreate(size, style);
 
     QMutexLocker locker(&m_lock);
 
-    if (auto cachedBlock = findBlockNolock(size))
+    if (auto cachedBlock = findBlockNolock(size, style))
         return cachedBlock;
 
-    m_cache << qMakePair(size, block.toWeakRef());
+    m_cache << qMakePair(qMakePair(size, style.generation), block.toWeakRef());
     return block;
 }
 
@@ -34,13 +34,13 @@ void BookBlockFactory::setImageSizes(const QHash<QUrl, QSize> &imageSizes)
     Q_UNUSED(imageSizes);
 }
 
-BookBlock::Ptr BookBlockFactory::findBlockNolock(const QSizeF &size)
+BookBlock::Ptr BookBlockFactory::findBlockNolock(const QSizeF &size, const BookStyle &style)
 {
     QListIterator<CachedBlock> it(m_cache);
 
     while (it.hasNext()) {
         const auto &pair = it.next();
-        if (isEqual(pair.first, size)) {
+        if (isEqual(pair.first.first, size) && pair.first.second == style.generation) {
             if (auto block = pair.second.toStrongRef())
                 return block;
         }

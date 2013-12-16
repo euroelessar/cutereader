@@ -14,7 +14,7 @@ public:
     void setImageSizes(const QHash<QUrl, QSize> &imageSizes);
 
 protected:
-    BookBlock::Ptr doCreate(const QSizeF &size);
+    BookBlock::Ptr doCreate(const QSizeF &size, const BookStyle &style);
 
 private:
     BookImageBlockData::Ptr m_data;

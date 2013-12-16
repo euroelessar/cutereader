@@ -1,6 +1,6 @@
 #include "booktextblockfactory.h"
 
-BookTextBlockFactory::BookTextBlockFactory(const QString &text, const QFont &font, const QList<QTextLayout::FormatRange> &formats)
+BookTextBlockFactory::BookTextBlockFactory(const QString &text, const QFont &font, const QList<FormatRange> &formats)
     : m_data(BookTextBlockData::Ptr::create())
 {
     m_data->text = text;
@@ -8,7 +8,7 @@ BookTextBlockFactory::BookTextBlockFactory(const QString &text, const QFont &fon
     m_data->formats = formats;
 }
 
-BookBlockFactory::Ptr BookTextBlockFactory::create(const QString &text, const QFont &font, const QList<QTextLayout::FormatRange> &formats)
+BookBlockFactory::Ptr BookTextBlockFactory::create(const QString &text, const QFont &font, const QList<FormatRange> &formats)
 {
     QFont tmp = font;
     tmp.setFamily("Ubuntu");
@@ -17,7 +17,7 @@ BookBlockFactory::Ptr BookTextBlockFactory::create(const QString &text, const QF
     return result;
 }
 
-BookBlock::Ptr BookTextBlockFactory::doCreate(const QSizeF &size)
+BookBlock::Ptr BookTextBlockFactory::doCreate(const QSizeF &size, const BookStyle &style)
 {
-    return QSharedPointer<BookTextBlock>::create(m_data, size, m_pointer);
+    return QSharedPointer<BookTextBlock>::create(m_data, size, style, m_pointer);
 }

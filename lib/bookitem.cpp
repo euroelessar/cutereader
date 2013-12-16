@@ -15,8 +15,9 @@
 #include <QPointer>
 
 BookItem::BookItem(QObject *parent) :
-    QObject(parent), m_state(Null), m_info(new BookInfoItem(this))
+    QObject(parent), m_state(Null), m_info(new BookInfoItem(this)), m_style(BookStyle::defaultStyle())
 {
+    m_style.generation = 1;
 }
 
 QList<BookBlockFactory::Ptr> BookItem::blocks(int body) const
@@ -152,4 +153,21 @@ BookTextPosition BookItem::positionForId(const QString &id) const
     return BookTextPosition {
         -1, -1, -1
     };
+}
+
+BookStyle BookItem::style() const
+{
+    QReadLocker lock(&m_lock);
+    return m_style;
+}
+
+void BookItem::setStyle(const BookStyle &style)
+{
+    BookStyle tmp = style;
+    {
+        QWriteLocker lock(&m_lock);
+        tmp.generation = m_style.generation + 1;
+        m_style = tmp;
+    }
+    emit styleChanged(tmp);
 }

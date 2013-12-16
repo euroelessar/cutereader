@@ -13,7 +13,7 @@ struct BookTextBlockData
 
     QString text;
     QFont font;
-    QList<QTextLayout::FormatRange> formats;
+    QList<FormatRange> formats;
 };
 
 class BookTextBlock : public BookBlock
@@ -21,7 +21,7 @@ class BookTextBlock : public BookBlock
 public:
     typedef QSharedPointer<BookTextBlock> Ptr;
 
-    BookTextBlock(const BookTextBlockData::Ptr &data, const QSizeF &size, const QWeakPointer<BookBlockFactory> &factory);
+    BookTextBlock(const BookTextBlockData::Ptr &data, const QSizeF &size, const BookStyle &style, const QWeakPointer<BookBlockFactory> &factory);
 
     template <typename... Args>
     static Ptr create(Args &&...args)
@@ -41,7 +41,7 @@ private:
 
     QTextLayout m_textLayout;
     qreal m_height;
-    const QList<QTextLayout::FormatRange> m_formats;
+    const QList<FormatRange> m_formats;
 };
 
 #endif // BOOKTEXTBLOCK_H

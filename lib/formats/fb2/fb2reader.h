@@ -7,6 +7,7 @@
 #include <QTextCharFormat>
 
 class QXmlStreamReader;
+class Format;
 
 class FB2Reader
 {
@@ -33,14 +34,14 @@ private:
     };
 
     void readDescription(QXmlStreamReader &in, BookInfo &info, const QUrl &baseUrl);
-    BookBlockFactory::Ptr readParagraph(QXmlStreamReader &in, const QList<QTextCharFormat> &baseFormats);
+    BookBlockFactory::Ptr readParagraph(QXmlStreamReader &in, const QList<Format> &baseFormats);
     ImageInfo readImage(QXmlStreamReader &in, const QUrl &baseUrl);
     BodyInfo readBody(QXmlStreamReader &in, const QUrl &baseUrl);
 
     struct FormatDescription
     {
         QString name;
-        std::function<void (const QXmlStreamReader &in, QTextCharFormat &)> change;
+        std::function<void (const QXmlStreamReader &in, Format &)> change;
     };
 
     QList<FormatDescription> m_descriptions;

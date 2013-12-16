@@ -23,28 +23,27 @@ FB2Reader::FB2Reader()
     m_descriptions = {
         {
             QStringLiteral("strong"),
-            std::bind(&QTextCharFormat::setFontWeight, _2, QFont::Bold)
+            [] (const QXmlStreamReader &, Format &format) { format.type = Format::Strong; }
         },
         {
             QStringLiteral("emphasis"),
-            std::bind(&QTextCharFormat::setFontItalic, _2, true)
+            [] (const QXmlStreamReader &, Format &format) { format.type = Format::Emphasis; }
         },
         {
             QStringLiteral("strikethrough"),
-            std::bind(&QTextCharFormat::setFontStrikeOut, _2, true)
+            [] (const QXmlStreamReader &, Format &format) { format.type = Format::StrikeThrough; }
         },
         {
             QStringLiteral("sub"),
-            std::bind(&QTextCharFormat::setVerticalAlignment, _2, QTextCharFormat::AlignSubScript)
+            [] (const QXmlStreamReader &, Format &format) { format.type = Format::Sub; }
         },
         {
             QStringLiteral("sup"),
-            std::bind(&QTextCharFormat::setFontItalic, _2, QTextCharFormat::AlignSuperScript)
+            [] (const QXmlStreamReader &, Format &format) { format.type = Format::Sup; }
         },
         {
             QStringLiteral("a"),
-            [] (const QXmlStreamReader &in, QTextCharFormat &format)
-            {
+            [] (const QXmlStreamReader &in, Format &format) {
                 const QString xlink = QStringLiteral("http://www.w3.org/1999/xlink");
                 const QStringRef type = in.attributes().value(QStringLiteral("type"));
                 const QStringRef href = in.attributes().value(xlink, QStringLiteral("href"));
@@ -52,17 +51,60 @@ FB2Reader::FB2Reader()
                 if (href.isEmpty())
                     return;
 
-                bool isNote = type == QStringLiteral("note");
-                bool isLocalLink = href.startsWith(QLatin1Char('#'));
+                if (type == QStringLiteral("note"))
+                    format.type = Format::NoteAnchor;
+                else if (href.startsWith(QLatin1Char('#')))
+                    format.type = Format::InternalAnchor;
+                else
+                    format.type = Format::ExternalAnchor;
 
-                if (!isNote)
-                    format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-                format.setVerticalAlignment(QTextCharFormat::AlignSuperScript);
-                format.setForeground(QColor(isLocalLink ? Qt::blue : Qt::red));
-                format.setAnchorHref(href.toString());
+                format.href = href.toString();
             }
         }
     };
+//    m_descriptions = {
+//        {
+//            QStringLiteral("strong"),
+//            std::bind(&QTextCharFormat::setFontWeight, _2, QFont::Bold)
+//        },
+//        {
+//            QStringLiteral("emphasis"),
+//            std::bind(&QTextCharFormat::setFontItalic, _2, true)
+//        },
+//        {
+//            QStringLiteral("strikethrough"),
+//            std::bind(&QTextCharFormat::setFontStrikeOut, _2, true)
+//        },
+//        {
+//            QStringLiteral("sub"),
+//            std::bind(&QTextCharFormat::setVerticalAlignment, _2, QTextCharFormat::AlignSubScript)
+//        },
+//        {
+//            QStringLiteral("sup"),
+//            std::bind(&QTextCharFormat::setFontItalic, _2, QTextCharFormat::AlignSuperScript)
+//        },
+//        {
+//            QStringLiteral("a"),
+//            [] (const QXmlStreamReader &in, QTextCharFormat &format)
+//            {
+//                const QString xlink = QStringLiteral("http://www.w3.org/1999/xlink");
+//                const QStringRef type = in.attributes().value(QStringLiteral("type"));
+//                const QStringRef href = in.attributes().value(xlink, QStringLiteral("href"));
+
+//                if (href.isEmpty())
+//                    return;
+
+//                bool isNote = type == QStringLiteral("note");
+//                bool isLocalLink = href.startsWith(QLatin1Char('#'));
+
+//                if (!isNote)
+//                    format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+//                format.setVerticalAlignment(QTextCharFormat::AlignSuperScript);
+//                format.setForeground(QColor(isLocalLink ? Qt::blue : Qt::red));
+//                format.setAnchorHref(href.toString());
+//            }
+//        }
+//    };
 }
 
 bool FB2Reader::canRead(const QMimeType &mimeType) const
@@ -142,19 +184,19 @@ void FB2Reader::readDescription(QXmlStreamReader &in, BookInfo &info, const QUrl
     Q_ASSERT(!"Impossible situation");
 }
 
-BookBlockFactory::Ptr FB2Reader::readParagraph(QXmlStreamReader &in, const QList<QTextCharFormat> &baseFormats)
+BookBlockFactory::Ptr FB2Reader::readParagraph(QXmlStreamReader &in, const QList<Format> &baseFormats)
 {
     Q_ASSERT(in.name() == QStringLiteral("p"));
 
     int depth = 1;
     QString text;
-    QList<QTextLayout::FormatRange> formats;
+    QList<FormatRange> formats;
 
     struct ChangeData
     {
         int start;
         int depth;
-        QTextCharFormat format;
+        Format format;
     };
     QStack<ChangeData> changes;
 
@@ -172,7 +214,7 @@ BookBlockFactory::Ptr FB2Reader::readParagraph(QXmlStreamReader &in, const QList
             ++depth;
 
             if (FormatDescription *description = find_description(in.name())) {
-                QTextCharFormat format;
+                Format format;
                 description->change(in, format);
 
                 changes.append({ text.size(), depth, format });
@@ -236,8 +278,7 @@ BodyInfo FB2Reader::readBody(QXmlStreamReader &in, const QUrl &baseUrl)
     int sectionsDepth = 0;
     int inTitleCounter = 0;
 
-    QTextCharFormat titleFormat;
-    titleFormat.setFontWeight(QFont::Bold);
+    const QList<Format> titleFormat = { { Format::Title } };
 
     while (in.readNext() != QXmlStreamReader::Invalid) {
         switch (in.tokenType()) {
@@ -253,9 +294,9 @@ BodyInfo FB2Reader::readBody(QXmlStreamReader &in, const QUrl &baseUrl)
             } else if (in.name() == QStringLiteral("title")) {
                 ++inTitleCounter;
             } else if (in.name() == QStringLiteral("p")) {
-                QList<QTextCharFormat> baseFormats;
+                QList<Format> baseFormats;
                 if (inTitleCounter)
-                    baseFormats << titleFormat;
+                    baseFormats = titleFormat;
 
                 info.blocks << readParagraph(in, baseFormats);
                 --depth;

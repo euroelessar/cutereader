@@ -7,12 +7,12 @@
 class BookTextBlockFactory : public BookBlockFactory
 {
 public:
-    BookTextBlockFactory(const QString &text, const QFont &font, const QList<QTextLayout::FormatRange> &formats);
+    BookTextBlockFactory(const QString &text, const QFont &font, const QList<FormatRange> &formats);
 
-    static BookBlockFactory::Ptr create(const QString &text, const QFont &font, const QList<QTextLayout::FormatRange> &formats);
+    static BookBlockFactory::Ptr create(const QString &text, const QFont &font, const QList<FormatRange> &formats);
 
 protected:
-    BookBlock::Ptr doCreate(const QSizeF &size);
+    BookBlock::Ptr doCreate(const QSizeF &size, const BookStyle &style);
 
 private:
     BookTextBlockData::Ptr m_data;

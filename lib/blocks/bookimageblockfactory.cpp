@@ -20,7 +20,8 @@ void BookImageBlockFactory::setImageSizes(const QHash<QUrl, QSize> &imageSizes)
         m_data->size = it.value();
 }
 
-BookBlock::Ptr BookImageBlockFactory::doCreate(const QSizeF &size)
+BookBlock::Ptr BookImageBlockFactory::doCreate(const QSizeF &size, const BookStyle &style)
 {
+    (void) style;
     return QSharedPointer<BookImageBlock>::create(m_data, size, m_pointer);
 }

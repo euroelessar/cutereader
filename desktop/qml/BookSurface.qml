@@ -30,10 +30,7 @@ Item {
             anchors.fill: parent
             anchors.margins: 5
             onLinkClicked: root.linkClicked(linkPosition)
-            positionValue: {
-                console.log(config.path, config.positionValue)
-                return config.positionValue.length == 0 ? {} : JSON.parse(config.positionValue)
-            }
+            positionValue: config.positionValue.length == 0 ? {} : JSON.parse(config.positionValue)
         }
 
         Behavior on x {

@@ -6,6 +6,7 @@
 #include "bookblockfactory.h"
 #include "bookinfoitem.h"
 #include "bookinfo.h"
+#include <QReadWriteLock>
 
 class BookItem : public QObject
 {
@@ -36,9 +37,13 @@ public:
 
     BookTextPosition positionForId(const QString &id) const;
 
+    BookStyle style() const;
+    void setStyle(const BookStyle &style);
+
 signals:
     void sourceChanged(const QUrl &source);
     void stateChanged(State state);
+    void styleChanged(const BookStyle &style);
 
 public slots:
     void setSource(const QUrl &source);
@@ -52,6 +57,8 @@ private:
     State m_state;
     BookInfo m_bookInfo;
     BookInfoItem *m_info;
+    BookStyle m_style;
+    mutable QReadWriteLock m_lock;
 };
 
 #endif // BOOKITEM_H

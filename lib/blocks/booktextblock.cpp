@@ -4,14 +4,20 @@
 #include <QPainter>
 #include <QElapsedTimer>
 
-BookTextBlock::BookTextBlock(const BookTextBlockData::Ptr &data, const QSizeF &size, const QWeakPointer<BookBlockFactory> &factory)
+BookTextBlock::BookTextBlock(const BookTextBlockData::Ptr &data, const QSizeF &size, const BookStyle &style, const QWeakPointer<BookBlockFactory> &factory)
     : BookBlock(size, factory), m_textLayout(data->text, data->font), m_height(0), m_formats(data->formats)
 {
     QTextOption textOption;
     textOption.setAlignment(Qt::AlignJustify);
     textOption.setWrapMode(QTextOption::WordWrap);
 
-    m_textLayout.setAdditionalFormats(data->formats);
+    QList<QTextLayout::FormatRange> formats;
+
+    for (const FormatRange &range : m_formats) {
+        formats.append({ range.start, range.length, style.formats.value(range.format.type) });
+    }
+
+    m_textLayout.setAdditionalFormats(formats);
     m_textLayout.setTextOption(textOption);
 
     buildLayout(size);
@@ -29,10 +35,10 @@ QList<BookBlock::ItemInfo> BookTextBlock::createItems(const QPointF &position, i
     const int begin = textLine.textStart();
     const int end = begin + textLine.textLength();
 
-    for (const QTextLayout::FormatRange &range : m_formats) {
+    for (const FormatRange &range : m_formats) {
         const int rangeBegin = qMax(begin, range.start);
         const int rangeEnd = qMin(end, range.start + range.length);
-        if (rangeBegin >= rangeEnd || range.format.anchorHref().isEmpty())
+        if (rangeBegin >= rangeEnd || range.format.href.isEmpty())
             continue;
 
         const qreal xBegin = position.x() + textLine.cursorToX(rangeBegin);
@@ -46,7 +52,7 @@ QList<BookBlock::ItemInfo> BookTextBlock::createItems(const QPointF &position, i
                 { "y", position.y() - delta },
                 { "width", xEnd - xBegin + 2 * delta },
                 { "height", textLine.height() + 2 * delta },
-                { "href", range.format.anchorHref() }
+                { "href", range.format.href }
             }
         };
 
