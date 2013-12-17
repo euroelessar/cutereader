@@ -235,6 +235,7 @@ void BookPageItem::setBook(BookItem *book)
 
         m_book = book;
         connect(m_book, &BookItem::stateChanged, this, &BookPageItem::requestUpdate);
+        connect(m_book, &BookItem::styleChanged, this, &BookPageItem::requestUpdate);
 
         emit bookChanged(book);
         requestUpdate();

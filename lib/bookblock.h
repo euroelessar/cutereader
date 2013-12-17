@@ -13,6 +13,8 @@ struct Format
 {
     enum Type {
         InvalidType,
+        Base,
+        Standard,
         Strong,
         Emphasis,
         StrikeThrough,
@@ -21,7 +23,8 @@ struct Format
         Title,
         InternalAnchor,
         NoteAnchor,
-        ExternalAnchor
+        ExternalAnchor,
+        TypesCount
     };
 
     Format() : type(InvalidType)
@@ -49,9 +52,12 @@ struct FormatRange
 
 struct BookStyle
 {
+    BookStyle() : formats(Format::TypesCount)
+    {
+    }
+
     int generation;
-    QMap<Format::Type, QTextCharFormat> formats;
-    QTextCharFormat baseFormat;
+    QVector<QTextCharFormat> formats;
 
     static BookStyle defaultStyle()
     {

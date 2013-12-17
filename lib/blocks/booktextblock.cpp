@@ -5,7 +5,7 @@
 #include <QElapsedTimer>
 
 BookTextBlock::BookTextBlock(const BookTextBlockData::Ptr &data, const QSizeF &size, const BookStyle &style, const QWeakPointer<BookBlockFactory> &factory)
-    : BookBlock(size, factory), m_textLayout(data->text, data->font), m_height(0), m_formats(data->formats)
+    : BookBlock(size, factory), m_textLayout(data->text), m_height(0), m_formats(data->formats)
 {
     QTextOption textOption;
     textOption.setAlignment(Qt::AlignJustify);
@@ -14,7 +14,7 @@ BookTextBlock::BookTextBlock(const BookTextBlockData::Ptr &data, const QSizeF &s
     QList<QTextLayout::FormatRange> formats;
 
     for (const FormatRange &range : m_formats) {
-        formats.append({ range.start, range.length, style.formats.value(range.format.type) });
+        formats.append({ range.start, range.length, style.formats[range.format.type] });
     }
 
     m_textLayout.setAdditionalFormats(formats);

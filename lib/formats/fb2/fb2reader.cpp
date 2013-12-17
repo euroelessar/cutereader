@@ -62,49 +62,6 @@ FB2Reader::FB2Reader()
             }
         }
     };
-//    m_descriptions = {
-//        {
-//            QStringLiteral("strong"),
-//            std::bind(&QTextCharFormat::setFontWeight, _2, QFont::Bold)
-//        },
-//        {
-//            QStringLiteral("emphasis"),
-//            std::bind(&QTextCharFormat::setFontItalic, _2, true)
-//        },
-//        {
-//            QStringLiteral("strikethrough"),
-//            std::bind(&QTextCharFormat::setFontStrikeOut, _2, true)
-//        },
-//        {
-//            QStringLiteral("sub"),
-//            std::bind(&QTextCharFormat::setVerticalAlignment, _2, QTextCharFormat::AlignSubScript)
-//        },
-//        {
-//            QStringLiteral("sup"),
-//            std::bind(&QTextCharFormat::setFontItalic, _2, QTextCharFormat::AlignSuperScript)
-//        },
-//        {
-//            QStringLiteral("a"),
-//            [] (const QXmlStreamReader &in, QTextCharFormat &format)
-//            {
-//                const QString xlink = QStringLiteral("http://www.w3.org/1999/xlink");
-//                const QStringRef type = in.attributes().value(QStringLiteral("type"));
-//                const QStringRef href = in.attributes().value(xlink, QStringLiteral("href"));
-
-//                if (href.isEmpty())
-//                    return;
-
-//                bool isNote = type == QStringLiteral("note");
-//                bool isLocalLink = href.startsWith(QLatin1Char('#'));
-
-//                if (!isNote)
-//                    format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-//                format.setVerticalAlignment(QTextCharFormat::AlignSuperScript);
-//                format.setForeground(QColor(isLocalLink ? Qt::blue : Qt::red));
-//                format.setAnchorHref(href.toString());
-//            }
-//        }
-//    };
 }
 
 bool FB2Reader::canRead(const QMimeType &mimeType) const
@@ -225,9 +182,9 @@ BookBlockFactory::Ptr FB2Reader::readParagraph(QXmlStreamReader &in, const QList
             if (depth == 1) {
                 Q_ASSERT(in.name() == QStringLiteral("p"));
                 for (int i = baseFormats.size() - 1; i >= 0; --i)
-                    formats.append({ 0, text.size(), baseFormats[i] });
+                    formats.prepend({ 0, text.size(), baseFormats[i] });
 
-                return BookTextBlockFactory::create(text, qApp->font(), formats);
+                return BookTextBlockFactory::create(text, formats);
             }
 
             if (!changes.isEmpty() && changes.last().depth == depth) {
@@ -278,7 +235,8 @@ BodyInfo FB2Reader::readBody(QXmlStreamReader &in, const QUrl &baseUrl)
     int sectionsDepth = 0;
     int inTitleCounter = 0;
 
-    const QList<Format> titleFormat = { { Format::Title } };
+    const QList<Format> titleFormat = { { Format::Base }, { Format::Title } };
+    const QList<Format> standardFormat = { { Format::Base }, { Format::Standard } };
 
     while (in.readNext() != QXmlStreamReader::Invalid) {
         switch (in.tokenType()) {
@@ -297,6 +255,8 @@ BodyInfo FB2Reader::readBody(QXmlStreamReader &in, const QUrl &baseUrl)
                 QList<Format> baseFormats;
                 if (inTitleCounter)
                     baseFormats = titleFormat;
+                else
+                    baseFormats = standardFormat;
 
                 info.blocks << readParagraph(in, baseFormats);
                 --depth;

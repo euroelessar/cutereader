@@ -222,6 +222,9 @@ private:
 LocalBookCollection::LocalBookCollection(QObject *parent) :
     QObject(parent), m_state(Null), m_model(new LocalBookModel(this))
 {
+    auto dataPath = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    dataPath += QStringLiteral("/books");
+    m_baseDir = QUrl::fromLocalFile(dataPath);
 }
 
 LocalBookCollection::State LocalBookCollection::state() const

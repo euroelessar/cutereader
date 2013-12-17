@@ -37,10 +37,8 @@ static void populateConfig(QVariantHash &data, QString &prefix, const QJsonObjec
     }
 }
 
-static QVariantHash loadConfig()
+static QVariantHash loadConfig(const QString &path)
 {
-    const auto path = QStandardPaths::locate(QStandardPaths::ConfigLocation, CONFIG_FILE);
-
     if (path.isEmpty())
         return QVariantHash();
 
@@ -59,6 +57,12 @@ static QVariantHash loadConfig()
     QString prefix;
     populateConfig(data, prefix, document.object());
     return data;
+}
+
+static QVariantHash loadConfig()
+{
+    const auto path = QStandardPaths::locate(QStandardPaths::ConfigLocation, CONFIG_FILE);
+    return loadConfig(path);
 }
 
 static void saveConfig(const QVariantHash &config)
@@ -212,6 +216,27 @@ void Config::setPath(const QString &path)
     if (m_path != path) {
         m_path = path;
         emit pathChanged(path);
+    }
+}
+
+QVariant Config::value(const QString &name)
+{
+    return m_data->config.value(name);
+}
+
+void Config::setValue(const QString &name, const QVariant &value)
+{
+    m_data->updateConfig(name, value);
+}
+
+void Config::loadDefaultConfig(const QString &path)
+{
+    QVariantHash data = loadConfig(path);
+
+    for (auto it = data.begin(); it != data.end(); ++it) {
+        if (m_data->config.contains(it.key()))
+            continue;
+        m_data->config.insert(it.key(), it.value());
     }
 }
 

@@ -12,7 +12,6 @@ struct BookTextBlockData
     typedef QSharedPointer<BookTextBlockData> Ptr;
 
     QString text;
-    QFont font;
     QList<FormatRange> formats;
 };
 

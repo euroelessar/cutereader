@@ -29,14 +29,15 @@ Item {
         }
     }
 
+    Book {
+        id: rootBook
+        source: genericConfig.book
+        style.base.fontPointSize: bookStackTab.item.sliderValue
+    }
+
     TabView {
         anchors.fill: parent
         anchors.margins: 5
-
-        Book {
-            id: rootBook
-            source: genericConfig.book
-        }
 
         Tab {
             id: bookStackTab
@@ -44,6 +45,7 @@ Item {
 
             Item {
                 property StackView stackView: bookStack
+                property alias sliderValue: fontSlider.value
 
                 StackView {
                     id: bookStack
@@ -69,6 +71,18 @@ Item {
                     enabled: bookStack.depth > 1
                     onClicked: bookStack.pop()
                 }
+                Slider {
+                    id: fontSlider
+                    anchors {
+                        left: backButton.right
+                        right: parent.right
+                        verticalCenter: backButton.verticalCenter
+                    }
+
+                    minimumValue: 1
+                    maximumValue: 48
+                    value: 12
+                }
             }
         }
 //        Tab {
@@ -83,7 +97,6 @@ Item {
             clip: true
             LocalView {
                 book: rootBook
-                source: "file:///home/elessar/.books/"
                 onBookRequested: {
                     var book = bookStackTab.item;
                     book.stackView.clear();

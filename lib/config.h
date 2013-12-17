@@ -23,6 +23,11 @@ public:
     QString path() const;
     void setPath(const QString &path);
 
+    QVariant value(const QString &name);
+    void setValue(const QString &name, const QVariant &value);
+
+    void loadDefaultConfig(const QString &path);
+
     virtual void classBegin();
     virtual void componentComplete();
 

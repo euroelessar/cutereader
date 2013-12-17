@@ -15,9 +15,10 @@
 #include <QPointer>
 
 BookItem::BookItem(QObject *parent) :
-    QObject(parent), m_state(Null), m_info(new BookInfoItem(this)), m_style(BookStyle::defaultStyle())
+    QObject(parent), m_state(Null), m_info(new BookInfoItem(this)),
+    m_style(new BookStyleItem(this))
 {
-    m_style.generation = 1;
+    connect(m_style, &BookStyleItem::changed, this, &BookItem::styleChanged);
 }
 
 QList<BookBlockFactory::Ptr> BookItem::blocks(int body) const
@@ -87,6 +88,18 @@ void BookItem::setSource(const QUrl &source)
     }
 }
 
+void BookItem::setConfigSource(const QUrl &configSource)
+{
+    if (m_configSource != configSource) {
+        m_configSource = configSource;
+        if (configSource.isLocalFile()) {
+            Config config;
+            config.loadDefaultConfig(configSource.toLocalFile());
+        }
+        emit configSourceChanged(configSource);
+    }
+}
+
 void BookItem::setBookInfo(const BookInfo &book)
 {
     if (book.source == m_source) {
@@ -119,6 +132,8 @@ void BookItem::registerQmlTypes(QQmlEngine *engine)
     engine->addImageProvider("fb2", new FB2ImageProvider);
     qmlRegisterUncreatableType<BookInfoItem>("org.qutim", 0, 3, "BookInfo", "This object is always Book property");
     qmlRegisterType<BookItem>("org.qutim", 0, 3, "Book");
+    qmlRegisterUncreatableType<BookStyleItem>("org.qutim", 0, 3, "BookStyle", "This object is always Book property");
+    qmlRegisterUncreatableType<BookTextStyleItem>("org.qutim", 0, 3, "BookTextStyle", "This object is always Book property");
     qmlRegisterType<BookPageItem>("org.qutim", 0, 3, "BaseBookPage");
     qmlRegisterType<LocalBookCollection>("org.qutim", 0, 3, "LocalBookCollection");
     qmlRegisterType<SortedLocalBookModel>("org.qutim", 0, 3, "LocalBookModel");
@@ -157,17 +172,24 @@ BookTextPosition BookItem::positionForId(const QString &id) const
 
 BookStyle BookItem::style() const
 {
-    QReadLocker lock(&m_lock);
-    return m_style;
+    return m_style->style();
 }
 
-void BookItem::setStyle(const BookStyle &style)
+
+void BookItem::classBegin()
 {
-    BookStyle tmp = style;
-    {
-        QWriteLocker lock(&m_lock);
-        tmp.generation = m_style.generation + 1;
-        m_style = tmp;
-    }
-    emit styleChanged(tmp);
+}
+
+void BookItem::componentComplete()
+{
+}
+
+QUrl BookItem::configSource() const
+{
+    return m_configSource;
+}
+
+BookStyleItem *BookItem::styleItem() const
+{
+    return m_style;
 }
