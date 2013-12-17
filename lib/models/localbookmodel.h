@@ -6,6 +6,8 @@
 
 enum RoleNames {
     BookTitle = Qt::UserRole,
+    BookSubtitle,
+    BookSection,
     BookSource,
     BookCover,
     BookAuthors,

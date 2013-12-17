@@ -182,6 +182,7 @@ void BookItem::classBegin()
 
 void BookItem::componentComplete()
 {
+    m_style->componentComplete();
 }
 
 QUrl BookItem::configSource() const

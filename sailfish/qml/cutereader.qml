@@ -38,9 +38,27 @@ ApplicationWindow
     id: application
     property Book book: rootBook
 
+    function openBook(source) {
+        book.source = source;
+        genericConfig.book = source;
+        pageStack.replaceAbove(null, initialPage);
+    }
+
+    Config {
+        id: genericConfig
+        path: "generic"
+
+        property url book: Qt.resolvedUrl("../books/the_three_musketeers.fb2")
+    }
+
     Book {
         id: rootBook
-        source: Qt.resolvedUrl("../books/the_three_musketeers.fb2")
+        source: genericConfig.book
+
+        style.base.fontPointSize: Theme.fontSizeExtraSmall
+        style.base.fontFamily: Theme.fontFamily
+        style.title.fontPointSize: Theme.fontSizeSmall
+        style.title.fontFamily: Theme.fontFamilyHeading
     }
 
     initialPage: Component {

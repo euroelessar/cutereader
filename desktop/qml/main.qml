@@ -15,6 +15,13 @@ Item {
         property url book
     }
 
+    Config {
+        id: styleConfig
+        path: "style.default.base"
+
+        property real fontPointSize: 28
+    }
+
     Component {
         id: bookSurfaceComponent
 
@@ -32,7 +39,7 @@ Item {
     Book {
         id: rootBook
         source: genericConfig.book
-        style.base.fontPointSize: bookStackTab.item.sliderValue
+//        style.base.fontPointSize: styleConfig.fontPointSize
     }
 
     TabView {
@@ -78,10 +85,16 @@ Item {
                         right: parent.right
                         verticalCenter: backButton.verticalCenter
                     }
+                    property bool completed: false
 
                     minimumValue: 1
                     maximumValue: 48
-                    value: 12
+                    value: styleConfig.fontPointSize
+                    onValueChanged: {
+                        rootBook.style.base.fontPointSize = value;
+                        console.log(value, rootBook.style.base.fontPointSize)
+                        if (status === Component.Ready) styleConfig.fontPointSize = value
+                    }
                 }
             }
         }

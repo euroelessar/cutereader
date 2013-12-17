@@ -35,6 +35,13 @@ import org.qutim 0.3
 Page {
     id: page
 
+    Config {
+        id: config
+        path: "books." + Qt.md5(application.book.source.toString())
+
+        property string positionValue
+    }
+
     // To enable PullDownMenu, place our content in a SilicaFlickable
     SilicaFlickable {
         anchors.fill: parent
@@ -42,8 +49,8 @@ Page {
         // PullDownMenu and PushUpMenu must be declared in SilicaFlickable, SilicaListView or SilicaGridView
         PullDownMenu {
             MenuItem {
-                text: "Show Page 2"
-                onClicked: pageStack.push(Qt.resolvedUrl("SecondPage.qml"))
+                text: "Library"
+                onClicked: pageStack.push(Qt.resolvedUrl("LocalView.qml"))
             }
         }
 
@@ -60,6 +67,7 @@ Page {
                 anchors.fill: parent
                 anchors.margins: 5
                 book: application.book
+                positionValue: config.positionValue.length == 0 ? {} : JSON.parse(config.positionValue)
             }
 
             MouseArea {
@@ -71,6 +79,7 @@ Page {
                     } else {
                         bookPage.positionValue = bookPage.nextPage;
                     }
+                    config.positionValue = JSON.stringify(bookPage.positionValue);
                 }
             }
         }

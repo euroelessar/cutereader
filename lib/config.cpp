@@ -16,6 +16,7 @@
 #include <QPair>
 #include <QSet>
 #include <QSaveFile>
+#include <QStringBuilder>
 
 #define CONFIG_PATH QStringLiteral("/cutereader")
 #define CONFIG_FILE QStringLiteral("/cutereader/config.json")
@@ -221,17 +222,17 @@ void Config::setPath(const QString &path)
 
 QVariant Config::value(const QString &name)
 {
-    return m_data->config.value(name);
+    return m_data->config.value(m_path % QLatin1Char('.') % name);
 }
 
 void Config::setValue(const QString &name, const QVariant &value)
 {
-    m_data->updateConfig(name, value);
+    m_data->updateConfig(m_path % QLatin1Char('.') % name, value);
 }
 
 void Config::loadDefaultConfig(const QString &path)
 {
-    QVariantHash data = loadConfig(path);
+    const QVariantHash data = loadConfig(path);
 
     for (auto it = data.begin(); it != data.end(); ++it) {
         if (m_data->config.contains(it.key()))
@@ -281,6 +282,12 @@ void Config::onValueChanged(const QString &key, const QVariant &value)
     auto it = m_properties.find(key);
     if (it != m_properties.end())
         it.value().write(this, value);
+
+    if (key.size() > m_path.size()
+            && key.startsWith(m_path)
+            && key.at(m_path.size()) == QLatin1Char('.')) {
+        emit valueChanged(key.mid(m_path.size() + 1), value);
+    }
 }
 
 

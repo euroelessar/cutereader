@@ -8,7 +8,7 @@ enum BookCategoryRoles {
 };
 
 BookCategoriesModel::BookCategoriesModel(QObject *parent) :
-    QAbstractListModel(parent)
+    QAbstractListModel(parent), m_type(None)
 {
 }
 

@@ -33,6 +33,7 @@ public:
 
 signals:
     void pathChanged(const QString &path);
+    void valueChanged(const QString &key, const QVariant &value);
 
 private:
     void onValueChanged(const QString &key, const QVariant &value);

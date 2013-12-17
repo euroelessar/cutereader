@@ -1,4 +1,5 @@
 #include "localbookmodel.h"
+#include <algorithm>
 
 LocalBookModel::LocalBookModel(LocalBookCollection *parent) :
     QAbstractListModel(parent), m_collection(parent)
@@ -24,6 +25,10 @@ QVariant LocalBookModel::data(const QModelIndex &index, int role) const
     switch (role) {
     case BookTitle:
         return info.title;
+    case BookSubtitle:
+        return info.authorsList().join(QStringLiteral(", "));
+    case BookSection:
+        return info.title.at(0);
     case BookSource:
         return info.source;
     case BookCover:
@@ -49,6 +54,8 @@ QHash<int, QByteArray> LocalBookModel::createRoleNames()
 {
     return {
         { BookTitle, "title" },
+        { BookSubtitle, "subtitle" },
+        { BookSection, "section" },
         { BookSource, "source" },
         { BookCover, "coverSource" },
         { BookAuthors, "authors" },

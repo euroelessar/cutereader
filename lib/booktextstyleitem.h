@@ -5,39 +5,47 @@
 #include <QTextCharFormat>
 #include <QDebug>
 
+#define FORMAT_PROPERTY(NAME, FORMAT) \
+    Q_PROPERTY(QVariant NAME READ NAME WRITE set ## NAME NOTIFY NAME ## Changed) \
+public: \
+    QVariant NAME() const \
+    { \
+        return m_format.property(FORMAT); \
+    } \
+ \
+    void set ## NAME(const QVariant &arg) \
+    { \
+        QVariant realArg = updateValue(FORMAT, arg); \
+        emit NAME ## Changed(); \
+    } \
+private:
+
 class BookTextStyleItem : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(qreal fontPointSize READ fontPointSize WRITE setFontPointSize NOTIFY fontPointSizeChanged)
+    FORMAT_PROPERTY(fontPointSize, QTextCharFormat::FontPointSize)
+    FORMAT_PROPERTY(fontWeight, QTextCharFormat::FontWeight)
+    FORMAT_PROPERTY(fontItalic, QTextCharFormat::FontItalic)
+    FORMAT_PROPERTY(fontFamily, QTextCharFormat::FontFamily)
 public:
     explicit BookTextStyleItem(const QTextCharFormat &format, QObject *parent = 0);
 
     QTextCharFormat format() const;
 
-    qreal fontPointSize() const
-    {
-        return m_format.doubleProperty(QTextCharFormat::FontPointSize);
-    }
-
-    void setFontPointSize(qreal fontPointSize)
-    {
-        if (qFuzzyCompare(fontPointSize, m_format.doubleProperty(QTextCharFormat::FontPointSize)))
-            return;
-
-        if (qIsNull(fontPointSize))
-            m_format.clearProperty(QTextCharFormat::FontPointSize);
-        else
-            m_format.setProperty(QTextCharFormat::FontPointSize, fontPointSize);
-
-        emit changed();
-    }
-
 signals:
     void changed();
-    void fontPointSizeChanged(qreal fontPointSize);
+    void fontPointSizeChanged();
+    void fontWeightChanged();
+    void fontItalicChanged();
+    void fontFamilyChanged();
+
+protected:
+    QVariant updateValue(QTextCharFormat::Property key, const QVariant &input);
 
 private:
     QTextCharFormat m_format;
 };
+
+#undef PROPERTY_REAL
 
 #endif // BOOKTEXTSTYLEITEM_H
