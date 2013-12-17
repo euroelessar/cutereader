@@ -5,8 +5,16 @@ include(../lib/lib.pri)
 
 SOURCES += $$PWD/main.cpp
 
+android {
+    QT += xmlpatterns #hack for deployment
+    UI_TYPE = android
+} else {
+    UI_TYPE = desktop
+}
+#UI_TYPE = android
+
 # Add more folders to ship with the application, here
-folder_01.source = ../desktop/qml
+folder_01.source = ../app/qml/$$UI_TYPE/qml
 folder_01.target = qml/cutereader
 folder_02.source = ../books
 folder_02.target = ./

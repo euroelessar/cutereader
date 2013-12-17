@@ -2,7 +2,7 @@ import QtQuick 2.0
 import QtQuick.Controls 1.0
 import org.qutim 0.3
 
-Item {
+ApplicationWindow {
     width: 360
     height: 360
     visible: true
