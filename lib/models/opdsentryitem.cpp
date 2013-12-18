@@ -4,6 +4,7 @@
 #include <QQmlEngine>
 #include <QNetworkAccessManager>
 #include <qqml.h>
+#include <QNetworkRequest>
 
 OpdsEntryItem::OpdsEntryItem(QObject *parent) :
     QObject(parent)

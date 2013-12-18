@@ -22,7 +22,7 @@ public:
     QVariantList actions() const;
 
 public slots:
-    void download();
+    void download(const QUrl &source);
 
 public slots:
     void setEntry(const QVariant &entry);
