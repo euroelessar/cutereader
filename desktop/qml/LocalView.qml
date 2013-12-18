@@ -69,6 +69,52 @@ Item {
         }
     }
 
+    Component {
+        id: opdsBookView
+
+        OpdsBookView {
+            onLinkRequested: {
+                stackView.push({
+                    item: opdsView,
+                    properties: {
+                        source: source
+                    }
+                })
+            }
+            onBookRequested: {
+                stackView.push({
+                    item: opdsBookView,
+                    properties: {
+                        opdsEntry: opdsEntry
+                    }
+                })
+            }
+        }
+    }
+
+    Component {
+        id: opdsView
+
+        OpdsView {
+            onLinkRequested: {
+                stackView.push({
+                    item: opdsView,
+                    properties: {
+                        source: source
+                    }
+                })
+            }
+            onBookRequested: {
+                stackView.push({
+                    item: opdsBookView,
+                    properties: {
+                        opdsEntry: opdsEntry
+                    }
+                })
+            }
+        }
+    }
+
     StackView {
         id: stackView
 
@@ -120,6 +166,14 @@ Item {
                                 subtitle: qsTr("Recently opened books"),
                                 component: categorizedView,
                                 properties: {
+                                }
+                            });
+                            append({
+                                title: qsTr("Opds"),
+                                subtitle: qsTr("network library"),
+                                component: opdsView,
+                                properties: {
+                                    source: "http://flibusta.net/opds/author/19011/alphabet/1"
                                 }
                             });
                         }

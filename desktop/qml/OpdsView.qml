@@ -1,26 +1,16 @@
 import QtQuick 2.0
 import QtQuick.XmlListModel 2.0
+import org.qutim 0.3
 
 ListView {
     id: root
-    anchors.fill: parent
     property alias source: opdsModel.source
-    
-    model: XmlListModel {
+
+    signal linkRequested(url source)
+    signal bookRequested(variant opdsEntry)
+
+    model: OpdsBookModel {
         id: opdsModel
-        query: "/feed/entry"
-        namespaceDeclarations: "declare default element namespace 'http://www.w3.org/2005/Atom';"
-        XmlRole {
-            name: "title"
-            query: "title/string()"
-        }
-        XmlRole {
-            name: "link"
-            query: "link[@type=\"application/atom+xml;profile=opds-catalog\"][1]/@href/string()"
-        }
-        onStatusChanged: {
-            console.log(status, count, errorString())
-        }
     }
     delegate: Rectangle {
         id: item
@@ -30,12 +20,15 @@ ListView {
         Text {
             anchors.verticalCenter: parent.verticalCenter
             anchors.margins: 5
-            text: title //"title: " + title + "\nlink: " + "http://flibusta.net/" + link
+            text: title
         }
         MouseArea {
             anchors.fill: parent
             onClicked: {
-                opdsModel.source = "http://flibusta.net/" + link
+                if (isBook)
+                    root.bookRequested(opdsEntry)
+                else
+                    root.linkRequested(source)
             }
         }
     }

@@ -31,7 +31,9 @@ SOURCES += ../lib/blocks/booktextblock.cpp \
     ../lib/models/bookcategoriesmodel.cpp \
     ../lib/config.cpp \
     ../lib/bookstyle.cpp \
-    ../lib/booktextstyleitem.cpp
+    ../lib/booktextstyleitem.cpp \
+    ../lib/models/opdsparser.cpp \
+    ../lib/models/opdsentryitem.cpp
 
 HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/bookblockitem.h \
@@ -55,4 +57,6 @@ HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/models/bookcategoriesmodel.h \
     ../lib/config.h \
     ../lib/bookstyle.h \
-    ../lib/booktextstyleitem.h
+    ../lib/booktextstyleitem.h \
+    ../lib/models/opdsparser.h \
+    ../lib/models/opdsentryitem.h
