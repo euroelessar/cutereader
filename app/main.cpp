@@ -10,8 +10,11 @@ int main(int argc, char *argv[])
     QtQuick2ApplicationViewer viewer;
     
     BookItem::registerQmlTypes(viewer.engine());
-    viewer.setMainQmlFile(QStringLiteral("qml/cutereader/qml/main.qml"));
-    viewer.showExpanded();
-
+#ifdef Q_OS_ANDROID
+    QUrl url("assets:/qml/cutereader/qml/main.qml");
+#else
+    QUrl url("qml/cutereader/qml/main.qml");
+#endif
+    QQmlApplicationEngine engine(url);
     return app.exec();
 }
