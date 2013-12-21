@@ -11,7 +11,7 @@ android {
 } else {
     UI_TYPE = desktop
 }
-#UI_TYPE = android
+UI_TYPE = android
 
 # Add more folders to ship with the application, here
 folder_01.source = ../app/qml/$$UI_TYPE/qml

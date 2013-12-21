@@ -7,14 +7,14 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    QtQuick2ApplicationViewer viewer;
-    
-    BookItem::registerQmlTypes(viewer.engine());
 #ifdef Q_OS_ANDROID
     QUrl url("assets:/qml/cutereader/qml/main.qml");
 #else
     QUrl url("qml/cutereader/qml/main.qml");
 #endif
-    QQmlApplicationEngine engine(url);
+
+    QQmlApplicationEngine engine;
+    BookItem::registerQmlTypes(&engine);
+    engine.load(url);
     return app.exec();
 }

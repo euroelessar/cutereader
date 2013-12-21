@@ -222,9 +222,13 @@ private:
 LocalBookCollection::LocalBookCollection(QObject *parent) :
     QObject(parent), m_state(Null), m_model(new LocalBookModel(this))
 {
+#ifdef Q_OS_ANDROID
+    m_baseDir = QUrl::fromLocalFile("/sdcard/Books"); //TODO use jni
+#else
     auto dataPath = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     dataPath += QStringLiteral("/books");
     m_baseDir = QUrl::fromLocalFile(dataPath);
+#endif
 }
 
 LocalBookCollection::State LocalBookCollection::state() const
