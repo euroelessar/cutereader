@@ -1,4 +1,5 @@
 #include "localbookmodel.h"
+#include "frontmodel.h"
 #include <algorithm>
 
 LocalBookModel::LocalBookModel(LocalBookCollection *parent) :
@@ -39,6 +40,36 @@ QVariant LocalBookModel::data(const QModelIndex &index, int role) const
         return info.genres;
     case BookSequences:
         return info.sequencesList();
+    case BookIsBook:
+        return true;
+    case BookActions: {
+        QVariantList actions;
+        {
+            ModelAction action;
+            action.type = ModelAction::OpenBook;
+            action.title = tr("Read");
+            action.entry = info.source;
+            actions << action.toMap();
+        }
+        return actions;
+    }
+    case BookData: {
+        ModelData data;
+        data.type = ModelData::BookView;
+        data.title = info.title;
+        data.cover = info.cover;
+        data.source = info.source;
+        data.text = tr("Author: %1<br>\n"
+                       "Genres: %2<br>\n"
+                       "Series: %3<br>\n"
+                       "File: %4").arg(
+                    info.authorsList().join(QStringLiteral(", ")).toHtmlEscaped(),
+                    info.genres.join(QStringLiteral("/")).toHtmlEscaped(),
+                    info.sequencesList().join(QStringLiteral("/")).toHtmlEscaped(),
+                    info.source.toLocalFile().toHtmlEscaped());
+        data.actions = LocalBookModel::data(index, BookActions).toList();
+        return QVariant::fromValue(data);
+    }
     default:
         return QVariant();
     }
@@ -60,7 +91,9 @@ QHash<int, QByteArray> LocalBookModel::createRoleNames()
         { BookCover, "coverSource" },
         { BookAuthors, "authors" },
         { BookGenres, "genres" },
-        { BookSequences, "series" }
+        { BookSequences, "series" },
+        { BookIsBook, "isBook" },
+        { BookData, "data" }
     };
 }
 

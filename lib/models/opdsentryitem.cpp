@@ -1,13 +1,12 @@
 #include "opdsentryitem.h"
+#include "opdsdownloadjob.h"
 #include <QMimeDatabase>
 #include <QDebug>
 #include <QQmlEngine>
-#include <QNetworkAccessManager>
 #include <qqml.h>
-#include <QNetworkRequest>
 
 OpdsEntryItem::OpdsEntryItem(QObject *parent) :
-    QObject(parent)
+    QObject(parent), m_downloadList(NULL)
 {
 }
 
@@ -18,7 +17,7 @@ QVariant OpdsEntryItem::entry() const
 
 QUrl OpdsEntryItem::cover() const
 {
-    return m_entry.cover();
+    return m_entry.cover;
 }
 
 QString OpdsEntryItem::title() const
@@ -28,41 +27,37 @@ QString OpdsEntryItem::title() const
 
 QString OpdsEntryItem::content() const
 {
-    return m_entry.htmlContent;
+    return m_entry.text;
 }
 
 QVariantList OpdsEntryItem::actions() const
 {
-    QVariantList result;
+    return m_entry.actions;
+}
 
-    for (const OpdsLink &link : m_entry.links) {
-        if (!link.title.isEmpty())
-            result << link.toMap();
-    }
-
-    for (const OpdsLink &link : m_entry.links) {
-        if (link.type.isEmpty())
-            continue;
-        if (link.type.startsWith(QStringLiteral("application/fb2"))) {
-            OpdsLink tmp = link;
-            tmp.title = tr("Download book");
-            result << tmp.toMap();
-        }
-    }
-
-    return result;
+DownloadBookList *OpdsEntryItem::downloadList() const
+{
+    return m_downloadList;
 }
 
 void OpdsEntryItem::download(const QUrl &source)
 {
-    auto manager = qmlEngine(this)->networkAccessManager();
+    Q_ASSERT(m_downloadList);
 
-    QNetworkRequest request(source);
-    manager->get(request);
+//    auto manager = qmlEngine(this)->networkAccessManager();
+//    m_downloadList->addJob(new OpdsDownloadJob(m_downloadList, manager, m_entry, source));
 }
 
 void OpdsEntryItem::setEntry(const QVariant &entry)
 {
-    m_entry = entry.value<OpdsEntry>();
+    m_entry = entry.value<ModelData>();
     emit entryChanged(entry);
+}
+
+void OpdsEntryItem::setDownloadList(DownloadBookList *downloadList)
+{
+    if (m_downloadList != downloadList) {
+        m_downloadList = downloadList;
+        emit downloadListChanged(downloadList);
+    }
 }

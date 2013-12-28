@@ -1,14 +1,8 @@
 #include "bookcategoriesmodel.h"
-
-enum BookCategoryRoles {
-    BookCategoryTitle = Qt::UserRole,
-    BookCategorySubTitle,
-    BookCategoryBooks,
-    BookCategoryFilter
-};
+#include "frontmodel.h"
 
 BookCategoriesModel::BookCategoriesModel(QObject *parent) :
-    QAbstractListModel(parent), m_type(None)
+    QAbstractListModel(parent), m_type(None), m_collection(NULL)
 {
 }
 
@@ -27,27 +21,19 @@ QVariant BookCategoriesModel::data(const QModelIndex &index, int role) const
     const TypeInfo &info = m_data[index.row()];
 
     switch (role) {
-    case BookCategoryTitle:
+    case BookTitle:
         return info.title;
-    case BookCategorySubTitle:
+    case BookSubtitle:
         return info.subtitle;
-    case BookCategoryBooks:
-        return info.books;
-    case BookCategoryFilter:
-        return info.filter;
+    case BookData: {
+        ModelData data;
+        data.type = ModelData::LocalBooks;
+        data.localFilter = info.filter;
+        return QVariant::fromValue(data);
+    }
     default:
         return QVariant();
     }
-}
-
-QHash<int, QByteArray> BookCategoriesModel::roleNames() const
-{
-    return {
-        { BookCategoryTitle, "title" },
-        { BookCategorySubTitle, "subtitle" },
-        { BookCategoryBooks, "books" },
-        { BookCategoryFilter, "filter" }
-    };
 }
 
 void BookCategoriesModel::rebuildModel()

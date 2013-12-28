@@ -33,7 +33,12 @@ SOURCES += ../lib/blocks/booktextblock.cpp \
     ../lib/bookstyle.cpp \
     ../lib/booktextstyleitem.cpp \
     ../lib/models/opdsparser.cpp \
-    ../lib/models/opdsentryitem.cpp
+    ../lib/models/opdsentryitem.cpp \
+    ../lib/models/downloadbooklist.cpp \
+    ../lib/models/downloadbookjob.cpp \
+    ../lib/models/opdsdownloadjob.cpp \
+    ../lib/models/frontmodel.cpp \
+    ../lib/models/bookrootmodel.cpp
 
 HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/bookblockitem.h \
@@ -59,4 +64,9 @@ HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/bookstyle.h \
     ../lib/booktextstyleitem.h \
     ../lib/models/opdsparser.h \
-    ../lib/models/opdsentryitem.h
+    ../lib/models/opdsentryitem.h \
+    ../lib/models/downloadbooklist.h \
+    ../lib/models/downloadbookjob.h \
+    ../lib/models/opdsdownloadjob.h \
+    ../lib/models/frontmodel.h \
+    ../lib/models/bookrootmodel.h

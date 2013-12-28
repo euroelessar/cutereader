@@ -1,12 +1,13 @@
-import QtQuick 2.0
+import QtQuick 2.1
 import org.qutim 0.3
 
-Item {
+FocusScope {
     id: root
     property Book book
     property alias positionValue: firstPage.positionValue
 
     signal linkClicked(variant linkPosition)
+    focus: true
 
     Config {
         id: config
@@ -23,6 +24,11 @@ Item {
         width: parent.width
         border.width: 1
         z: 1
+
+        focus: true
+        activeFocusOnTab: true
+        Keys.onRightPressed: firstPage.positionValue = firstPage.nextPage
+        Keys.onLeftPressed: firstPage.positionValue = firstPage.previousPage
 
         BookPage {
             id: firstPage

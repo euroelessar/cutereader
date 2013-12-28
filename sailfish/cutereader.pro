@@ -25,7 +25,10 @@ OTHER_FILES += qml/cutereader.qml \
     qml/pages/BookPage.qml \
     qml/pages/LocalView.qml \
     qml/pages/BookListItem.qml \
-    qml/pages/CategoryListItem.qml
+    qml/pages/CategoryListItem.qml \
+    qml/pages/LibraryListView.qml \
+    qml/pages/LibraryBookView.qml \
+    qml/pages/LibraryPageBase.qml
 
 INCLUDEPATH += ../
 

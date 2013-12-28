@@ -31,7 +31,7 @@ public:
     void classBegin();
     void componentComplete();
 
-    QHash<int, QByteArray> roleNames() const;
+//    QHash<int, QByteArray> roleNames() const;
 
     State state() const;
 

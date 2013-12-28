@@ -1,19 +1,8 @@
 #include "opdsbookmodel.h"
+#include "frontmodel.h"
 #include <qqml.h>
 #include <QQmlEngine>
 #include <QNetworkReply>
-
-enum {
-    EntryTitle = Qt::UserRole,
-    EntrySubtitle,
-    EntryLinks,
-    EntrySource,
-    EntryCover,
-    EntryCatalogs,
-    EntryAcquisitions,
-    EntryIsBook,
-    EntryOpdsEntry
-};
 
 OpdsBookModel::OpdsBookModel(QObject *parent) :
     QAbstractListModel(parent), m_state(Null)
@@ -39,70 +28,69 @@ QVariant OpdsBookModel::data(const QModelIndex &index, int role) const
     const auto acquisition = QStringLiteral("http://opds-spec.org/acquisition");
 
     switch (role) {
-    case EntryTitle:
+    case BookTitle:
         return entry.title;
-    case EntrySubtitle:
+    case BookSubtitle:
         return entry.textContent;
-    case EntryLinks: {
-        QVariantList result;
-        for (const OpdsLink &link : entry.links)
-            result << link.toMap();
-        return result;
-    }
-    case EntryCatalogs: {
-        QVariantList result;
-        for (const OpdsLink &link : entry.links) {
-            if (link.type == catalog)
-                result << link.toMap();
-        }
-        return result;
-    }
-    case EntrySource: {
+//    case BookLinks: {
+//        QVariantList result;
+//        for (const OpdsLink &link : entry.links)
+//            result << link.toMap();
+//        return result;
+//    }
+//    case BookCatalogs: {
+//        QVariantList result;
+//        for (const OpdsLink &link : entry.links) {
+//            if (link.type == catalog)
+//                result << link.toMap();
+//        }
+//        return result;
+//    }
+    case BookSource: {
         for (const OpdsLink &link : entry.links) {
             if (link.type == catalog && link.title.isEmpty())
                 return link.source;
         }
         return QVariant();
     }
-    case EntryCover:
+    case BookCover:
         return entry.cover();
-    case EntryAcquisitions: {
-        QVariantList result;
-        for (const OpdsLink &link : entry.links) {
-            if (link.relation.startsWith(acquisition))
-                result << link.toMap();
-        }
-        return result;
-    }
-    case EntryIsBook: {
+//    case BookAcquisitions: {
+//        QVariantList result;
+//        for (const OpdsLink &link : entry.links) {
+//            if (link.relation.startsWith(acquisition))
+//                result << link.toMap();
+//        }
+//        return result;
+//    }
+    case BookIsBook: {
         for (const OpdsLink &link : entry.links) {
             if (link.relation.startsWith(acquisition))
                 return true;
         }
         return false;
     }
-    case EntryOpdsEntry:
-        return QVariant::fromValue(entry);
+    case BookData:
+        return QVariant::fromValue(entry.data());
     default:
         return QVariant();
     }
 }
 
-
-QHash<int, QByteArray> OpdsBookModel::roleNames() const
-{
-    return {
-        { EntryTitle, "title" },
-        { EntrySubtitle, "subtitle" },
-        { EntryLinks, "links" },
-        { EntrySource, "source" },
-        { EntryCatalogs, "catalogs" },
-        { EntryCover, "cover" },
-        { EntryAcquisitions, "acquisitions" },
-        { EntryIsBook, "isBook" },
-        { EntryOpdsEntry, "opdsEntry" }
-    };
-}
+//QHash<int, QByteArray> OpdsBookModel::roleNames() const
+//{
+//    return {
+//        { BookTitle, "title" },
+//        { BookSubtitle, "subtitle" },
+//        { BookLinks, "links" },
+//        { BookSource, "source" },
+//        { BookCatalogs, "catalogs" },
+//        { BookCover, "cover" },
+//        { BookAcquisitions, "acquisitions" },
+//        { BookIsBook, "isBook" },
+//        { BookOpdsEntry, "opdsEntry" }
+//    };
+//}
 
 void OpdsBookModel::classBegin()
 {
@@ -141,7 +129,7 @@ void OpdsBookModel::setSource(const QUrl &source)
 
 void OpdsBookModel::load()
 {
-    QNetworkAccessManager *manager = qmlEngine(this)->networkAccessManager();
+    QNetworkAccessManager *manager = qmlEngine(QObject::parent())->networkAccessManager();
 
     QNetworkRequest request(m_source);
     QNetworkReply *reply = manager->get(request);

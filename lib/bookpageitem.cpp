@@ -355,7 +355,7 @@ void BookPageItem::handleSubItems(const QList<BookBlock::ItemInfo> &infos)
         else
             qWarning() << "unknown component type:" << info.type;
 
-        if (!component)
+        if (!component || !component->isReady())
             continue;
 
         QObject *subItem = component->beginCreate(qmlContext(this));

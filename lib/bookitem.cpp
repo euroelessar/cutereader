@@ -7,10 +7,8 @@
 #include "formats/fb2/fb2reader.h"
 #include "archivereader.h"
 #include "models/localbookcollection.h"
-#include "models/sortedlocalbookmodel.h"
-#include "models/bookcategoriesmodel.h"
-#include "models/opdsbookmodel.h"
 #include "models/opdsentryitem.h"
+#include "models/frontmodel.h"
 #include "config.h"
 #include <QRunnable>
 #include <QThreadPool>
@@ -138,9 +136,7 @@ void BookItem::registerQmlTypes(QQmlEngine *engine)
     qmlRegisterUncreatableType<BookTextStyleItem>("org.qutim", 0, 3, "BookTextStyle", "This object is always Book property");
     qmlRegisterType<BookPageItem>("org.qutim", 0, 3, "BaseBookPage");
     qmlRegisterType<LocalBookCollection>("org.qutim", 0, 3, "LocalBookCollection");
-    qmlRegisterType<SortedLocalBookModel>("org.qutim", 0, 3, "LocalBookModel");
-    qmlRegisterType<BookCategoriesModel>("org.qutim", 0, 3, "CategoriesBookModel");
-    qmlRegisterType<OpdsBookModel>("org.qutim", 0, 3, "OpdsBookModel");
+    qmlRegisterType<BookFrontModel>("org.qutim", 0, 3, "FrontModel");
     qmlRegisterType<OpdsEntryItem>("org.qutim", 0, 3, "OpdsEntry");
     qmlRegisterType<Config>("org.qutim", 0, 3, "Config");
 }

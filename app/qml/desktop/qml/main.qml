@@ -42,6 +42,10 @@ ApplicationWindow {
 //        style.base.fontPointSize: styleConfig.fontPointSize
     }
 
+//    DownloadBookList {
+//        id: downloadBookList
+//    }
+
     TabView {
         anchors.fill: parent
         anchors.margins: 5

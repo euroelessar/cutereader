@@ -12,7 +12,10 @@ enum RoleNames {
     BookCover,
     BookAuthors,
     BookGenres,
-    BookSequences
+    BookSequences,
+    BookIsBook,
+    BookData,
+    BookActions
 };
 
 class LocalBookModel : public QAbstractListModel
