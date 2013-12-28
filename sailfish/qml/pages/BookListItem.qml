@@ -39,7 +39,7 @@ ListItem {
         anchors.right: parent.right
         text: subtitle
         font.pixelSize: Theme.fontSizeSmall
-        color: listItem.highlighted ? Theme.highlightColor : Theme.secondaryColor
+        color: listItem.highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor
         elide: Text.ElideRight
     }
 }
