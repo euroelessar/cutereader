@@ -10,16 +10,42 @@ ListItem {
 
     signal actionClicked(variant data)
 
+    Image {
+        id: image
+
+        property bool validSource: coverSource !== undefined
+        property real rightOffset: validSource ? width + Theme.paddingSmall : 0
+
+        y: (label.height + subLable.height - height) / 2
+        width: validSource ? Theme.iconSizeMedium : 0
+        height: validSource ? Theme.iconSizeMedium : 0
+        fillMode: Image.PreserveAspectCrop
+        smooth: true
+        clip: true
+
+        source: coverSource === undefined ? "" : coverSource
+
+        BusyIndicator {
+            anchors.centerIn: parent
+            running: parent.validSource && parent.status === Image.Loading
+        }
+    }
+
     Label {
         id: label
-        width: parent.width
+        x: image.rightOffset
+        width: parent.width - image.rightOffset
+
         text: title
         color: listItem.highlighted ? Theme.highlightColor : Theme.primaryColor
         elide: Text.ElideRight
     }
     Label {
-        anchors.top: label.bottom
-        width: parent.width
+        id: subLable
+        x: image.rightOffset
+        y: label.height
+        width: parent.width - image.rightOffset
+
         text: subtitle
         font.pixelSize: Theme.fontSizeSmall
         color: listItem.highlighted ? Theme.highlightColor : Theme.secondaryColor
