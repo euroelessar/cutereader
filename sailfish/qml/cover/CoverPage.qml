@@ -32,22 +32,16 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 
 CoverBackground {
-    Label {
-        id: label
-        anchors.centerIn: parent
-        text: "My Cover"
-    }
+//    Image {
+//        anchors.centerIn: parent
+//        source: application.book.info.cover
+//    }
 
-    CoverActionList {
-        id: coverAction
+    CoverPlaceholder {
+        text: icon.status === Image.Null ? application.book.info.title : ""
 
-        CoverAction {
-            iconSource: "image://theme/icon-cover-next"
-        }
-
-        CoverAction {
-            iconSource: "image://theme/icon-cover-pause"
-        }
+        icon.source: application.book.info.cover
+        icon.opacity: 1
     }
 }
 

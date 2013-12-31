@@ -4,7 +4,8 @@ import org.qutim 0.3
 FocusScope {
     id: root
     property Book book
-    property alias positionValue: firstPage.positionValue
+//    property variant positionValue
+    property alias positionValue: currentPageHelper.positionValue
 
     signal linkClicked(variant linkPosition)
     focus: true
@@ -18,124 +19,111 @@ FocusScope {
 
     onPositionValueChanged: config.positionValue = JSON.stringify(positionValue)
 
-    Rectangle {
-        id: firstPageItem
-        height: parent.height
-        width: parent.width
-        border.width: 1
-        z: 1
+    readonly property real themePaddingLarge: 15
+    readonly property real pageWidth: pagesView.width - 2 * themePaddingLarge
+    readonly property real pageHeight: pagesView.height - 2 * themePaddingLarge
 
-        focus: true
-        activeFocusOnTab: true
-        Keys.onRightPressed: firstPage.positionValue = firstPage.nextPage
-        Keys.onLeftPressed: firstPage.positionValue = firstPage.previousPage
+    BookPage {
+        id: previousPageHelper
 
-        BookPage {
-            id: firstPage
-            book: root.book
-            anchors.fill: parent
-            anchors.margins: 5
-            onLinkClicked: root.linkClicked(linkPosition)
-            positionValue: config.positionValue.length == 0 ? {} : JSON.parse(config.positionValue)
-        }
+        width: root.pageWidth
+        height: root.pageHeight
+        book: root.book
 
-        Behavior on x {
-            id: firstPageXBehavior
-            PropertyAnimation {
-                id: firstPageXAnimation
-                duration: 150
-                easing.type: Easing.Linear
-            }
-        }
+        positionValue: currentPageHelper.previousPage
+
+        visible: false
+        enabled: false
     }
 
-    Rectangle {
-        id: secondPageItem
-        height: parent.height
-        width: parent.width
-        border.width: 1
+    BookPage {
+        id: currentPageHelper
 
-        BookPage {
-            id: secondPage
-            book: root.book
-            anchors.fill: parent
-            anchors.margins: 5
-            positionValue: firstPageItem.x > 0 ? firstPage.previousPage : firstPage.nextPage
-        }
+        width: root.pageWidth
+        height: root.pageHeight
+        book: root.book
+
+        visible: false
+        enabled: false
     }
 
-    MouseArea {
-        id: dragMouseArea
-        acceptedButtons: Qt.LeftButton
-        preventStealing: true
+    BookPage {
+        id: nextPageHelper
+
+        width: root.pageWidth
+        height: root.pageHeight
+        book: root.book
+
+        positionValue: currentPageHelper.nextPage
+
+        visible: false
+        enabled: false
+    }
+
+    readonly property variant positions: {
+        var result = [
+            currentPageHelper.previousPage.block === undefined ? undefined : previousPageHelper.previousPage,
+            currentPageHelper.previousPage,
+            currentPageHelper.positionValue,
+            currentPageHelper.nextPage,
+            currentPageHelper.nextPage.block === undefined ? undefined : nextPageHelper.nextPage
+        ];
+
+        return result
+            .filter(function (arg) { return arg !== undefined && arg.block !== undefined; })
+            .map(function (arg) { return { positionValue: arg }; });
+    }
+    readonly property int currentPosition: {
+        var result = [
+            currentPageHelper.previousPage.block === undefined ? {} : previousPageHelper.previousPage,
+            currentPageHelper.previousPage
+        ];
+        return 2 - (result[0].block === undefined ? 1 : 0) - (result[1].block === undefined ? 1 : 0);
+    }
+
+    ListView {
+        id: pagesView
         anchors.fill: parent
-        property real startX: 0
-        property real previousX: 0
-        property real previousTime: 0
-        property real newPositionX: 0
-        property real minX: 0
-        property real maxX: 0
-        readonly property real deltaX: Math.max(minX, Math.min(startX - mouseX, maxX))
-        signal pageChanged
+        orientation: Qt.Horizontal
+        snapMode: PathView.SnapOneItem
+        clip: true
+        model: root.positions
 
-        onPressed: {
-            newPositionX = 0
-            startX = mouseX
-            previousX = mouseX
-            previousTime = new Date().getTime()
+        delegate: Rectangle {
+            width: pagesView.width
+            height: pagesView.height
+            color: 'white'
 
-            var previousResult = firstPage.previousPage;
-            if (previousResult.block !== undefined)
-                minX = -parent.width
-            else
-                minX = 0
+            property alias positionValue: listPage.positionValue
 
-            var nextResult = firstPage.nextPage;
-            if (nextResult.block !== undefined)
-                maxX = parent.width
-            else
-                maxX = 0
-
-//                        console.log(JSON.stringify([previousResult, nextResult]))
-        }
-        onReleased: {
-            var distance = newPositionX - firstPageItem.x
-            var animationTime = firstPageXAnimation.duration - Math.min(new Date().getTime() - previousTime, firstPageXAnimation.duration)
-
-            if (Math.abs(deltaX) > parent.width / 2
-                    || (distance != 0 && Math.abs(distance * 1000 / animationTime / parent.width) > 1)) {
-                var resultX = -deltaX * parent.width / Math.abs(deltaX)
-                firstPageItem.x = resultX
-
-                if (firstPageItem.x == resultX) {
-                    dragMouseArea.pageChanged()
-                }
-            } else {
-                firstPageItem.x = 0
+            BookPage {
+                id: listPage
+                anchors.margins: root.themePaddingLarge
+                anchors.fill: parent
+                book: root.book
+                positionValue: modelData.positionValue
             }
         }
-        onDeltaXChanged: {
-            firstPageItem.x = -deltaX
-            newPositionX = -deltaX
 
-            var time = new Date().getTime();
+        function recalcCurrentPage() {
+            currentPage = indexAt(contentX, contentY);
+        }
 
-            previousX = mouseX
-            previousTime = time
-        }
-        onPageChanged: {
-            firstPage.positionValue = secondPage.positionValue
-            firstPageXBehavior.enabled = false
-            firstPageItem.x = 0
-            firstPageXBehavior.enabled = true
-        }
-        Connections {
-            target: firstPageItem
-            onXChanged: {
-                if (!dragMouseArea.pressed && Math.abs(firstPageItem.x) == root.width) {
-                    dragMouseArea.pageChanged()
-                }
-            }
+        onMovementEnded: recalcCurrentPage()
+
+        property int currentPage: -2
+        property bool insideThePageChange: false
+
+        onCurrentPageChanged: {
+            if (insideThePageChange)
+                return;
+            insideThePageChange = true;
+
+            currentPageHelper.positionValue = root.positions[currentPage].positionValue;
+            contentX = root.currentPosition * width;
+            currentPage = root.currentPosition;
+
+            insideThePageChange = false;
         }
     }
 }

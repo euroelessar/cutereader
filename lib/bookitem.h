@@ -18,6 +18,8 @@ class BookItem : public QObject, public QQmlParserStatus
     Q_PROPERTY(BookStyleItem *style READ styleItem CONSTANT FINAL)
     Q_PROPERTY(BookInfoItem *info READ info CONSTANT FINAL)
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
+    Q_PROPERTY(QVariant bookData READ bookData NOTIFY bookDataChanged)
+    Q_PROPERTY(QVariantList positions READ positions WRITE setPositions NOTIFY positionsChanged)
 public:
     enum State {
         Null,
@@ -32,8 +34,6 @@ public:
 
     QUrl source() const;
 
-    static void registerQmlTypes(QQmlEngine *engine);
-
     State state() const;
 
     BookInfoItem *info() const;
@@ -46,20 +46,24 @@ public:
     void componentComplete();
 
     QUrl configSource() const;
+    QVariant bookData() const;
 
     BookStyleItem *styleItem() const;
+
+    QVariantList positions() const;
 
 signals:
     void sourceChanged(const QUrl &source);
     void stateChanged(State state);
     void styleChanged(const BookStyle &style);
-
+    void bookDataChanged(const QVariant &bookData);
     void configSourceChanged(const QUrl &configSource);
+    void positionsChanged(const QVariantList &positions);
 
 public slots:
     void setSource(const QUrl &source);
-
     void setConfigSource(const QUrl &configSource);
+    void setPositions(const QVariantList &positions);
 
 protected slots:
     void setBookInfo(const BookInfo &book);
@@ -72,6 +76,7 @@ private:
     BookInfoItem *m_info;
     BookStyleItem *m_style;
     QUrl m_configSource;
+    QList<BookTextPosition> m_positions;
 };
 
 #endif // BOOKITEM_H

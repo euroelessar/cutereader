@@ -44,6 +44,11 @@ ApplicationWindow
         pageStack.replaceAbove(null, initialPage);
     }
 
+    function clickLink(positionValue) {
+        console.log('new position', JSON.stringify(positionValue))
+        pageStack.push(Qt.resolvedUrl('pages/BookPageItem.qml'), { positionValue: positionValue })
+    }
+
     Config {
         id: genericConfig
         path: "generic"
@@ -55,6 +60,7 @@ ApplicationWindow
         id: rootBook
         source: genericConfig.book
 
+        style.base.foreground: Theme.primaryColor
         style.base.fontPointSize: Theme.fontSizeExtraSmall
         style.base.fontFamily: Theme.fontFamily
         style.title.fontPointSize: Theme.fontSizeSmall

@@ -1,7 +1,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtQuick/QtQuick>
 #include "../qtquick2applicationviewer/qtquick2applicationviewer.h"
-#include "../lib/bookitem.h"
+#include "../lib/bookplugin.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 #endif
 
     QQmlApplicationEngine engine;
-    BookItem::registerQmlTypes(&engine);
+    BookPlugin::registerQmlTypes(&engine);
     engine.load(url);
     return app.exec();
 }

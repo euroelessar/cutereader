@@ -4,6 +4,8 @@
 #include <QMetaType>
 #include "bookblockfactory.h"
 
+class ModelData;
+
 struct AuthorInfo
 {
     QString firstName;
@@ -34,6 +36,11 @@ struct BookTextPosition
     int body;
     int block;
     int position;
+
+    QVariantMap toMap() const;
+    static BookTextPosition fromMap(const QVariantMap &arg);
+
+    bool operator ==(const BookTextPosition &other) const;
 };
 
 struct BodyInfo
@@ -60,23 +67,10 @@ struct BookInfo
     BodyInfo annotation;
     QList<BodyInfo> bodies;
 
-    QStringList authorsList() const
-    {
-        QStringList result;
-        for (const AuthorInfo &author : authors)
-            result << author.toString();
-        std::sort(result.begin(), result.end());
-        return result;
-    }
-
-    QStringList sequencesList() const
-    {
-        QStringList result;
-        for (const SequenceInfo &sequence : sequences)
-            result << sequence.name;
-        std::sort(result.begin(), result.end());
-        return result;
-    }
+    QStringList authorsList() const;
+    QStringList sequencesList() const;
+    QVariantList actions() const;
+    ModelData toData() const;
 };
 
 Q_DECLARE_METATYPE(BookInfo)

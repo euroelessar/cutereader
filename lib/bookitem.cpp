@@ -1,18 +1,13 @@
 #include "bookitem.h"
 #include <QElapsedTimer>
 #include <QDebug>
-#include <QMimeDatabase>
-#include "bookpageitem.h"
-#include "providers/fb2imageprovider.h"
-#include "formats/fb2/fb2reader.h"
-#include "archivereader.h"
-#include "models/localbookcollection.h"
-#include "models/opdsentryitem.h"
-#include "models/frontmodel.h"
-#include "config.h"
 #include <QRunnable>
 #include <QThreadPool>
 #include <QPointer>
+#include <QMimeDatabase>
+#include "formats/fb2/fb2reader.h"
+#include "archivereader.h"
+#include "models/frontmodel.h"
 
 BookItem::BookItem(QObject *parent) :
     QObject(parent), m_state(Null), m_info(new BookInfoItem(this)),
@@ -83,6 +78,7 @@ void BookItem::setSource(const QUrl &source)
         m_state = Loading;
         emit stateChanged(m_state);
         emit sourceChanged(source);
+        emit bookDataChanged(bookData());
 
         QThreadPool::globalInstance()->start(new BookLoader(this, m_source));
     }
@@ -100,6 +96,18 @@ void BookItem::setConfigSource(const QUrl &configSource)
     }
 }
 
+void BookItem::setPositions(const QVariantList &positions)
+{
+    QList<BookTextPosition> tmp;
+    for (const QVariant &var : positions)
+        tmp << BookTextPosition::fromMap(var.toMap());
+
+    if (m_positions != tmp) {
+        m_positions = tmp;
+        emit positionsChanged(BookItem::positions());
+    }
+}
+
 void BookItem::setBookInfo(const BookInfo &book)
 {
     if (book.source == m_source) {
@@ -107,6 +115,7 @@ void BookItem::setBookInfo(const BookInfo &book)
         m_state = Ready;
         m_info->setBookInfo(book);
         emit stateChanged(m_state);
+        emit bookDataChanged(bookData());
     }
 }
 
@@ -121,24 +130,6 @@ void BookItem::setError(const QUrl &source)
 QUrl BookItem::source() const
 {
     return m_source;
-}
-
-void BookItem::registerQmlTypes(QQmlEngine *engine)
-{
-    QMimeDatabase dataBase;
-    Q_UNUSED(dataBase.allMimeTypes());
-    qRegisterMetaType<BookInfo>();
-    qRegisterMetaType<QList<BookInfo>>();
-    engine->addImageProvider("fb2", new FB2ImageProvider);
-    qmlRegisterUncreatableType<BookInfoItem>("org.qutim", 0, 3, "BookInfo", "This object is always Book property");
-    qmlRegisterType<BookItem>("org.qutim", 0, 3, "Book");
-    qmlRegisterUncreatableType<BookStyleItem>("org.qutim", 0, 3, "BookStyle", "This object is always Book property");
-    qmlRegisterUncreatableType<BookTextStyleItem>("org.qutim", 0, 3, "BookTextStyle", "This object is always Book property");
-    qmlRegisterType<BookPageItem>("org.qutim", 0, 3, "BaseBookPage");
-    qmlRegisterType<LocalBookCollection>("org.qutim", 0, 3, "LocalBookCollection");
-    qmlRegisterType<BookFrontModel>("org.qutim", 0, 3, "FrontModel");
-    qmlRegisterType<OpdsEntryItem>("org.qutim", 0, 3, "OpdsEntry");
-    qmlRegisterType<Config>("org.qutim", 0, 3, "Config");
 }
 
 BookItem::State BookItem::state() const
@@ -190,7 +181,20 @@ QUrl BookItem::configSource() const
     return m_configSource;
 }
 
+QVariant BookItem::bookData() const
+{
+    return QVariant::fromValue(m_bookInfo.toData());
+}
+
 BookStyleItem *BookItem::styleItem() const
 {
     return m_style;
+}
+
+QVariantList BookItem::positions() const
+{
+    QVariantList result;
+    for (const auto &position : m_positions)
+        result << position.toMap();
+    return result;
 }

@@ -66,7 +66,6 @@ struct BookStyle
         style.formats[Format::Strong].setFontWeight(QFont::Bold);
         style.formats[Format::Emphasis].setFontItalic(true);
         style.formats[Format::StrikeThrough].setFontItalic(true);
-        style.formats[Format::Emphasis].setFontStrikeOut(true);
         style.formats[Format::Sub].setVerticalAlignment(QTextCharFormat::AlignSubScript);
         style.formats[Format::Sup].setVerticalAlignment(QTextCharFormat::AlignSuperScript);
         style.formats[Format::Title].setFontWeight(QFont::Bold);

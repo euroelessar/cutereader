@@ -35,7 +35,7 @@
 #include <QGuiApplication>
 #include <sailfishapp.h>
 
-#include "lib/bookitem.h"
+#include "../lib/bookplugin.h"
 
 int main(int argc, char *argv[])
 {
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 
     QQuickView *view = SailfishApp::createView();
 
-    BookItem::registerQmlTypes(view->engine());
+    BookPlugin::registerQmlTypes(view->engine());
     view->setSource(SailfishApp::pathTo("qml/cutereader.qml"));
     view->show();
     int code = app->exec();

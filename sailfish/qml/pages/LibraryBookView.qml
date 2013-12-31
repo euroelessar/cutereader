@@ -55,8 +55,4 @@ LibraryPageBase {
             }
         }
     }
-
-    Component.onCompleted: {
-        console.log(JSON.stringify(entry.actions))
-    }
 }

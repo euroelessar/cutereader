@@ -62,11 +62,11 @@ desktop-file-install --delete-original       \
 
 %files
 %defattr(-,root,root,-)
-/usr/share/icons/hicolor/90x90/apps
-/usr/share/applications
-/usr/share/sailfish
-/usr/bin
-%{_datadir}/icons/hicolor/90x90/apps/%{name}.png
+/usr/share/icons/hicolor/86x86/apps
+#/usr/share/applications
+#/usr/share/cutereader
+#/usr/bin
+#%{_datadir}/icons/hicolor/90x90/apps/%{name}.png
 %{_datadir}/applications/%{name}.desktop
 %{_datadir}/%{name}/qml
 %{_bindir}

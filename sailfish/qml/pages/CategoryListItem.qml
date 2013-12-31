@@ -36,7 +36,7 @@ ListItem {
         x: image.rightOffset
         width: parent.width - image.rightOffset
 
-        text: title
+        text: title === undefined ? "" : title
         color: listItem.highlighted ? Theme.highlightColor : Theme.primaryColor
         elide: Text.ElideRight
     }
@@ -46,7 +46,7 @@ ListItem {
         y: label.height
         width: parent.width - image.rightOffset
 
-        text: subtitle
+        text: subtitle === undefined ? "" : subtitle
         font.pixelSize: Theme.fontSizeSmall
         color: listItem.highlighted ? Theme.highlightColor : Theme.secondaryColor
         elide: Text.ElideRight

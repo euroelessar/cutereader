@@ -298,10 +298,15 @@ void BookPageItem::componentComplete()
 
     connect(this, &BookPageItem::widthChanged, this, &BookPageItem::requestUpdate);
     connect(this, &BookPageItem::heightChanged, this, &BookPageItem::requestUpdate);
+    requestUpdate();
 }
 
 void BookPageItem::requestUpdate()
 {
+    // Item is not constructed yet
+    if (!m_imageDelegate || !m_linkDelegate)
+        return;
+
     recalcPages();
     recreateSubItems();
     update();
@@ -342,8 +347,13 @@ void BookPageItem::handleSubItems(const QList<BookBlock::ItemInfo> &infos)
 {
     QList<QObject *> subItems;
     qSwap(m_subItems, subItems);
-    for (auto object : subItems)
+    for (auto object : subItems) {
+        object->setProperty("visible", false);
         object->deleteLater();
+    }
+
+    if (!qmlContext(this) || !qmlContext(this)->parentContext())
+        return;
 
     for (const BookBlock::ItemInfo &info : infos) {
         QQmlComponent *component = NULL;

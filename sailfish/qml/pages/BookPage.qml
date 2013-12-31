@@ -16,7 +16,8 @@ BaseBookPage {
 
             onClicked: {
                 if (parent.href.charAt(0) === '#') {
-                    parent.parent.positionValue = parent.parent.positionForId(parent.href.substring(1));
+                    var page = parent.parent;
+                    application.clickLink(page.positionForId(parent.href.substring(1)));
                 } else {
                     Qt.openUrlExternally(parent.href);
                 }

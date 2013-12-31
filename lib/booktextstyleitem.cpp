@@ -12,7 +12,25 @@ QTextCharFormat BookTextStyleItem::format() const
 
 QVariant BookTextStyleItem::updateValue(QTextFormat::Property key, const QVariant &input)
 {
-    m_format.setProperty(key, input);
+    QVariant tmp = input;
+
+    if (key == QTextFormat::ForegroundBrush && !tmp.isNull())
+        tmp = QBrush(QColor(tmp.toString()));
+
+    m_format.setProperty(key, tmp);
     emit changed();
     return m_format.property(key);
+}
+
+QVariant BookTextStyleItem::value(QTextFormat::Property key) const
+{
+    if (!m_format.hasProperty(key))
+        return QVariant();
+
+    QVariant tmp = m_format.property(key);
+
+    if (key == QTextFormat::ForegroundBrush && !tmp.isNull())
+        return tmp.value<QBrush>().color().name();
+
+    return tmp;
 }
