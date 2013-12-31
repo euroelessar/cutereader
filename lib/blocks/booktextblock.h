@@ -30,6 +30,7 @@ public:
 
     void draw(QPainter *painter, const QPointF &position, int line) const;
     QList<ItemInfo> createItems(const QPointF &position, int line) const;
+    QList<QGlyphRun> glyphRuns(int line);
 
     int linesCount() const;
     int lineForPosition(int position) const;

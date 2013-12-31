@@ -29,3 +29,9 @@ QList<BookBlock::ItemInfo> BookBlock::createItems(const QPointF &position, int l
     Q_UNUSED(line);
     return QList<BookBlock::ItemInfo>();
 }
+
+QList<QGlyphRun> BookBlock::glyphRuns(int line)
+{
+    Q_UNUSED(line);
+    return QList<QGlyphRun>();
+}

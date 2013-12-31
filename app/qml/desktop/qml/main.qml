@@ -92,7 +92,7 @@ ApplicationWindow {
                     property bool completed: false
 
                     minimumValue: 1
-                    maximumValue: 48
+                    maximumValue: 128
                     value: styleConfig.fontPointSize
                     onValueChanged: {
                         rootBook.style.base.fontPointSize = value;

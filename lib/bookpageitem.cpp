@@ -1,12 +1,17 @@
 #include "bookpageitem.h"
+#include "booksgglyphnode.h"
 #include <QQmlContext>
 #include <QThread>
+#include <private/qquickitem_p.h>
+#include <QSGFlatColorMaterial>
+#include <QSGSimpleTextureNode>
 
 BookPageItem::BookPageItem(QQuickItem *parent) :
-    QQuickPaintedItem(parent), m_book(NULL),
+    QQuickItem(parent), m_book(NULL),
     m_body(0), m_block(0), m_blockPosition(0),
     m_imageDelegate(NULL), m_linkDelegate(NULL)
 {
+    setFlag(QQuickItem::ItemHasContents, true);
     qRegisterMetaType<QList<BookBlock::ItemInfo>>();
 }
 
@@ -145,6 +150,9 @@ QVariantMap BookPageItem::recalcPreviousPage(QList<BookBlock::Ptr> &cache) const
     int startBlock = m_block;
     int startLine = fetchBlock(m_block, blocks, pageSize, style, cache)->lineForPosition(m_blockPosition);
 
+    if (startLine == 0 && startBlock == 0)
+        return QVariantMap();
+
     if (startLine == 0) {
         --startBlock;
         BookBlock::Ptr block = fetchBlock(startBlock, blocks, pageSize, style, cache);
@@ -275,7 +283,7 @@ void BookPageItem::setLinkDelegate(QQmlComponent *linkDelegate)
 
 void BookPageItem::componentComplete()
 {
-    QQuickPaintedItem::componentComplete();
+    QQuickItem::componentComplete();
 
     if (!m_imageDelegate) {
         m_imageDelegate = new QQmlComponent(qmlEngine(this), this);
@@ -299,6 +307,174 @@ void BookPageItem::componentComplete()
     connect(this, &BookPageItem::widthChanged, this, &BookPageItem::requestUpdate);
     connect(this, &BookPageItem::heightChanged, this, &BookPageItem::requestUpdate);
     requestUpdate();
+}
+
+QSGNode *BookPageItem::updatePaintNode(QSGNode *node, QQuickItem::UpdatePaintNodeData *)
+{
+    if (!m_book)
+        return node;
+
+    if (!node)
+        node = new QSGNode;
+
+    QElapsedTimer timer;
+    timer.start();
+    node->removeAllChildNodes();
+//    QSGContext *context = QQuickItemPrivate::get(this)->sceneGraphContext();
+
+    const QSizeF pageSize(width(), height());
+    const BookStyle style = m_book->style();
+    QPointF position(0, 0);
+
+    const QList<BookBlockFactory::Ptr> blocks = m_book->blocks(m_body);
+
+    static QList<QRawFont> fonts;
+    struct Image
+    {
+        QPointF offset;
+        QSGTexture *texture;
+        QImage image;
+    };
+    static QHash<QPair<int, quint32>, Image> glyphCache;
+    int tryCount = 0;
+
+    for (int i = m_block; i < blocks.size(); ++i) {
+        const BookBlock::Ptr &block = blocks[i]->item(pageSize, style);
+
+        int lineNumber = (m_block == i ? block->lineForPosition(m_blockPosition) : 0);
+        const int linesCount = block->linesCount();
+        for (int j = lineNumber; j < linesCount; ++j) {
+            const BookBlock::LineInfo info = block->lineInfo(j);
+            if (fuzzyLess(height() - position.y(), info.height)) {
+                i = blocks.size();
+                break;
+            }
+            for (const QGlyphRun &glyph : block->glyphRuns(j)) {
+                const QRawFont font = glyph.rawFont();
+
+                int fontIndex = fonts.indexOf(font);
+                if (fontIndex < 0) {
+                    fontIndex = fonts.size();
+                    fonts << font;
+                }
+
+                const QVector<quint32> indexes = glyph.glyphIndexes();
+                const QVector<QPointF> positions = glyph.positions();
+
+                for (int i = 0; i < indexes.size(); ++i) {
+                    const auto glyphId = qMakePair(fontIndex, indexes[i]);
+
+                    Image image;
+                    ++tryCount;
+                    if (glyphCache.contains(glyphId)) {
+                        image = glyphCache[glyphId];
+                    } else {
+                        QPainterPath path = font.pathForGlyph(indexes[i]);
+                        qDebug() << path.boundingRect();
+                        const QRectF rect = path.boundingRect();
+                        image.image = QImage(rect.size().toSize() + QSize(1, 1), QImage::Format_ARGB32);
+                        image.offset = rect.topLeft();
+
+                        const QImage mask = font.alphaMapForGlyph(indexes[i]);
+                        QImage ref(mask.size(), QImage::Format_ARGB32);
+                        ref.fill(Qt::white);
+                        ref.setAlphaChannel(mask);
+
+//                        QImage ref;
+//                        QPainter p(&ref);
+//                        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+//                        p.setRenderHint(QPainter::Antialiasing);
+//                        p.setRenderHint(QPainter::HighQualityAntialiasing);
+//                        p.fillRect(0, 0, ref.width(), ref.height(), QColor(0,0,0,0)); // TODO optimize this
+//                        p.drawImage(0, 0, mask);
+//                        p.end();
+
+//                        ref = mask;
+//                        ref.invertPixels(QImage::InvertRgb);
+
+//                        ref.invertPixels(QImage::InvertRgb);
+
+                        image.texture = window()->createTextureFromImage(ref);
+
+                        glyphCache.insert(glyphId, image);
+                    }
+
+                    QRectF imageRect = image.image.rect();
+                    imageRect.translate(positions[i] + position + image.offset);
+                    imageRect.setTopLeft(imageRect.topLeft().toPoint());
+
+//                    QSGFlatColorMaterial *material = new QSGFlatColorMaterial;
+//                    material->setColor(QColor(255, 0, 0));
+
+                    QSGSimpleTextureNode *imageNode = new QSGSimpleTextureNode;
+                    imageNode->setTexture(image.texture);
+                    imageNode->setFiltering(QSGTexture::Linear);
+                    imageNode->setRect(imageRect);
+//                    imageNode->setMaterial(material);
+//                    node->setFlag(QSGNode::OwnsMaterial);
+
+                    node->appendChildNode(imageNode);
+
+/*
+                    QList<QPolygonF> polygons;
+
+                    if (glyphCache.contains(glyphId)) {
+                        polygons = glyphCache[glyphId];
+                    } else {
+                        QPainterPath path = font.pathForGlyph(indexes[i]);
+                        polygons = path.toSubpathPolygons();
+                        qDebug() << polygons.first().size();
+                        glyphCache.insert(glyphId, polygons);
+                    }
+
+                    foreach (const QPolygonF &polygon, polygons) {
+                        QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), polygon.size());
+                        geometry->setDrawingMode(GL_POLYGON);
+                        QSGGeometry::Point2D *points = geometry->vertexDataAsPoint2D();
+                        for (int j = 0; j < polygon.size(); ++j) {
+                            const auto point = polygon.at(j) + position + positions[i];
+                            points[j].set(point.x(), point.y());
+                        }
+
+                        QSGFlatColorMaterial *material = new QSGFlatColorMaterial;
+                        material->setColor(QColor(255, 0, 0));
+
+                        QSGGeometryNode *geomentryNode = new QSGGeometryNode;
+                        geomentryNode->setGeometry(geometry);
+                        geomentryNode->setFlag(QSGNode::OwnsGeometry);
+                        geomentryNode->setMaterial(material);
+                        geomentryNode->setFlag(QSGNode::OwnsMaterial);
+                        node->appendChildNode(geomentryNode);
+                    }
+*/
+                }
+/*
+                QSGGlyphNode *glyphNode = context->createNativeGlyphNode();
+                qDebug() << "glyph 0" << glyphNode << glyphNode->type() << glyphNode->parent() << glyphNode->material();
+                glyphNode->setColor(Qt::red);
+//                qDebug() << "Created glyph";
+                glyphNode->setGlyphs(position, glyph);
+                glyphNode->setStyle(QQuickText::Normal);
+                glyphNode->setPreferredAntialiasingMode(QSGGlyphNode::HighQualitySubPixelAntialiasing);
+                glyphNode->setOwnerElement(this);
+                glyphNode->update();
+
+                glyphNode->geometry()->setIndexDataPattern(QSGGeometry::StaticPattern);
+                glyphNode->geometry()->setVertexDataPattern(QSGGeometry::StaticPattern);
+
+                node->appendChildNode(glyphNode);
+                qDebug() << "glyph" << glyphNode << glyphNode->type() << glyphNode->parent() << glyphNode->material();
+*/
+            }
+            position.ry() += info.height;
+        }
+    }
+    qDebug() << "generate: " << timer.nsecsElapsed() / 1000000. << ", fonts:" << fonts.size() << ", cache:" << glyphCache.size() << ", instead of:" << tryCount;
+    timer.restart();
+
+//    qDebug() << context << node->childCount();
+
+    return node;
 }
 
 void BookPageItem::requestUpdate()

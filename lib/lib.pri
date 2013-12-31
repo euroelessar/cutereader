@@ -5,8 +5,10 @@
 
 include(../karchive.pri)
 
-QT += concurrent
+QT += concurrent quick-private core-private qml-private gui-private v8-private
 CONFIG += c++11
+
+message($${INCLUDEPATH})
 
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += ../lib/blocks/booktextblock.cpp \
@@ -39,7 +41,8 @@ SOURCES += ../lib/blocks/booktextblock.cpp \
     ../lib/models/opdsdownloadjob.cpp \
     ../lib/models/frontmodel.cpp \
     ../lib/models/bookrootmodel.cpp \
-    ../lib/bookplugin.cpp
+    ../lib/bookplugin.cpp \
+    ../lib/booksgglyphnode.cpp
 
 HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/bookblockitem.h \
@@ -71,4 +74,5 @@ HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/models/opdsdownloadjob.h \
     ../lib/models/frontmodel.h \
     ../lib/models/bookrootmodel.h \
-    ../lib/bookplugin.h
+    ../lib/bookplugin.h \
+    ../lib/booksgglyphnode.h

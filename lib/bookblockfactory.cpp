@@ -19,6 +19,7 @@ BookBlock::Ptr BookBlockFactory::item(const QSizeF &size, const BookStyle &style
     }
 
     auto block = doCreate(size, style);
+    return block;
 
     QMutexLocker locker(&m_lock);
 

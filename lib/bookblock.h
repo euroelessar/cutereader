@@ -6,6 +6,7 @@
 #include <QPainter>
 #include <QQuickItem>
 #include <QTextCharFormat>
+#include <QGlyphRun>
 
 class BookBlockFactory;
 
@@ -107,6 +108,7 @@ public:
 
     virtual void draw(QPainter *painter, const QPointF &position, int line) const = 0;
     virtual QList<ItemInfo> createItems(const QPointF &position, int line) const;
+    virtual QList<QGlyphRun> glyphRuns(int line);
 
     struct LineInfo {
         qreal height;

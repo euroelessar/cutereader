@@ -62,6 +62,13 @@ QList<BookBlock::ItemInfo> BookTextBlock::createItems(const QPointF &position, i
     return result;
 }
 
+QList<QGlyphRun> BookTextBlock::glyphRuns(int line)
+{
+    const QTextLine textLine = m_textLayout.lineAt(line);
+
+    return textLine.glyphRuns();
+}
+
 int BookTextBlock::linesCount() const
 {
     return m_textLayout.lineCount();

@@ -20,6 +20,7 @@ License:    LICENSE
 Source0:    %{name}-%{version}.tar.bz2
 Source100:  cutereader.yaml
 Requires:   sailfishsilica-qt5
+BuildRequires:  pkgconfig(Qt5V8)
 BuildRequires:  pkgconfig(Qt5Core)
 BuildRequires:  pkgconfig(Qt5Qml)
 BuildRequires:  pkgconfig(Qt5Quick)
@@ -63,12 +64,12 @@ desktop-file-install --delete-original       \
 %files
 %defattr(-,root,root,-)
 /usr/share/icons/hicolor/86x86/apps
-#/usr/share/applications
-#/usr/share/cutereader
+/usr/share/applications
+#/usr/share/sailfish
 #/usr/bin
 #%{_datadir}/icons/hicolor/90x90/apps/%{name}.png
-%{_datadir}/applications/%{name}.desktop
-%{_datadir}/%{name}/qml
+#%{_datadir}/applications/%{name}.desktop
+#%{_datadir}/%{name}/qml
 %{_bindir}
 /usr/share/cutereader
 # >> files

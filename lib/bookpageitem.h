@@ -5,7 +5,7 @@
 #include <QQmlComponent>
 #include "bookitem.h"
 
-class BookPageItem : public QQuickPaintedItem
+class BookPageItem : public QQuickItem
 {
     Q_OBJECT
     Q_PROPERTY(BookItem *book READ book WRITE setBook NOTIFY bookChanged)
@@ -52,6 +52,7 @@ public slots:
 
 protected:
     virtual void componentComplete();
+    virtual QSGNode *updatePaintNode(QSGNode *node, UpdatePaintNodeData *);
 
 protected slots:
     void requestUpdate();
