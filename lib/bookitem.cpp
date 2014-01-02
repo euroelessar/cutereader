@@ -1,8 +1,7 @@
 #include "bookitem.h"
 #include <QElapsedTimer>
 #include <QDebug>
-#include <QRunnable>
-#include <QThreadPool>
+#include "saferunnable.h"
 #include <QPointer>
 #include <QMimeDatabase>
 #include "formats/fb2/fb2reader.h"
@@ -26,55 +25,6 @@ QList<BookBlockFactory::Ptr> BookItem::blocks(int body) const
     return m_bookInfo.bodies.value(body).blocks;
 }
 
-class BookLoader : public QRunnable
-{
-public:
-    BookLoader(BookItem *book, const QUrl &source) : m_source(source), m_book(book)
-    {
-    }
-
-    void run()
-    {
-        if (m_source.isLocalFile()) {
-            QElapsedTimer timer;
-            timer.start();
-
-            ArchiveReader reader(m_source.toLocalFile());
-            if (reader.open()) {
-                QMimeDatabase mimeDataBase;
-                QMimeType mime = mimeDataBase.mimeTypeForFileNameAndData(reader.fileName(), reader.device());
-                FB2Reader fb2Reader;
-                if (fb2Reader.canRead(mime)) {
-                    BookInfo book = fb2Reader.read(m_source, reader.device(), FB2Reader::All);
-                    send_result(book);
-                } else {
-                    send_error();
-                }
-            } else {
-                send_error();
-            }
-
-            qDebug() << timer.restart();
-        } else {
-            send_error();
-        }
-    }
-
-    void send_result(const BookInfo &book)
-    {
-        QMetaObject::invokeMethod(m_book.data(), "setBookInfo", Q_ARG(BookInfo, book));
-    }
-
-    void send_error()
-    {
-        QMetaObject::invokeMethod(m_book.data(), "setError", Q_ARG(QUrl, m_source));
-    }
-
-private:
-    QUrl m_source;
-    QPointer<BookItem> m_book;
-};
-
 void BookItem::setSource(const QUrl &source)
 {
     if (m_source != source) {
@@ -85,7 +35,33 @@ void BookItem::setSource(const QUrl &source)
         emit sourceChanged(source);
         emit bookDataChanged(bookData());
 
-        QThreadPool::globalInstance()->start(new BookLoader(this, m_source));
+        SafeRunnable::start(this, [this, source] () -> SafeRunnable::Handler {
+            auto send_error = [this, source] () {
+                setError(source);
+            };
+
+            if (!source.isLocalFile())
+                return send_error;
+
+            QElapsedTimer timer;
+            timer.start();
+
+            ArchiveReader reader(source.toLocalFile());
+
+            if (!reader.open())
+                return send_error;
+
+            QMimeDatabase mimeDataBase;
+            QMimeType mime = mimeDataBase.mimeTypeForFileNameAndData(reader.fileName(), reader.device());
+            FB2Reader fb2Reader;
+            if (!fb2Reader.canRead(mime))
+                return send_error;
+
+            BookInfo book = fb2Reader.read(m_source, reader.device(), FB2Reader::All);
+            return [this, source, book] () {
+                setBookInfo(book);
+            };
+        });
     }
 }
 
