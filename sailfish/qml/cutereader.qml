@@ -41,12 +41,47 @@ ApplicationWindow
     function openBook(source) {
         book.source = source;
         genericConfig.book = source;
-        pageStack.replaceAbove(null, initialPage);
+
+        var pages = [];
+
+        var positions = book.positions;
+        if (positions.length === 0) {
+            positions = [{
+                body: 0,
+                block: 0,
+                position: 0
+            }]
+        }
+
+        for (var i = 0; i < positions.length; ++i) {
+            pages.push({
+                page: bookPageComponent,
+                properties: { positionValue: positions[i], positionIndex: i }
+            })
+        }
+
+        pageStack.replaceAbove(null, pages);
     }
 
     function clickLink(positionValue) {
-        console.log('new position', JSON.stringify(positionValue))
-        pageStack.push(Qt.resolvedUrl('pages/BookPageItem.qml'), { positionValue: positionValue })
+        pageStack.push(bookPageComponent, { positionValue: positionValue, positionIndex: pageStack.depth })
+        updatePositions();
+    }
+
+    function getPositions() {
+        var positions = [];
+
+        pageStack.find(function (page) {
+            if (page.positionIndex !== undefined && page.positionIndex >= 0)
+                positions.push(page.positionValue)
+        })
+
+        positions.reverse();
+        return positions;
+    }
+
+    function updatePositions() {
+        rootBook.positions = getPositions();
     }
 
     Config {
@@ -58,21 +93,31 @@ ApplicationWindow
 
     Book {
         id: rootBook
-        source: genericConfig.book
 
         style.base.foreground: Theme.primaryColor
-        style.base.fontPointSize: Theme.fontSizeExtraSmall
+        style.base.fontPixelSize: Theme.fontSizeMedium
         style.base.fontFamily: Theme.fontFamily
-        style.title.fontPointSize: Theme.fontSizeSmall
+        style.title.fontPixelSize: Theme.fontSizeLarge
         style.title.fontFamily: Theme.fontFamilyHeading
+        style.title.foreground: Theme.highlightColor
+        style.internalAnchor.foreground: Theme.highlightColor
+        style.noteAnchor.foreground: Theme.highlightColor
+        style.externalAnchor.foreground: Theme.highlightColor
     }
 
-    initialPage: Component {
+    Component {
+        id: bookPageComponent
+
         BookPageItem {
+            id: page
+
+            onPositionValueChanged: updatePositions()
         }
     }
 
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
+
+    Component.onCompleted: openBook(genericConfig.book)
 }
 
 

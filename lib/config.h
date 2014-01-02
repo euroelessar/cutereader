@@ -24,6 +24,7 @@ public:
     void setPath(const QString &path);
 
     QVariant value(const QString &name);
+    bool hasValue(const QString &name);
     void setValue(const QString &name, const QVariant &value);
 
     void loadDefaultConfig(const QString &path);

@@ -13,6 +13,68 @@
 #include <QDir>
 #include <QCryptographicHash>
 
+static QDir bookmarksDir()
+{
+    const QDir path = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
+            + QStringLiteral("/cutereader/bookmarks/");
+
+    if (!path.exists())
+        path.mkpath(path.absolutePath());
+
+    return path;
+}
+
+static QString bookmarkFilePath(const QUrl &source)
+{
+    QByteArray hash = QCryptographicHash::hash(source.toString().toUtf8(), QCryptographicHash::Md5);
+    QString fileName = QString::fromLatin1(hash.toHex());
+
+    return bookmarksDir().filePath(fileName);
+}
+
+static QList<BookTextPosition> loadPositions(const QUrl &source)
+{
+    QString filePath = bookmarkFilePath(source);
+
+    QFile file(filePath);
+    if (!file.open(QFile::ReadOnly))
+        return QList<BookTextPosition>();
+
+    QList<BookTextPosition> result;
+
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    QVariantMap data = doc.toVariant().toMap();
+    QVariantList list = data.value(QStringLiteral("positions")).toList();
+    for (const auto &item : list) {
+        auto position = BookTextPosition::fromMap(item.toMap());
+        if (!position)
+            continue;
+        result << position;
+    }
+
+    return result;
+}
+
+static void savePositions(const QUrl &source, const QList<BookTextPosition> &positions)
+{
+    QVariantList list;
+    for (const auto &position : positions)
+        list << position.toMap();
+    QVariantMap result;
+    result.insert(QStringLiteral("source"), source);
+    result.insert(QStringLiteral("positions"), list);
+
+    QJsonDocument document = QJsonDocument::fromVariant(result);
+
+    QString filePath = bookmarkFilePath(source);
+    QSaveFile file(filePath);
+    if (!file.open(QFile::WriteOnly))
+        return;
+
+    file.write(document.toJson());
+    file.commit();
+}
+
 BookItem::BookItem(QObject *parent) :
     QObject(parent), m_state(Null), m_info(new BookInfoItem(this)),
     m_style(new BookStyleItem(this))
@@ -31,9 +93,11 @@ void BookItem::setSource(const QUrl &source)
         m_bookInfo = BookInfo();
         m_source = source;
         m_state = Loading;
+        m_positions = loadPositions(source);
         emit stateChanged(m_state);
         emit sourceChanged(source);
         emit bookDataChanged(bookData());
+        emit positionsChanged(positions());
 
         SafeRunnable::start(this, [this, source] () -> SafeRunnable::Handler {
             auto send_error = [this, source] () {
@@ -42,9 +106,6 @@ void BookItem::setSource(const QUrl &source)
 
             if (!source.isLocalFile())
                 return send_error;
-
-            QElapsedTimer timer;
-            timer.start();
 
             ArchiveReader reader(source.toLocalFile());
 
@@ -77,64 +138,6 @@ void BookItem::setConfigSource(const QUrl &configSource)
     }
 }
 
-static QDir bookmarksDir()
-{
-    const QDir path = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-            + QStringLiteral("/cutereader/bookmarks/");
-
-    if (!path.exists())
-        path.mkpath(path.absolutePath());
-
-    return path;
-}
-
-static QString bookmarkFilePath(const QUrl &source)
-{
-    QByteArray hash = QCryptographicHash::hash(source.toString().toUtf8(), QCryptographicHash::Md5);
-    QString fileName = QString::fromLatin1(hash.toHex());
-
-    return bookmarksDir().filePath(fileName);
-}
-
-static QList<BookTextPosition> loadPositions(const QUrl &source)
-{
-    QString filePath = bookmarkFilePath(source);
-
-    QFile file(filePath);
-    if (!file.open(QFile::ReadOnly))
-        return QList<BookTextPosition>();
-
-    QList<BookTextPosition> result;
-
-    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    QVariantList list = doc.toVariant().toList();
-    for (const auto &item : list) {
-        auto position = BookTextPosition::fromMap(item.toMap());
-        if (!position)
-            continue;
-        result << position;
-    }
-
-    return result;
-}
-
-static void savePositions(const QUrl &source, const QList<BookTextPosition> &positions)
-{
-    QVariantList result;
-    for (const auto &position : positions)
-        result << position.toMap();
-
-    QJsonDocument document = QJsonDocument::fromVariant(result);
-
-    QString filePath = bookmarkFilePath(source);
-    QSaveFile file(filePath);
-    if (!file.open(QFile::WriteOnly))
-        return;
-
-    file.write(document.toJson());
-    file.commit();
-}
-
 void BookItem::setPositions(const QVariantList &positions)
 {
     QList<BookTextPosition> tmp;
@@ -143,7 +146,8 @@ void BookItem::setPositions(const QVariantList &positions)
 
     if (m_positions != tmp) {
         m_positions = tmp;
-        savePositions(m_bookInfo.source, m_positions);
+        if (m_bookInfo.source.isValid())
+            savePositions(m_bookInfo.source, m_positions);
         emit positionsChanged(BookItem::positions());
     }
 }
@@ -154,10 +158,8 @@ void BookItem::setBookInfo(const BookInfo &book)
         m_bookInfo = book;
         m_state = Ready;
         m_info->setBookInfo(book);
-        m_positions = loadPositions(book.source);
         emit stateChanged(m_state);
         emit bookDataChanged(bookData());
-        emit positionsChanged(positions());
     }
 }
 

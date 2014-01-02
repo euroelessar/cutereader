@@ -225,6 +225,11 @@ QVariant Config::value(const QString &name)
     return m_data->config.value(m_path % QLatin1Char('.') % name);
 }
 
+bool Config::hasValue(const QString &name)
+{
+    return m_data->config.contains(m_path % QLatin1Char('.') % name);
+}
+
 void Config::setValue(const QString &name, const QVariant &value)
 {
     m_data->updateConfig(m_path % QLatin1Char('.') % name, value);

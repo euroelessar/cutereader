@@ -23,7 +23,7 @@ class BookTextStyleItem : public QObject
 {
     Q_OBJECT
     FORMAT_PROPERTY(foreground, QTextCharFormat::ForegroundBrush)
-    FORMAT_PROPERTY(fontPointSize, QTextCharFormat::FontPointSize)
+    FORMAT_PROPERTY(fontPixelSize, QTextCharFormat::FontPixelSize)
     FORMAT_PROPERTY(fontWeight, QTextCharFormat::FontWeight)
     FORMAT_PROPERTY(fontItalic, QTextCharFormat::FontItalic)
     FORMAT_PROPERTY(fontFamily, QTextCharFormat::FontFamily)

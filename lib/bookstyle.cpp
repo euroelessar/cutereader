@@ -48,9 +48,8 @@ void BookStyleItem::componentComplete()
             auto itemProperty = itemMeta->property(j);
             const auto itemPropertyName = QString::fromLatin1(itemProperty.name());
             const QString configKey = propertyName % QLatin1Char('.') % itemPropertyName;
-            const QVariant value = m_config.value(configKey);
-            if (value.isValid())
-                itemProperty.write(item, value);
+            if (m_config.hasValue(configKey))
+                itemProperty.write(item, m_config.value(configKey));
             else
                 m_config.setValue(configKey, itemProperty.read(item));
         }

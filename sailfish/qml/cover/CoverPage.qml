@@ -32,11 +32,6 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 
 CoverBackground {
-//    Image {
-//        anchors.centerIn: parent
-//        source: application.book.info.cover
-//    }
-
     CoverPlaceholder {
         text: icon.status === Image.Null ? application.book.info.title : ""
 

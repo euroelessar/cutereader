@@ -35,10 +35,14 @@ import org.qutim 0.3
 Page {
     id: root
     property Book book: application.book
+    property int positionIndex: -1
     property alias positionValue: currentPageHelper.positionValue
 
     signal linkClicked(variant linkPosition)
     focus: true
+
+    Keys.onVolumeUpPressed: pagesView.flick(pagesView.width, 0)
+    Keys.onVolumeDownPressed: pagesView.flick(-pagesView.width, 0)
 
     PseudoBookPage {
         id: currentPageHelper
@@ -170,6 +174,8 @@ Page {
                 if (pagesModel.count > 0 && index === 0)
                     root.prependItem();
             }
+
+            onMovementEnded: root.positionValue = pagesModel.get(index).positionValue
 
             delegate: Item {
                 width: pagesView.width
