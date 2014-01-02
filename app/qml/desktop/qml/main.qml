@@ -95,7 +95,6 @@ ApplicationWindow {
                     maximumValue: 48
                     value: styleConfig.fontPointSize
                     onValueChanged: {
-                        rootBook.style.base.fontPointSize = value;
                         console.log(value, rootBook.style.base.fontPointSize)
                         if (status === Component.Ready) styleConfig.fontPointSize = value
                     }

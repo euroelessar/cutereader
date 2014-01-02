@@ -34,79 +34,101 @@ import org.qutim 0.3
 
 Page {
     id: root
+    property Book book: application.book
+    property alias positionValue: currentPageHelper.positionValue
 
-    property variant positionValue
-//    property alias positionValue: bookPage.positionValue
+    signal linkClicked(variant linkPosition)
+    focus: true
 
-    Config {
-        id: config
-        path: "books." + Qt.md5(application.book.source.toString())
-
-        property string positionValue
-    }
-
-    onPositionValueChanged: config.positionValue = JSON.stringify(positionValue)
-
-    readonly property real themePaddingLarge: Theme.paddingLarge
-    readonly property real pageWidth: pagesView.width - 2 * themePaddingLarge
-    readonly property real pageHeight: pagesView.height - 2 * themePaddingLarge
-
-    BookPage {
-        id: previousPageHelper
-
-        width: root.pageWidth
-        height: root.pageHeight
-        book: application.book
-
-        positionValue: currentPageHelper.previousPage
-
-        visible: false
-        enabled: false
-    }
-
-    BookPage {
+    PseudoBookPage {
         id: currentPageHelper
+        anchors.fill: parent
+        anchors.margins: Theme.paddingLarge
+        book: root.book
 
-        width: root.pageWidth
-        height: root.pageHeight
-        book: application.book
+        onPositionCalculationReady: {
+            if (root.previousPositionId === calculationId) {
+                if (position.block === undefined) {
+                    root.previousPositionId = -2;
+                    return;
+                }
 
-        visible: false
-        enabled: false
+                pagesView.contentX += pagesView.width;
+                pagesModel.insert(0, { positionValue: position });
+
+                root.previousPositionId = -1;
+            }
+            if (root.nextPositionId === calculationId) {
+                if (position.block === undefined) {
+                    root.nextPositionId = -2;
+                    return;
+                }
+
+                console.log('calced next page', JSON.stringify(position))
+                pagesModel.append({ positionValue: position });
+
+                root.nextPositionId = -1;
+            }
+        }
     }
 
-    BookPage {
-        id: nextPageHelper
+    onWidthChanged: rebuildModel(1)
+    onHeightChanged: rebuildModel(2)
+    Component.onCompleted: rebuildModel(3)
 
-        width: root.pageWidth
-        height: root.pageHeight
-        book: application.book
-
-        positionValue: currentPageHelper.nextPage
-
-        visible: false
-        enabled: false
+    Connections {
+        target: root.book
+        onStyleChanged: root.rebuildModel(4)
+        onSourceChanged: root.rebuildModel(5)
+        onStateChanged: root.rebuildModel(6)
     }
 
-    readonly property variant positions: {
-        var result = [
-            currentPageHelper.previousPage.block === undefined ? undefined : previousPageHelper.previousPage,
-            currentPageHelper.previousPage,
-            currentPageHelper.positionValue,
-            currentPageHelper.nextPage,
-            currentPageHelper.nextPage.block === undefined ? undefined : nextPageHelper.nextPage
-        ];
+    property int previousPositionId: -1
+    property int nextPositionId: -1
 
-        return result
-            .filter(function (arg) { return arg !== undefined && arg.block !== undefined; })
-            .map(function (arg) { return { positionValue: arg }; });
+    function rebuildModel(type) {
+        nextPositionId = -1;
+        previousPositionId = -1;
+
+        console.log('rebuildModel', type)
+        pagesModel.clear()
+
+        var positions = new Array(5);
+        var i;
+        var positionIndex = 2;
+
+        positions[2] = currentPageHelper.positionValue;
+        for (i = 1; i >= 0; --i) {
+            positions[i] = currentPageHelper.previousPageForPosition(positions[i + 1]);
+            if (positions[i].block === undefined)
+                --positionIndex;
+        }
+        for (i = 3; i < 5; ++i)
+            positions[i] = currentPageHelper.nextPageForPosition(positions[i - 1]);
+
+        positions = positions.filter(function (a) { return a.block !== undefined });
+
+        for (i = 0; i < positions.length; ++i)
+            pagesModel.append({ positionValue: positions[i] })
+
+        pagesView.contentX = positionIndex * pagesView.width;
+        console.log(JSON.stringify(positions))
     }
-    readonly property int currentPosition: {
-        var result = [
-            currentPageHelper.previousPage.block === undefined ? {} : previousPageHelper.previousPage,
-            currentPageHelper.previousPage
-        ];
-        return 2 - (result[0].block === undefined ? 1 : 0) - (result[1].block === undefined ? 1 : 0);
+
+    function appendItem() {
+        if (nextPositionId !== -1)
+            return;
+
+        var position = pagesModel.get(pagesModel.count - 1).positionValue;
+        nextPositionId = currentPageHelper.calculateNextPage(position);
+    }
+
+    function prependItem() {
+        if (nextPositionId !== -1)
+            return;
+
+        var position = pagesModel.get(0).positionValue;
+        previousPositionId = currentPageHelper.calculatePreviousPage(position);
     }
 
     SilicaFlickable {
@@ -123,36 +145,30 @@ Page {
                 text: qsTr("About the book")
                 onClicked: pageStack.push(Qt.resolvedUrl("LibraryBookView.qml"),
                                           {
-                                              title: application.book.title,
-                                              data: application.book.bookData
+                                              title: root.book.title,
+                                              data: root.book.bookData
                                           })
             }
         }
 
         SilicaListView {
             id: pagesView
-//            anchors.fill: parent
             width: parent.width
             height: parent.height
             orientation: Qt.Horizontal
             snapMode: PathView.SnapOneItem
-            model: root.positions
+            model: ListModel {
+                id: pagesModel
+            }
 
-            onMovementEnded: currentPage = indexAt(contentX, contentY)
+            property int contentXBy10: Math.floor(contentX * 2 / width)
+            property int index: Math.floor((contentX - originX) / width)
 
-            property int currentPage: -2
-            property bool insideThePageChange: false
-
-            onCurrentPageChanged: {
-                if (insideThePageChange)
-                    return;
-                insideThePageChange = true;
-
-                currentPageHelper.positionValue = root.positions[currentPage].positionValue;
-                contentX = root.currentPosition * width;
-                currentPage = root.currentPosition;
-
-                insideThePageChange = false;
+            onContentXBy10Changed: {
+                if (pagesModel.count > 0 && index >= pagesModel.count - 2)
+                    root.appendItem();
+                if (pagesModel.count > 0 && index === 0)
+                    root.prependItem();
             }
 
             delegate: Item {
@@ -162,38 +178,10 @@ Page {
                 BookPage {
                     anchors.margins: Theme.paddingLarge
                     anchors.fill: parent
-                    book: application.book
-                    positionValue: modelData.positionValue
+                    book: root.book
+                    positionValue: model.positionValue
                 }
             }
-
-    //        Rectangle {
-    //            width: page.width
-    //            height: page.height
-    //            color: "#ffffff"
-
-    //            MouseArea {
-    //                anchors.fill: parent
-
-    //                onClicked: {
-    //                    if (mouseX < width / 2) {
-    //                        if (bookPage.previousPage.block !== undefined)
-    //                            bookPage.positionValue = bookPage.previousPage;
-    //                    } else {
-    //                        if (bookPage.nextPage.block !== undefined)
-    //                            bookPage.positionValue = bookPage.nextPage;
-    //                    }
-    //                }
-    //            }
-
-    //            BookPage {
-    //                id: bookPage
-    //                anchors.fill: parent
-    //                anchors.margins: 5
-    //                book: application.book
-    //                positionValue: config.positionValue.length == 0 ? {} : JSON.parse(config.positionValue)
-    //            }
-    //        }
         }
     }
 }

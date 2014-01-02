@@ -40,7 +40,13 @@ struct BookTextPosition
     QVariantMap toMap() const;
     static BookTextPosition fromMap(const QVariantMap &arg);
 
+    bool isValid() const;
+
+    operator bool() const;
+
     bool operator ==(const BookTextPosition &other) const;
+    bool operator !=(const BookTextPosition &other) const;
+    bool operator <(const BookTextPosition &other) const;
 };
 
 struct BodyInfo

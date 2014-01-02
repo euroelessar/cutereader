@@ -39,7 +39,10 @@ SOURCES += ../lib/blocks/booktextblock.cpp \
     ../lib/models/opdsdownloadjob.cpp \
     ../lib/models/frontmodel.cpp \
     ../lib/models/bookrootmodel.cpp \
-    ../lib/bookplugin.cpp
+    ../lib/bookplugin.cpp \
+    ../lib/pseudobookpageitem.cpp \
+    ../lib/bookpageiterator.cpp \
+    ../lib/saferunnable.cpp
 
 HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/bookblockitem.h \
@@ -71,4 +74,7 @@ HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/models/opdsdownloadjob.h \
     ../lib/models/frontmodel.h \
     ../lib/models/bookrootmodel.h \
-    ../lib/bookplugin.h
+    ../lib/bookplugin.h \
+    ../lib/pseudobookpageitem.h \
+    ../lib/bookpageiterator.h \
+    ../lib/saferunnable.h

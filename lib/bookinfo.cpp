@@ -74,7 +74,27 @@ BookTextPosition BookTextPosition::fromMap(const QVariantMap &arg)
     };
 }
 
+bool BookTextPosition::isValid() const
+{
+    return body >= 0 && block >= 0 && position >= 0;
+}
+
+BookTextPosition::operator bool() const
+{
+    return isValid();
+}
+
 bool BookTextPosition::operator ==(const BookTextPosition &other) const
 {
     return body == other.body && block == other.block && position == other.position;
+}
+
+bool BookTextPosition::operator !=(const BookTextPosition &other) const
+{
+    return !operator ==(other);
+}
+
+bool BookTextPosition::operator <(const BookTextPosition &other) const
+{
+    return std::tie(body, block, position) < std::tie(other.body, other.block, other.position);
 }

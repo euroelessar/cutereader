@@ -5,13 +5,13 @@
 #include <QQmlComponent>
 #include "bookitem.h"
 
+class BookPageIterator;
+
 class BookPageItem : public QQuickPaintedItem
 {
     Q_OBJECT
     Q_PROPERTY(BookItem *book READ book WRITE setBook NOTIFY bookChanged)
     Q_PROPERTY(QVariantMap positionValue READ positionValue WRITE setPositionValue NOTIFY positionValueChanged)
-    Q_PROPERTY(QVariantMap nextPage READ nextPage NOTIFY nextPageChanged)
-    Q_PROPERTY(QVariantMap previousPage READ previousPage NOTIFY previousPageChanged)
     Q_PROPERTY(QQmlComponent *imageDelegate READ imageDelegate WRITE setImageDelegate NOTIFY imageDelegateChanged)
     Q_PROPERTY(QQmlComponent *linkDelegate READ linkDelegate WRITE setLinkDelegate NOTIFY linkDelegateChanged)
 
@@ -20,18 +20,11 @@ public:
     virtual void paint(QPainter *painter);
 
     BookItem *book() const;
-    int block() const;
-    int blockPosition() const;
     QVariantMap positionValue() const;
 
-    QVariantMap nextPage() const;
-    QVariantMap previousPage() const;
-
-    QVariantMap recalcNextPage(QList<BookBlock::Ptr> &cache) const;
-    QVariantMap recalcPreviousPage(QList<BookBlock::Ptr> &cache) const;
-    void recalcPages();
-
     Q_INVOKABLE QVariant positionForId(const QString &id) const;
+    Q_INVOKABLE QVariantMap nextPageForPosition(const QVariantMap &position);
+    Q_INVOKABLE QVariantMap previousPageForPosition(const QVariantMap &position);
 
     QQmlComponent *imageDelegate() const;
     QQmlComponent *linkDelegate() const;
@@ -55,14 +48,14 @@ protected:
 
 protected slots:
     void requestUpdate();
-    void recreateSubItems();
+    virtual void recreateSubItems();
     void handleSubItems(const QList<BookBlock::ItemInfo> &infos);
 
 private:
+    friend class BookPageIterator;
+
     BookItem *m_book;
-    int m_body;
-    int m_block;
-    int m_blockPosition;
+    BookTextPosition m_positionValue;
     QQmlComponent *m_imageDelegate;
     QQmlComponent *m_linkDelegate;
     QList<QObject*> m_subItems;

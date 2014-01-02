@@ -3,6 +3,25 @@
 
 #include "bookblock.h"
 
+class BookItem;
+class QThread;
+
+class ItemId
+{
+public:
+    ItemId(const QSizeF &size, const BookStyle &style);
+
+    QSizeF size() const;
+    BookStyle style() const;
+
+    bool operator ==(const ItemId &other) const;
+
+private:
+    QSizeF m_size;
+    BookStyle m_style;
+    QThread *m_thread;
+};
+
 class BookBlockFactory
 {
 public:
@@ -11,18 +30,18 @@ public:
 
     BookBlockFactory();
 
-    BookBlock::Ptr item(const QSizeF &size, const BookStyle &style);
+    BookBlock::Ptr item(const ItemId &id);
 
     virtual void setImageSizes(const QHash<QUrl, QSize> &imageSizes);
 
 protected:
     virtual BookBlock::Ptr doCreate(const QSizeF &size, const BookStyle &style) = 0;
 
-    BookBlock::Ptr findBlockNolock(const QSizeF &size, const BookStyle &style);
+    BookBlock::Ptr findBlockNolock(const ItemId &id);
     void clearDeadBlocks();
 
     friend class BookBlock;
-    typedef QPair<QPair<QSizeF, int>, BookBlock::WeakPtr> CachedBlock;
+    typedef QPair<ItemId, BookBlock::WeakPtr> CachedBlock;
 
     QList<CachedBlock> m_cache;
     QMutex m_lock;

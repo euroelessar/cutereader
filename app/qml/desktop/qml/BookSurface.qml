@@ -4,81 +4,76 @@ import org.qutim 0.3
 FocusScope {
     id: root
     property Book book
-//    property variant positionValue
     property alias positionValue: currentPageHelper.positionValue
 
     signal linkClicked(variant linkPosition)
     focus: true
 
-    Config {
-        id: config
-        path: "books." + Qt.md5(root.book.source.toString())
-
-        property string positionValue
-    }
-
-    onPositionValueChanged: config.positionValue = JSON.stringify(positionValue)
-
-    readonly property real themePaddingLarge: 15
-    readonly property real pageWidth: pagesView.width - 2 * themePaddingLarge
-    readonly property real pageHeight: pagesView.height - 2 * themePaddingLarge
-
-    BookPage {
-        id: previousPageHelper
-
-        width: root.pageWidth
-        height: root.pageHeight
-        book: root.book
-
-        positionValue: currentPageHelper.previousPage
-
-        visible: false
-        enabled: false
-    }
-
-    BookPage {
+    PseudoBookPage {
         id: currentPageHelper
-
-        width: root.pageWidth
-        height: root.pageHeight
+        anchors.fill: parent
+        anchors.margins: 15
         book: root.book
-
-        visible: false
-        enabled: false
     }
 
-    BookPage {
-        id: nextPageHelper
+    onWidthChanged: rebuildModel(1)
+    onHeightChanged: rebuildModel(2)
+    Component.onCompleted: rebuildModel(4)
 
-        width: root.pageWidth
-        height: root.pageHeight
-        book: root.book
-
-        positionValue: currentPageHelper.nextPage
-
-        visible: false
-        enabled: false
+    Connections {
+        target: root.book
+        onStyleChanged: root.rebuildModel(3)
     }
 
-    readonly property variant positions: {
-        var result = [
-            currentPageHelper.previousPage.block === undefined ? undefined : previousPageHelper.previousPage,
-            currentPageHelper.previousPage,
-            currentPageHelper.positionValue,
-            currentPageHelper.nextPage,
-            currentPageHelper.nextPage.block === undefined ? undefined : nextPageHelper.nextPage
-        ];
+    function rebuildModel(type) {
+        pagesModel.clear()
 
-        return result
-            .filter(function (arg) { return arg !== undefined && arg.block !== undefined; })
-            .map(function (arg) { return { positionValue: arg }; });
+        var positions = new Array(5);
+        var i;
+        var positionIndex = 2;
+
+        positions[2] = currentPageHelper.positionValue;
+        for (i = 1; i >= 0; --i) {
+            positions[i] = currentPageHelper.previousPageForPosition(positions[i + 1]);
+            if (positions[i].block === undefined)
+                --positionIndex;
+        }
+        for (i = 3; i < 5; ++i)
+            positions[i] = currentPageHelper.nextPageForPosition(positions[i - 1]);
+
+        positions = positions.filter(function (a) { return a.block !== undefined });
+
+        for (i = 0; i < positions.length; ++i)
+            pagesModel.append({ positionValue: positions[i] })
+
+        pagesView.contentX = positionIndex * pagesView.width;
+        console.log(JSON.stringify(positions))
     }
-    readonly property int currentPosition: {
-        var result = [
-            currentPageHelper.previousPage.block === undefined ? {} : previousPageHelper.previousPage,
-            currentPageHelper.previousPage
-        ];
-        return 2 - (result[0].block === undefined ? 1 : 0) - (result[1].block === undefined ? 1 : 0);
+
+    function appendItem() {
+        var position = pagesModel.get(pagesModel.count - 1).positionValue;
+        var newPosition = currentPageHelper.nextPageForPosition(position);
+        if (newPosition.block === undefined)
+            return false;
+
+        pagesModel.append({ positionValue: newPosition })
+        return true;
+    }
+
+    function prependItem() {
+        var position = pagesModel.get(0).positionValue;
+        var newPosition = currentPageHelper.previousPageForPosition(position);
+        if (newPosition.block === undefined)
+            return false;
+
+        console.log('prependItem', pagesView.contentX, pagesView.originX, Math.floor((pagesView.contentX - pagesView.originX) / width))
+        pagesView.contentX += pagesView.width;
+        pagesModel.insert(0, { positionValue: newPosition });
+        return true;
+    }
+
+    ListModel {
+        id: pagesModel
     }
 
     ListView {
@@ -87,7 +82,16 @@ FocusScope {
         orientation: Qt.Horizontal
         snapMode: PathView.SnapOneItem
         clip: true
-        model: root.positions
+        model: pagesModel
+
+        onContentXChanged: {
+            function index() {
+                return Math.floor((contentX - originX) / width);
+            }
+
+            while (pagesModel.count > 0 && index() >= pagesModel.count - 2 && root.appendItem());
+            while (pagesModel.count > 0 && index() === 0 && root.prependItem());
+        }
 
         delegate: Rectangle {
             width: pagesView.width
@@ -98,32 +102,11 @@ FocusScope {
 
             BookPage {
                 id: listPage
-                anchors.margins: root.themePaddingLarge
+                anchors.margins: 15
                 anchors.fill: parent
                 book: root.book
-                positionValue: modelData.positionValue
+                positionValue: model.positionValue
             }
-        }
-
-        function recalcCurrentPage() {
-            currentPage = indexAt(contentX, contentY);
-        }
-
-        onMovementEnded: recalcCurrentPage()
-
-        property int currentPage: -2
-        property bool insideThePageChange: false
-
-        onCurrentPageChanged: {
-            if (insideThePageChange)
-                return;
-            insideThePageChange = true;
-
-            currentPageHelper.positionValue = root.positions[currentPage].positionValue;
-            contentX = root.currentPosition * width;
-            currentPage = root.currentPosition;
-
-            insideThePageChange = false;
         }
     }
 }
