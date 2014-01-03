@@ -23,9 +23,9 @@ public:
     QString path() const;
     void setPath(const QString &path);
 
-    QVariant value(const QString &name);
-    bool hasValue(const QString &name);
-    void setValue(const QString &name, const QVariant &value);
+    Q_INVOKABLE QVariant value(const QString &name);
+    Q_INVOKABLE bool hasValue(const QString &name);
+    Q_INVOKABLE void setValue(const QString &name, const QVariant &value);
 
     void loadDefaultConfig(const QString &path);
 

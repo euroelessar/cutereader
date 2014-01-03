@@ -28,7 +28,12 @@ OTHER_FILES += qml/cutereader.qml \
     qml/pages/CategoryListItem.qml \
     qml/pages/LibraryListView.qml \
     qml/pages/LibraryBookView.qml \
-    qml/pages/LibraryPageBase.qml
+    qml/pages/LibraryPageBase.qml \
+    qml/pages/SettingsListPage.qml \
+    qml/pages/FontSettingsPage.qml \
+    qml/pages/ColorsSettingsPage.qml \
+    qml/pages/ColorChooserDialog.qml \
+    qml/pages/ColorChooser.qml
 
 INCLUDEPATH += ../
 

@@ -39,6 +39,9 @@ ApplicationWindow
     property Book book: rootBook
 
     function openBook(source) {
+        if (book.source === source)
+            return;
+
         book.source = source;
         genericConfig.book = source;
 
