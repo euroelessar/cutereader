@@ -170,3 +170,8 @@ QList<BookPageIterator::Line> BookPageIterator::pageLines(QList<BookBlock::Ptr> 
 
     return result;
 }
+
+ItemId BookPageIterator::id() const
+{
+    return ItemId(m_size, m_style);
+}

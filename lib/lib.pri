@@ -42,7 +42,8 @@ SOURCES += ../lib/blocks/booktextblock.cpp \
     ../lib/bookplugin.cpp \
     ../lib/pseudobookpageitem.cpp \
     ../lib/bookpageiterator.cpp \
-    ../lib/saferunnable.cpp
+    ../lib/saferunnable.cpp \
+    ../lib/fontlistmodel.cpp
 
 HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/bookblockitem.h \
@@ -77,4 +78,5 @@ HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/bookplugin.h \
     ../lib/pseudobookpageitem.h \
     ../lib/bookpageiterator.h \
-    ../lib/saferunnable.h
+    ../lib/saferunnable.h \
+    ../lib/fontlistmodel.h

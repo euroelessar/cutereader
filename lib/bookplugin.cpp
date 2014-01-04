@@ -5,6 +5,7 @@
 #include "providers/fb2imageprovider.h"
 #include "models/localbookcollection.h"
 #include "models/opdsentryitem.h"
+#include "fontlistmodel.h"
 #include "config.h"
 
 BookPlugin::BookPlugin(QObject *parent) :
@@ -28,5 +29,6 @@ void BookPlugin::registerQmlTypes(QQmlEngine *engine)
     qmlRegisterType<LocalBookCollection>("org.qutim", 0, 3, "LocalBookCollection");
     qmlRegisterType<BookFrontModel>("org.qutim", 0, 3, "FrontModel");
     qmlRegisterType<OpdsEntryItem>("org.qutim", 0, 3, "OpdsEntry");
+    qmlRegisterType<FontListModel>("org.qutim", 0, 3, "FontListModel");
     qmlRegisterType<Config>("org.qutim", 0, 3, "Config");
 }

@@ -25,6 +25,8 @@ public:
 
     QList<Line> pageLines(QList<BookBlock::Ptr> &cache) const;
 
+    ItemId id() const;
+
 private:
     BookTextPosition m_position;
     const QList<BookBlockFactory::Ptr> m_blocks;

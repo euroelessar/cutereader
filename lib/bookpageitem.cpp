@@ -3,28 +3,50 @@
 #include "saferunnable.h"
 #include <QQmlContext>
 #include <QElapsedTimer>
+#include <QThread>
+#include <QSGSimpleTextureNode>
+#include <QQuickWindow>
 
 BookPageItem::BookPageItem(QQuickItem *parent) :
-    QQuickPaintedItem(parent),
+    QQuickItem(parent),
     m_book(NULL),
     m_positionValue({ 0, 0, 0 }),
     m_imageDelegate(NULL),
-    m_linkDelegate(NULL)
+    m_linkDelegate(NULL),
+    m_texture(NULL)
 {
     qRegisterMetaType<QList<BookBlock::ItemInfo>>();
-    setRenderTarget(FramebufferObject);
+    setFlag(ItemHasContents);
 }
 
-void BookPageItem::paint(QPainter *painter)
+QSGNode *BookPageItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
-    if (!m_book)
-        return;
+    QSGSimpleTextureNode *node = static_cast<QSGSimpleTextureNode *>(oldNode);
+    if (!node) {
+        node = new QSGSimpleTextureNode;
+    }
 
-    BookPageIterator it(this);
+    if (m_texture) {
+        node->setTexture(NULL);
+        delete m_texture;
+        m_texture = NULL;
+    }
 
-    QList<BookBlock::Ptr> cache;
-    for (const auto &line : it.pageLines(cache))
-        line.block->draw(painter, line.position, line.index);
+    QImage image;
+    {
+        QMutexLocker locker(&m_cacheLock);
+        if (m_cachedImage.isNull()) {
+            delete node;
+            return NULL;
+        }
+        image = m_cachedImage;
+    }
+
+    m_texture = window()->createTextureFromImage(image);
+    node->setTexture(m_texture);
+    node->setRect(0, 0, image.width(), image.height());
+
+    return node;
 }
 
 BookItem *BookPageItem::book() const
@@ -130,9 +152,14 @@ void BookPageItem::setLinkDelegate(QQmlComponent *linkDelegate)
     }
 }
 
+void BookPageItem::classBegin()
+{
+    QQuickItem::classBegin();
+}
+
 void BookPageItem::componentComplete()
 {
-    QQuickPaintedItem::componentComplete();
+    QQuickItem::componentComplete();
 
     if (!m_imageDelegate) {
         m_imageDelegate = new QQmlComponent(qmlEngine(this), this);
@@ -164,11 +191,12 @@ void BookPageItem::requestUpdate()
     if (!m_imageDelegate || !m_linkDelegate)
         return;
 
-    QList<BookBlock::Ptr> cache;
-    qSwap(m_cache, cache);
+    {
+        QMutexLocker locker(&m_cacheLock);
+        m_cache.clear();
+    }
 
     recreateSubItems();
-    update();
 }
 
 void BookPageItem::recreateSubItems()
@@ -179,23 +207,51 @@ void BookPageItem::recreateSubItems()
     for (auto object : m_subItems)
         object->setProperty("visible", false);
 
-    BookPageIterator it(this);
+    const BookPageIterator it(this);
+    const ItemId id = it.id();
 
-    SafeRunnable::start(this, [this, it] () -> SafeRunnable::Handler {
+    SafeRunnable::start(this, [this, it, id] () -> SafeRunnable::Handler {
         QList<BookBlock::Ptr> cache;
         QList<BookBlock::ItemInfo> items;
 
-        for (const auto &line : it.pageLines(cache))
-            items << line.block->createItems(line.position, line.index);
+        QSize size = it.id().size().toSize();
 
-        return [this, items] () {
-            handleSubItems(items);
+        if (size.isEmpty())
+            return [] () {};
+
+        size.rwidth() *= 1.1;
+        QImage image(size, QImage::Format_ARGB32_Premultiplied);
+        image.fill(Qt::transparent);
+
+        QPainter painter(&image);
+        painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
+
+        for (const auto &line : it.pageLines(cache)) {
+            painter.setRenderHint(QPainter::TextAntialiasing, !painter.testRenderHint(QPainter::TextAntialiasing));
+            items << line.block->createItems(line.position, line.index);
+            line.block->draw(&painter, line.position, line.index);
+        }
+
+        return [this, image, items, cache, id] () {
+            handleSubItems(id, image, cache, items);
         };
     });
 }
 
-void BookPageItem::handleSubItems(const QList<BookBlock::ItemInfo> &infos)
+void BookPageItem::handleSubItems(const ItemId &id, const QImage &image, const QList<BookBlock::Ptr> &cache, const QList<BookBlock::ItemInfo> &infos)
 {
+    const BookPageIterator it(this);
+    if (it.id() != id)
+        return;
+
+    {
+        QMutexLocker locker(&m_cacheLock);
+        m_cache = cache;
+        m_cachedImage = image;
+    }
+
+    update();
+
     QList<QObject *> subItems;
     qSwap(m_subItems, subItems);
     for (auto object : subItems) {

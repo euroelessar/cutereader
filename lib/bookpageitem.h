@@ -3,11 +3,12 @@
 
 #include <QQuickPaintedItem>
 #include <QQmlComponent>
+#include <QSGTexture>
 #include "bookitem.h"
 
 class BookPageIterator;
 
-class BookPageItem : public QQuickPaintedItem
+class BookPageItem : public QQuickItem
 {
     Q_OBJECT
     Q_PROPERTY(BookItem *book READ book WRITE setBook NOTIFY bookChanged)
@@ -17,7 +18,7 @@ class BookPageItem : public QQuickPaintedItem
 
 public:
     explicit BookPageItem(QQuickItem *parent = 0);
-    virtual void paint(QPainter *painter);
+    QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
 
     BookItem *book() const;
     QVariantMap positionValue() const;
@@ -44,12 +45,13 @@ public slots:
     void setLinkDelegate(QQmlComponent *linkDelegate);
 
 protected:
-    virtual void componentComplete();
+    void classBegin();
+    void componentComplete();
 
 protected slots:
     void requestUpdate();
     virtual void recreateSubItems();
-    void handleSubItems(const QList<BookBlock::ItemInfo> &infos);
+    void handleSubItems(const ItemId &id, const QImage &image, const QList<BookBlock::Ptr> &cache, const QList<BookBlock::ItemInfo> &infos);
 
 private:
     friend class BookPageIterator;
@@ -64,6 +66,8 @@ private:
 
     QMutex m_cacheLock;
     QList<BookBlock::Ptr> m_cache;
+    QImage m_cachedImage;
+    QSGTexture *m_texture;
 };
 
 #endif // BOOKPAGEITEM_H

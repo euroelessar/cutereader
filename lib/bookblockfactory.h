@@ -15,6 +15,7 @@ public:
     BookStyle style() const;
 
     bool operator ==(const ItemId &other) const;
+    bool operator !=(const ItemId &other) const { return !operator ==(other); }
 
 private:
     QSizeF m_size;
