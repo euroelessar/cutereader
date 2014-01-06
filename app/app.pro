@@ -18,7 +18,9 @@ folder_01.source = ../app/qml/$$UI_TYPE/qml
 folder_01.target = qml/cutereader
 folder_02.source = ../books
 folder_02.target = ./
-DEPLOYMENTFOLDERS = folder_01 folder_02
+folder_03.source = ../hyphen
+folder_03.target = ./
+DEPLOYMENTFOLDERS = folder_01 folder_02 folder_03
 
 # Additional import path used to resolve QML modules in Creator's code model
 QML_IMPORT_PATH =

@@ -43,7 +43,8 @@ SOURCES += ../lib/blocks/booktextblock.cpp \
     ../lib/pseudobookpageitem.cpp \
     ../lib/bookpageiterator.cpp \
     ../lib/saferunnable.cpp \
-    ../lib/fontlistmodel.cpp
+    ../lib/fontlistmodel.cpp \
+    ../lib/blocks/texthyphenator.cpp
 
 HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/bookblockitem.h \
@@ -79,4 +80,5 @@ HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/pseudobookpageitem.h \
     ../lib/bookpageiterator.h \
     ../lib/saferunnable.h \
-    ../lib/fontlistmodel.h
+    ../lib/fontlistmodel.h \
+    ../lib/blocks/texthyphenator.h

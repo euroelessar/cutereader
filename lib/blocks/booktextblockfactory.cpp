@@ -1,10 +1,13 @@
 #include "booktextblockfactory.h"
+#include "texthyphenator.h"
 
 BookTextBlockFactory::BookTextBlockFactory(const QString &text, const QList<FormatRange> &formats)
     : m_data(BookTextBlockData::Ptr::create())
 {
     m_data->text = text;
     m_data->formats = formats;
+
+    TextHyphenator(QStringLiteral("ru")).hyphenate(m_data->text, m_data->formats);
 }
 
 BookBlockFactory::Ptr BookTextBlockFactory::create(const QString &text, const QList<FormatRange> &formats)

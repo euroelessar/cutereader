@@ -191,11 +191,6 @@ void BookPageItem::requestUpdate()
     if (!m_imageDelegate || !m_linkDelegate)
         return;
 
-    {
-        QMutexLocker locker(&m_cacheLock);
-        m_cache.clear();
-    }
-
     recreateSubItems();
 }
 
@@ -227,18 +222,17 @@ void BookPageItem::recreateSubItems()
         painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
 
         for (const auto &line : it.pageLines(cache)) {
-            painter.setRenderHint(QPainter::TextAntialiasing, !painter.testRenderHint(QPainter::TextAntialiasing));
             items << line.block->createItems(line.position, line.index);
             line.block->draw(&painter, line.position, line.index);
         }
 
-        return [this, image, items, cache, id] () {
-            handleSubItems(id, image, cache, items);
+        return [this, image, items, id] () {
+            handleSubItems(id, image, items);
         };
     });
 }
 
-void BookPageItem::handleSubItems(const ItemId &id, const QImage &image, const QList<BookBlock::Ptr> &cache, const QList<BookBlock::ItemInfo> &infos)
+void BookPageItem::handleSubItems(const ItemId &id, const QImage &image, const QList<BookBlock::ItemInfo> &infos)
 {
     const BookPageIterator it(this);
     if (it.id() != id)
@@ -246,7 +240,6 @@ void BookPageItem::handleSubItems(const ItemId &id, const QImage &image, const Q
 
     {
         QMutexLocker locker(&m_cacheLock);
-        m_cache = cache;
         m_cachedImage = image;
     }
 

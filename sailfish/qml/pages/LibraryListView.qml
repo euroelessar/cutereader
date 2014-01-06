@@ -35,9 +35,22 @@ LibraryPageBase {
     SilicaListView {
         anchors.fill: parent
 
-        header: PageHeader {
-            id: pageHeader
-            title: page.title
+        header: Column {
+            width: parent.width
+
+            PageHeader {
+                id: pageHeader
+                title: page.title
+            }
+            SearchField {
+                id: searchField
+                width: parent.width
+                placeholderText: qsTr("Search")
+                onTextChanged: {
+                    console.log('Filter changed:', text);
+                    frontModel.filter = text;
+                }
+            }
         }
 
         section {

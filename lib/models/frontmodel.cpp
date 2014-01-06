@@ -22,6 +22,8 @@ bool BookFrontModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourcePa
 
     const QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
 
+    qDebug() << index.data(BookTitle).toString() <<  index.data(BookSubtitle).toString() << m_filter;
+
     return index.data(BookTitle).toString().contains(m_filter, Qt::CaseInsensitive)
             || index.data(BookSubtitle).toString().contains(m_filter, Qt::CaseInsensitive);
 }

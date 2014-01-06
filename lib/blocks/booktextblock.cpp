@@ -84,6 +84,8 @@ BookTextBlock::LineInfo BookTextBlock::lineInfo(int lineNumber) const
 
 void BookTextBlock::buildLayout(const QSizeF &size)
 {
+    const QString text = m_textLayout.text();
+
     QFontMetrics fontMetrics(m_textLayout.font());
     m_height = 0;
     int leading = fontMetrics.leading();
@@ -96,6 +98,13 @@ void BookTextBlock::buildLayout(const QSizeF &size)
             break;
 
         line.setLineWidth(size.width());
+        if (line.textLength() > 0) {
+            int lastCharIndex = line.textStart() + line.textLength() - 1;
+            QChar lastChar = text.at(lastCharIndex);
+            if (lastChar == QChar::SoftHyphen)
+                line.setLineWidth(line.width() - fontMetrics.width(QChar::SoftHyphen));
+        }
+
         if (!qFuzzyIsNull(m_height))
             m_height += leading;
         line.setPosition(QPointF(0, 0));

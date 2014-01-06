@@ -39,8 +39,10 @@ INCLUDEPATH += ../
 
 books.path = /usr/share/cutereader/books
 books.files = ../books/*
+hyphen.path = /usr/share/cutereader/hyphen
+hyphen.files = ../hyphen/*
 
-INSTALLS += books
+INSTALLS += books hyphen
 
 #include(cutereader.pri)
 

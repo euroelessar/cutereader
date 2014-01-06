@@ -51,7 +51,7 @@ protected:
 protected slots:
     void requestUpdate();
     virtual void recreateSubItems();
-    void handleSubItems(const ItemId &id, const QImage &image, const QList<BookBlock::Ptr> &cache, const QList<BookBlock::ItemInfo> &infos);
+    void handleSubItems(const ItemId &id, const QImage &image, const QList<BookBlock::ItemInfo> &infos);
 
 private:
     friend class BookPageIterator;
@@ -65,7 +65,6 @@ private:
     QVariantMap m_previousPage;
 
     QMutex m_cacheLock;
-    QList<BookBlock::Ptr> m_cache;
     QImage m_cachedImage;
     QSGTexture *m_texture;
 };

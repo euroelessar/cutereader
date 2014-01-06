@@ -160,6 +160,7 @@ Page {
             height: parent.height
             orientation: Qt.Horizontal
             snapMode: PathView.SnapOneItem
+            pixelAligned: true
             model: ListModel {
                 id: pagesModel
             }
