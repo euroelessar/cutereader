@@ -9,8 +9,12 @@
 
 class BookBlockFactory;
 
-struct Format
+class Format
 {
+    Q_GADGET
+    Q_ENUMS(Type)
+public:
+
     enum Type {
         InvalidType,
         Base,
@@ -21,9 +25,17 @@ struct Format
         Sub,
         Sup,
         Title,
+        Subtitle,
         InternalAnchor,
         NoteAnchor,
         ExternalAnchor,
+        Epigraph,
+        TextAuthor,
+        Poem,
+        Stanza,
+        Date,
+        Code,
+        Cite,
         TypesCount
     };
 
@@ -52,38 +64,16 @@ struct FormatRange
 
 struct BookStyle
 {
-    BookStyle() : formats(Format::TypesCount)
+    BookStyle() : generation(1), formats(Format::TypesCount), blockFormats(Format::TypesCount), colorsGeneration(1)
     {
     }
 
     int generation;
     QVector<QTextCharFormat> formats;
+    QVector<QTextBlockFormat> blockFormats;
 
-    static BookStyle defaultStyle()
-    {
-        BookStyle style;
-        style.generation = 1;
-        style.formats[Format::Strong].setFontWeight(QFont::Bold);
-        style.formats[Format::Emphasis].setFontItalic(true);
-        style.formats[Format::StrikeThrough].setFontItalic(true);
-        style.formats[Format::Sub].setVerticalAlignment(QTextCharFormat::AlignSubScript);
-        style.formats[Format::Sup].setVerticalAlignment(QTextCharFormat::AlignSuperScript);
-        style.formats[Format::Title].setFontWeight(QFont::Bold);
-
-        QTextCharFormat &internalAnchor = style.formats[Format::InternalAnchor];
-        internalAnchor.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-        internalAnchor.setForeground(QColor(Qt::blue));
-
-        QTextCharFormat &externalAnchor = style.formats[Format::ExternalAnchor];
-        externalAnchor.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-        externalAnchor.setForeground(QColor(Qt::red));
-
-        QTextCharFormat &noteAnchor = style.formats[Format::NoteAnchor];
-        noteAnchor.setForeground(QColor(Qt::blue));
-        noteAnchor.setVerticalAlignment(QTextCharFormat::AlignSuperScript);
-
-        return style;
-    }
+    int colorsGeneration;
+    QVector<QColor> colors;
 };
 
 class BookBlock

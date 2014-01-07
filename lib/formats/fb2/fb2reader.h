@@ -26,6 +26,8 @@ public:
     BookInfo read(const QUrl &source, QIODevice *device, Flags flags);
 
 private:
+    typedef QList<QPair<QString, int> > ReferencesList;
+
     struct ImageInfo
     {
         QUrl source;
@@ -34,7 +36,7 @@ private:
     };
 
     void readDescription(QXmlStreamReader &in, BookInfo &info, const QUrl &baseUrl);
-    BookBlockFactory::Ptr readParagraph(QXmlStreamReader &in, const QList<Format> &baseFormats);
+    BookBlockFactory::Ptr readParagraph(QXmlStreamReader &in, const QList<Format> &baseFormats, ReferencesList &references);
     ImageInfo readImage(QXmlStreamReader &in, const QUrl &baseUrl);
     BodyInfo readBody(QXmlStreamReader &in, const QUrl &baseUrl);
 

@@ -60,6 +60,10 @@ FB2Reader::FB2Reader()
 
                 format.href = href.toString();
             }
+        },
+        {
+            QStringLiteral("code"),
+            [] (const QXmlStreamReader &, Format &format) { format.type = Format::Code; }
         }
     };
 }
@@ -141,9 +145,13 @@ void FB2Reader::readDescription(QXmlStreamReader &in, BookInfo &info, const QUrl
     Q_ASSERT(!"Impossible situation");
 }
 
-BookBlockFactory::Ptr FB2Reader::readParagraph(QXmlStreamReader &in, const QList<Format> &baseFormats)
+BookBlockFactory::Ptr FB2Reader::readParagraph(QXmlStreamReader &in, const QList<Format> &baseFormats, ReferencesList &references)
 {
-    Q_ASSERT(in.name() == QStringLiteral("p"));
+    const bool isStanza = in.name() == QStringLiteral("stanza");
+
+    Q_ASSERT(in.name() == QStringLiteral("p") || in.name() == QStringLiteral("stanza")
+             || in.name() == QStringLiteral("subtitle") || in.name() == QStringLiteral("text-author")
+             || in.name() == QStringLiteral("th") || in.name() == QStringLiteral("td"));
 
     int depth = 1;
     QString text;
@@ -165,10 +173,15 @@ BookBlockFactory::Ptr FB2Reader::readParagraph(QXmlStreamReader &in, const QList
         return NULL;
     };
 
+    int codeCounter = 0;
+
     while (in.readNext() != QXmlStreamReader::Invalid) {
         switch (in.tokenType()) {
-        case QXmlStreamReader::StartElement:
+        case QXmlStreamReader::StartElement: {
             ++depth;
+
+            if (isStanza && in.name() == QStringLiteral("v") && !text.isEmpty())
+                text += QChar(QChar::LineSeparator);
 
             if (FormatDescription *description = find_description(in.name())) {
                 Format format;
@@ -177,10 +190,21 @@ BookBlockFactory::Ptr FB2Reader::readParagraph(QXmlStreamReader &in, const QList
                 changes.append({ text.size(), depth, format });
             }
 
+            if (in.name() == QStringLiteral("code"))
+                ++codeCounter;
+
+            QStringRef id = in.attributes().value(QStringLiteral("id"));
+            if (!id.isEmpty())
+                references.append({ id.toString(), text.size() });
+
             break;
+        }
         case QXmlStreamReader::EndElement:
             if (depth == 1) {
-                Q_ASSERT(in.name() == QStringLiteral("p"));
+                Q_ASSERT((in.name() == QStringLiteral("stanza")) == isStanza);
+                Q_ASSERT(in.name() == QStringLiteral("p") || in.name() == QStringLiteral("stanza")
+                         || in.name() == QStringLiteral("subtitle") || in.name() == QStringLiteral("text-author")
+                         || in.name() == QStringLiteral("th") || in.name() == QStringLiteral("td"));
                 for (int i = baseFormats.size() - 1; i >= 0; --i)
                     formats.prepend({ 0, text.size(), baseFormats[i] });
 
@@ -191,10 +215,23 @@ BookBlockFactory::Ptr FB2Reader::readParagraph(QXmlStreamReader &in, const QList
                 auto change = changes.takeLast();
                 formats.append({ change.start, text.size() - change.start, change.format });
             }
+
+            if (in.name() == QStringLiteral("code"))
+                --codeCounter;
+
             --depth;
             break;
         case QXmlStreamReader::Characters:
-            text += in.text();
+            if (codeCounter) {
+                text += in.text();
+            } else if (!in.text().isEmpty()) {
+                const QString tmp = in.text().toString();
+                if (tmp[0].isSpace() && (text.isEmpty() || !text[text.size() - 1].isSpace()))
+                    text += QLatin1Char(' ');
+                text += tmp.simplified();
+                if (tmp[tmp.size() - 1].isSpace())
+                    text += QLatin1Char(' ');
+            }
             break;
         default:
             break;
@@ -233,39 +270,83 @@ BodyInfo FB2Reader::readBody(QXmlStreamReader &in, const QUrl &baseUrl)
 
     int depth = 1;
     int sectionsDepth = 0;
-    int inTitleCounter = 0;
 
-    const QList<Format> titleFormat = { { Format::Base }, { Format::Title } };
-    const QList<Format> standardFormat = { { Format::Base }, { Format::Standard } };
+    struct FormatDescription
+    {
+        Format::Type format;
+        bool isParagraph;
+    };
+
+    const QMap<QString, FormatDescription> formatNames = {
+        { QStringLiteral("title"), { Format::Title, false } },
+        { QStringLiteral("subtitle"), { Format::Subtitle, true } },
+        { QStringLiteral("epigraph"), { Format::Epigraph, false } },
+        { QStringLiteral("text-author"), { Format::TextAuthor, true } },
+        { QStringLiteral("poem"), { Format::Poem, false } },
+        { QStringLiteral("stanza"), { Format::Stanza, true } },
+        { QStringLiteral("date"), { Format::Date, false } },
+        { QStringLiteral("code"), { Format::Code, false } },
+        { QStringLiteral("cite"), { Format::Cite, false } }
+    };
+
+    QList<Format> formats = { { Format::Base } };
 
     while (in.readNext() != QXmlStreamReader::Invalid) {
         switch (in.tokenType()) {
-        case QXmlStreamReader::StartElement:
+        case QXmlStreamReader::StartElement: {
             ++depth;
 
-            if (in.name() == QStringLiteral("section")) {
-                QStringRef id = in.attributes().value(QStringLiteral("id"));
-                if (!id.isEmpty())
-                    info.references.insert(id.toString(), { info.blocks.size(), 0 });
+            QStringRef id = in.attributes().value(QStringLiteral("id"));
+            if (!id.isEmpty())
+                info.references.insert(id.toString(), { info.blocks.size(), 0 });
 
+            if (in.name() == QStringLiteral("section")) {
                 ++sectionsDepth;
             } else if (in.name() == QStringLiteral("title")) {
-                ++inTitleCounter;
+                formats.append(Format::Title);
             } else if (in.name() == QStringLiteral("p")) {
-                QList<Format> baseFormats;
-                if (inTitleCounter)
-                    baseFormats = titleFormat;
-                else
-                    baseFormats = standardFormat;
+                const bool standard = formats.size() == 1;
 
-                info.blocks << readParagraph(in, baseFormats);
+                if (standard)
+                    formats.append(Format::Standard);
+
+                ReferencesList references;
+                info.blocks << readParagraph(in, formats, references);
                 --depth;
+
+                for (const auto &reference : references)
+                    info.references.insert(reference.first, { info.blocks.size() - 1, reference.second });
+
+                if (standard)
+                    formats.removeLast();
             } else if (in.name() == QStringLiteral("image")) {
                 info.blocks << readImage(in, baseUrl).toFactory();
                 --depth;
+            } else if (in.name() == QStringLiteral("empty-line")) {
+                QList<FormatRange> ranges;
+                for (int i = formats.size() - 1; i >= 0; --i)
+                    ranges.prepend({ 0, 1, formats[i] });
+                info.blocks << BookTextBlockFactory::create(QStringLiteral(" "), ranges);
+            } else {
+                auto it = formatNames.find(in.name().toString());
+                if (it != formatNames.end()) {
+                    formats.append(it.value().format);
+
+                    if (it.value().isParagraph) {
+                        ReferencesList references;
+                        info.blocks << readParagraph(in, formats, references);
+                        --depth;
+
+                        for (const auto &reference : references)
+                            info.references.insert(reference.first, { info.blocks.size() - 1, reference.second });
+
+                        formats.removeLast();
+                    }
+                }
             }
 
             break;
+        }
         case QXmlStreamReader::EndElement:
             --depth;
             if (depth == 0) {
@@ -275,7 +356,9 @@ BodyInfo FB2Reader::readBody(QXmlStreamReader &in, const QUrl &baseUrl)
             if (in.name() == QStringLiteral("section"))
                 --sectionsDepth;
             else if (in.name() == QStringLiteral("title"))
-                --inTitleCounter;
+                formats.removeLast();
+            else if (formatNames.contains(in.name().toString()))
+                formats.removeLast();
             break;
         case QXmlStreamReader::Characters:
             break;
