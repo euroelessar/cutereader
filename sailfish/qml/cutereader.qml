@@ -89,11 +89,15 @@ ApplicationWindow
 
         property url book: Qt.resolvedUrl("../books/the_three_musketeers.fb2")
     }
-    
+
+    BookSettingsSource {
+        id: settingsSource
+    }
+
     Config {
         id: textConfig
         path: "text"
-        
+
         function ensure(name, value) {
             if (!hasValue(name))
                 setValue(name, value);
@@ -101,19 +105,14 @@ ApplicationWindow
 
         Component.onCompleted: {
             // Default text settings
-            ensure("base.fontPixelSize", Theme.fontSizeMedium)
-            ensure("base.fontFamily", Theme.fontFamily)
-            ensure("title.fontPixelSize", Theme.fontSizeLarge)
-            ensure("title.fontFamily", Theme.fontFamilyHeading)
-            ensure("title.fontWeight", Font.Bold);
-            ensure("strong.fontWeight", Font.Bold);
-            ensure("emphasis.fontItalic", true);
-            ensure("strikeThrough.fontStrikeOut", true);
-            ensure("sub.verticalAlignment", TextSettings.AlignSubScript);
-            ensure("sup.verticalAlignment", TextSettings.AlignSuperScript);
-            ensure("internalAnchor.underlineStyle", Qt.SolidLine);
-            ensure("externalAnchor.underlineStyle", Qt.SolidLine);
-            ensure("noteAnchor.verticalAlignment", TextSettings.AlignSuperScript);
+            var settings = settingsSource.defaultFontSettings();
+            settings["base.fontPixelSize"] = Theme.fontSizeMedium;
+            settings["base.fontFamily"] = Theme.fontFamily;
+            settings["title.fontPixelSize"] = Theme.fontSizeLarge;
+            settings["title.fontFamily"] = Theme.fontFamilyHeading;
+
+            for (var name in settings)
+                ensure(name, settings[name]);
         }
     }
 

@@ -15,6 +15,10 @@ ApplicationWindow {
         property url book
     }
 
+    BookSettingsSource {
+        id: settingsSource
+    }
+
     Config {
         id: textConfig
         path: "text"
@@ -26,17 +30,12 @@ ApplicationWindow {
 
         Component.onCompleted: {
             // Default text settings
-            ensure("base.fontPixelSize", 12);
-            ensure("title.fontPixelSize", 14);
-            ensure("title.fontWeight", Font.Bold);
-            ensure("strong.fontWeight", Font.Bold);
-            ensure("emphasis.fontItalic", true);
-            ensure("strikeThrough.fontStrikeOut", true);
-            ensure("sub.verticalAlignment", TextSettings.AlignSubScript);
-            ensure("sup.verticalAlignment", TextSettings.AlignSuperScript);
-            ensure("internalAnchor.underlineStyle", Qt.SolidLine);
-            ensure("externalAnchor.underlineStyle", Qt.SolidLine);
-            ensure("noteAnchor.verticalAlignment", TextSettings.AlignSuperScript);
+            var settings = settingsSource.defaultFontSettings();
+            settings["base.fontPixelSize"] = 12;
+            settings["title.fontPixelSize"] = 14;
+
+            for (var name in settings)
+                ensure(name, settings[name]);
         }
     }
 

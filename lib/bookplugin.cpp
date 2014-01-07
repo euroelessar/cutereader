@@ -9,6 +9,7 @@
 #include "config.h"
 #include "bookstyle.h"
 #include "booktextsettings.h"
+#include "booksettingssource.h"
 
 BookPlugin::BookPlugin(QObject *parent) :
     QObject(parent)
@@ -32,5 +33,6 @@ void BookPlugin::registerQmlTypes(QQmlEngine *engine)
     qmlRegisterType<OpdsEntryItem>("org.qutim", 0, 3, "OpdsEntry");
     qmlRegisterType<FontListModel>("org.qutim", 0, 3, "FontListModel");
     qmlRegisterType<Config>("org.qutim", 0, 3, "Config");
+    qmlRegisterType<BookSettingsSource>("org.qutim", 0, 3, "BookSettingsSource");
     qmlRegisterUncreatableType<BookTextSettings>("org.qutim", 0, 3, "TextSettings", "This object only provides enum values");
 }
