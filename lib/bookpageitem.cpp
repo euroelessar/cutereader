@@ -21,26 +21,23 @@ BookPageItem::BookPageItem(QQuickItem *parent) :
 
 QSGNode *BookPageItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
-    QSGSimpleTextureNode *node = static_cast<QSGSimpleTextureNode *>(oldNode);
-    if (!node) {
-        node = new QSGSimpleTextureNode;
-    }
-
-    if (m_texture) {
-        node->setTexture(NULL);
-        delete m_texture;
-        m_texture = NULL;
-    }
-
     QImage image;
     {
         QMutexLocker locker(&m_cacheLock);
-        if (m_cachedImage.isNull()) {
-            delete node;
-            return NULL;
-        }
         image = m_cachedImage;
     }
+
+    QScopedPointer<QSGTexture> oldTexture(m_texture);
+    m_texture = nullptr;
+
+    if (image.isNull()) {
+        delete oldNode;
+        return nullptr;
+    }
+
+    QSGSimpleTextureNode *node = static_cast<QSGSimpleTextureNode *>(oldNode);
+    if (!node)
+        node = new QSGSimpleTextureNode;
 
     m_texture = window()->createTextureFromImage(image);
     node->setTexture(m_texture);
