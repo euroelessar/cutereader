@@ -12,18 +12,24 @@ ListView {
     model: OpdsBookModel {
         id: opdsModel
     }
-    delegate: ItemDelegate {
+    delegate: Rectangle {
         id: item
         width: parent.width
-        title: model.title
-        description: model.subtitle
-        imageSource: model.cover
-
-        onClicked: {
-            if (isBook)
-                root.bookRequested(opdsEntry)
-            else
-                root.linkRequested(source)
+        border.width: 1
+        height: 40
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.margins: 5
+            text: title
+        }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                if (isBook)
+                    root.bookRequested(opdsEntry)
+                else
+                    root.linkRequested(source)
+            }
         }
     }
 }
