@@ -38,8 +38,8 @@ public:
 private:
     void buildLayout(const QSizeF &size);
 
+    QTextBlockFormat m_blockFormat;
     QTextLayout m_textLayout;
-    qreal m_height;
     const QList<FormatRange> m_formats;
 };
 

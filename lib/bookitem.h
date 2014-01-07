@@ -6,7 +6,9 @@
 #include "bookblockfactory.h"
 #include "bookinfoitem.h"
 #include "bookinfo.h"
-#include "bookstyle.h"
+
+class BookTextSettings;
+class BookStyleItem;
 
 class BookItem : public QObject, public QQmlParserStatus
 {
@@ -15,7 +17,7 @@ class BookItem : public QObject, public QQmlParserStatus
     Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(QUrl configSource READ configSource WRITE setConfigSource NOTIFY configSourceChanged)
-    Q_PROPERTY(BookStyleItem *style READ styleItem CONSTANT FINAL)
+    Q_PROPERTY(BookStyleItem *style READ styleItem WRITE setStyleItem NOTIFY styleItemChanged)
     Q_PROPERTY(BookInfoItem *info READ info CONSTANT FINAL)
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
     Q_PROPERTY(QVariant bookData READ bookData NOTIFY bookDataChanged)
@@ -49,16 +51,20 @@ public:
     QVariant bookData() const;
 
     BookStyleItem *styleItem() const;
+    void setStyleItem(BookStyleItem *style);
 
     QVariantList positions() const;
 
 signals:
     void sourceChanged(const QUrl &source);
     void stateChanged(State state);
-    void styleChanged(const BookStyle &style);
+    void styleItemChanged(BookStyleItem *item);
     void bookDataChanged(const QVariant &bookData);
     void configSourceChanged(const QUrl &configSource);
     void positionsChanged(const QVariantList &positions);
+
+    void textSettingsChanged(const BookStyle &style);
+    void styleChanged(const BookStyle &style);
 
 public slots:
     void setSource(const QUrl &source);
@@ -66,6 +72,8 @@ public slots:
     void setPositions(const QVariantList &positions);
 
 protected slots:
+    void onTextSettingsChanged();
+    void onStyleChanged();
     void setBookInfo(const BookInfo &book);
     void setError(const QUrl &source);
 
@@ -74,7 +82,9 @@ private:
     State m_state;
     BookInfo m_bookInfo;
     BookInfoItem *m_info;
+    int m_colorsGeneration;
     BookStyleItem *m_style;
+    BookTextSettings *m_textSettings;
     QUrl m_configSource;
     QList<BookTextPosition> m_positions;
 };

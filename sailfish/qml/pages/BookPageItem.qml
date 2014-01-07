@@ -77,7 +77,7 @@ Page {
 
     Connections {
         target: root.book
-        onStyleChanged: root.rebuildModel(4)
+        onTextSettingsChanged: root.rebuildModel(4)
         onSourceChanged: root.rebuildModel(5)
         onStateChanged: root.rebuildModel(6)
     }

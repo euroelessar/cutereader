@@ -1,21 +1,32 @@
 #include "booktextblock.h"
+#include "../bookstyle.h"
 #include <QFontMetricsF>
 #include <QDebug>
 #include <QPainter>
 #include <QElapsedTimer>
+#include <QDebug>
 
 BookTextBlock::BookTextBlock(const BookTextBlockData::Ptr &data, const QSizeF &size, const BookStyle &style, const QWeakPointer<BookBlockFactory> &factory)
-    : BookBlock(size, factory), m_textLayout(data->text), m_height(0), m_formats(data->formats)
+    : BookBlock(size, factory), m_textLayout(data->text), m_formats(data->formats)
 {
-    QTextOption textOption;
-    textOption.setAlignment(Qt::AlignJustify);
-    textOption.setWrapMode(QTextOption::WordWrap);
-
     QList<QTextLayout::FormatRange> formats;
 
     for (const FormatRange &range : m_formats) {
-        formats.append({ range.start, range.length, style.formats[range.format.type] });
+        QTextCharFormat format = style.formats[range.format.type];
+
+        int index = BookStyleItem::indexForFormat(range.format.type);
+        if (index >= 0 && index < style.colors.size() && style.colors[index].isValid())
+            format.setForeground(style.colors[index]);
+
+        formats.append({ range.start, range.length, format });
+
+        if (range.start == 0 && range.length == data->text.size())
+            m_blockFormat.merge(style.blockFormats[range.format.type]);
     }
+
+    QTextOption textOption;
+    textOption.setAlignment(m_blockFormat.alignment());
+    textOption.setWrapMode(QTextOption::WordWrap);
 
     m_textLayout.setAdditionalFormats(formats);
     m_textLayout.setTextOption(textOption);
@@ -87,7 +98,7 @@ void BookTextBlock::buildLayout(const QSizeF &size)
     const QString text = m_textLayout.text();
 
     QFontMetrics fontMetrics(m_textLayout.font());
-    m_height = 0;
+    qreal height = 0;
     int leading = fontMetrics.leading();
 
     m_textLayout.setCacheEnabled(true);
@@ -97,7 +108,12 @@ void BookTextBlock::buildLayout(const QSizeF &size)
         if (!line.isValid())
             break;
 
-        line.setLineWidth(size.width());
+        const bool firstLine = line.textStart() == 0;
+        const qreal leftMargin = (firstLine ? m_blockFormat.textIndent() : 0)
+                + m_blockFormat.leftMargin();
+        const qreal rightMargin = m_blockFormat.rightMargin();
+
+        line.setLineWidth(size.width() - leftMargin - rightMargin);
         if (line.textLength() > 0) {
             int lastCharIndex = line.textStart() + line.textLength() - 1;
             QChar lastChar = text.at(lastCharIndex);
@@ -105,10 +121,10 @@ void BookTextBlock::buildLayout(const QSizeF &size)
                 line.setLineWidth(line.width() - fontMetrics.width(QChar::SoftHyphen));
         }
 
-        if (!qFuzzyIsNull(m_height))
-            m_height += leading;
-        line.setPosition(QPointF(0, 0));
-        m_height += line.height();
+        if (!qFuzzyIsNull(height))
+            height += leading;
+        line.setPosition(QPointF(leftMargin, 0));
+        height += line.height();
     }
     m_textLayout.endLayout();
 }

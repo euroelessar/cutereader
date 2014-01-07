@@ -6,7 +6,7 @@
 #include <QDebug>
 
 #define FORMAT_PROPERTY(NAME, FORMAT) \
-    Q_PROPERTY(QVariant NAME READ NAME WRITE set ## NAME NOTIFY changed) \
+    Q_PROPERTY(QVariant NAME READ NAME NOTIFY changed) \
 public: \
     QVariant NAME() const \
     { \

@@ -73,7 +73,7 @@ Page {
             }
 
             addItem(qsTr("Texts"), qsTr("Font size, borders, etc"), Qt.resolvedUrl("FontSettingsPage.qml"))
-            addItem(qsTr("Colors"), qsTr("Background and foreground colors"), Qt.resolvedUrl("ColorsSettingsPage.qml"))
+//            addItem(qsTr("Colors"), qsTr("Background and foreground colors"), Qt.resolvedUrl("ColorsSettingsPage.qml"))
         }
     }
 }

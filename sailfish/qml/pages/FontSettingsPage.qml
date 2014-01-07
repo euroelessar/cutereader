@@ -33,7 +33,7 @@ Page {
 
     Config {
         id: styleConfig
-        path: "style.default.base"
+        path: "text.base"
     }
 
     SilicaFlickable {

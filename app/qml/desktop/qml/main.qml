@@ -16,10 +16,28 @@ ApplicationWindow {
     }
 
     Config {
-        id: styleConfig
-        path: "style.default.base"
+        id: textConfig
+        path: "text"
 
-        property real fontPointSize: 28
+        function ensure(name, value) {
+            if (!hasValue(name))
+                setValue(name, value);
+        }
+
+        Component.onCompleted: {
+            // Default text settings
+            ensure("base.fontPixelSize", 12);
+            ensure("title.fontPixelSize", 14);
+            ensure("title.fontWeight", Font.Bold);
+            ensure("strong.fontWeight", Font.Bold);
+            ensure("emphasis.fontItalic", true);
+            ensure("strikeThrough.fontStrikeOut", true);
+            ensure("sub.verticalAlignment", TextSettings.AlignSubScript);
+            ensure("sup.verticalAlignment", TextSettings.AlignSuperScript);
+            ensure("internalAnchor.underlineStyle", Qt.SolidLine);
+            ensure("externalAnchor.underlineStyle", Qt.SolidLine);
+            ensure("noteAnchor.verticalAlignment", TextSettings.AlignSuperScript);
+        }
     }
 
     Component {
@@ -39,6 +57,14 @@ ApplicationWindow {
     Book {
         id: rootBook
         source: genericConfig.book
+        style: BookStyle {
+            id: bookStyle
+
+            background: 'white'
+            base: 'black'
+            title: 'red'
+        }
+
 //        style.base.fontPointSize: styleConfig.fontPointSize
     }
 
@@ -91,13 +117,20 @@ ApplicationWindow {
                     }
                     property bool completed: false
 
-                    minimumValue: 1
-                    maximumValue: 48
-                    value: styleConfig.fontPointSize
+                    minimumValue: 0
+                    maximumValue: 255
                     onValueChanged: {
-                        console.log(value, rootBook.style.base.fontPointSize)
-                        if (status === Component.Ready) styleConfig.fontPointSize = value
+                        if (!status === Component.Ready)
+                            return;
+                        console.log(Qt.hsla(value / 255, 0.5, 0.5))
+                        bookStyle.base = Qt.hsla(value / 255, 0.5, 0.5);
                     }
+
+//                    value: styleConfig.fontPointSize
+//                    onValueChanged: {
+//                        console.log(value, rootBook.style.base.fontPointSize)
+//                        if (status === Component.Ready) styleConfig.fontPointSize = value
+//                    }
                 }
             }
         }

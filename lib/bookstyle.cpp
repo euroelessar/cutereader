@@ -3,55 +3,63 @@
 #include <QQmlProperty>
 
 BookStyleItem::BookStyleItem(QObject *parent) :
-    QObject(parent), m_formats(Format::TypesCount), m_style(BookStyle::defaultStyle())
+    QObject(parent), m_formats(TotalCount, QColor())
 {
-    for (int i = 0; i < Format::TypesCount; ++i) {
-        auto format = new BookTextStyleItem(m_style.formats[i], this);
-        m_formats[i] = format;
-        connect(m_formats[i], &BookTextStyleItem::changed, [this, format, i] {
-            QWriteLocker locker(&m_lock);
-            ++m_style.generation;
-            m_style.formats[i] = format->format();
-            auto style = m_style;
-            locker.unlock();
-
-            emit changed(style);
-        });
-    }
 }
 
-BookStyle BookStyleItem::style() const
+QVector<QColor> BookStyleItem::colors() const
 {
     QReadLocker locker(&m_lock);
-    return m_style;
+    return m_formats;
 }
 
-void BookStyleItem::componentComplete()
+int BookStyleItem::indexForFormat(Format::Type type)
 {
-    m_config.setPath(QStringLiteral("style.default"));
-    connect(&m_config, &Config::valueChanged, [this] (const QString &key, const QVariant &value) {
-        QQmlProperty property(this, key);
-        if (property.isWritable())
-            property.write(value);
-    });
+    static const int foregroundsIndex = staticMetaObject.indexOfEnumerator("ForegroundColorType");
+    static const QMetaEnum foregrounds = staticMetaObject.enumerator(foregroundsIndex);
 
-    auto meta = &BookStyleItem::staticMetaObject;
-    for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
-        auto property = meta->property(i);
-        const auto propertyName = QString::fromLatin1(property.name());
-        auto item = property.read(this).value<BookTextStyleItem*>();
-        if (!item)
-            continue;
+    static const int typesIndex = Format::staticMetaObject.indexOfEnumerator("Type");
+    static const QMetaEnum types = Format::staticMetaObject.enumerator(typesIndex);
 
-        auto itemMeta = item->metaObject();
-        for (int j = itemMeta->propertyOffset(); j < itemMeta->propertyCount(); ++j) {
-            auto itemProperty = itemMeta->property(j);
-            const auto itemPropertyName = QString::fromLatin1(itemProperty.name());
-            const QString configKey = propertyName % QLatin1Char('.') % itemPropertyName;
-            if (m_config.hasValue(configKey))
-                itemProperty.write(item, m_config.value(configKey));
-            else
-                m_config.setValue(configKey, itemProperty.read(item));
+    const char *key = types.valueToKey(type);
+    return foregrounds.keyToValue(key);
+}
+
+QColor BookStyleItem::value(const QString &name) const
+{
+    if (QColor *color = colorByName(name))
+        return *color;
+    return QColor();
+}
+
+void BookStyleItem::updateValue(const QString &name, const QColor &arg)
+{
+    if (QColor *color = colorByName(name)) {
+        if (*color != arg) {
+            {
+                QWriteLocker lock(&m_lock);
+                *color = arg;
+            }
+            emit changed();
         }
     }
+}
+
+QColor *BookStyleItem::colorByName(const QString &name) const
+{
+    QByteArray key = name.toLatin1();
+    key[0] = name[0].toUpper().toLatin1();
+    const QMetaObject *meta = metaObject();
+
+    for (int i = 0; i < meta->enumeratorCount(); ++i) {
+        const QMetaEnum enumerator = meta->enumerator(i);
+        bool ok;
+        int result = enumerator.keyToValue(key, &ok);
+
+        if (ok) {
+            return &m_formats[result];
+        }
+    }
+
+    return NULL;
 }

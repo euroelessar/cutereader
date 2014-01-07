@@ -32,6 +32,7 @@ ApplicationWindow
 {
     id: application
     property Book book: rootBook
+    property BookStyle style: book.style
 
     function openBook(source) {
         if (book.source === source)
@@ -88,19 +89,45 @@ ApplicationWindow
 
         property url book: Qt.resolvedUrl("../books/the_three_musketeers.fb2")
     }
+    
+    Config {
+        id: textConfig
+        path: "text"
+        
+        function ensure(name, value) {
+            if (!hasValue(name))
+                setValue(name, value);
+        }
+
+        Component.onCompleted: {
+            // Default text settings
+            ensure("base.fontPixelSize", Theme.fontSizeMedium)
+            ensure("base.fontFamily", Theme.fontFamily)
+            ensure("title.fontPixelSize", Theme.fontSizeLarge)
+            ensure("title.fontFamily", Theme.fontFamilyHeading)
+            ensure("title.fontWeight", Font.Bold);
+            ensure("strong.fontWeight", Font.Bold);
+            ensure("emphasis.fontItalic", true);
+            ensure("strikeThrough.fontStrikeOut", true);
+            ensure("sub.verticalAlignment", TextSettings.AlignSubScript);
+            ensure("sup.verticalAlignment", TextSettings.AlignSuperScript);
+            ensure("internalAnchor.underlineStyle", Qt.SolidLine);
+            ensure("externalAnchor.underlineStyle", Qt.SolidLine);
+            ensure("noteAnchor.verticalAlignment", TextSettings.AlignSuperScript);
+        }
+    }
 
     Book {
         id: rootBook
 
-        style.base.foreground: Theme.primaryColor
-        style.base.fontPixelSize: Theme.fontSizeMedium
-        style.base.fontFamily: Theme.fontFamily
-        style.title.fontPixelSize: Theme.fontSizeLarge
-        style.title.fontFamily: Theme.fontFamilyHeading
-        style.title.foreground: Theme.highlightColor
-        style.internalAnchor.foreground: Theme.highlightColor
-        style.noteAnchor.foreground: Theme.highlightColor
-        style.externalAnchor.foreground: Theme.highlightColor
+        style: BookStyle {
+            background: Qt.rgba(0, 0, 0, 0)
+            base: Theme.primaryColor
+            title: Theme.highlightColor
+            internalAnchor: Theme.highlightColor
+            noteAnchor: Theme.highlightColor
+            externalAnchor: Theme.highlightColor
+        }
     }
 
     Component {

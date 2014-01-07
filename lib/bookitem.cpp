@@ -2,6 +2,8 @@
 #include <QElapsedTimer>
 #include <QDebug>
 #include "saferunnable.h"
+#include "booktextsettings.h"
+#include "bookstyle.h"
 #include <QPointer>
 #include <QMimeDatabase>
 #include "formats/fb2/fb2reader.h"
@@ -77,9 +79,9 @@ static void savePositions(const QUrl &source, const QList<BookTextPosition> &pos
 
 BookItem::BookItem(QObject *parent) :
     QObject(parent), m_state(Null), m_info(new BookInfoItem(this)),
-    m_style(new BookStyleItem(this))
+    m_colorsGeneration(0), m_style(nullptr), m_textSettings(new BookTextSettings(this))
 {
-    connect(m_style, &BookStyleItem::changed, this, &BookItem::styleChanged);
+    connect(m_textSettings, &BookTextSettings::changed, this, &BookItem::onTextSettingsChanged);
 }
 
 QList<BookBlockFactory::Ptr> BookItem::blocks(int body) const
@@ -207,7 +209,12 @@ BookTextPosition BookItem::positionForId(const QString &id) const
 
 BookStyle BookItem::style() const
 {
-    return m_style->style();
+    BookStyle style = m_textSettings->style();
+    style.colorsGeneration = m_colorsGeneration;
+    if (m_style)
+        style.colors = m_style->colors();
+
+    return style;
 }
 
 
@@ -217,7 +224,6 @@ void BookItem::classBegin()
 
 void BookItem::componentComplete()
 {
-    m_style->componentComplete();
 }
 
 QUrl BookItem::configSource() const
@@ -233,6 +239,34 @@ QVariant BookItem::bookData() const
 BookStyleItem *BookItem::styleItem() const
 {
     return m_style;
+}
+
+void BookItem::setStyleItem(BookStyleItem *style)
+{
+    if (m_style != style) {
+        if (m_style)
+            disconnect(m_style, nullptr, this, nullptr);
+        m_style = style;
+
+        ++m_colorsGeneration;
+        connect(style, &BookStyleItem::changed, this, &BookItem::onStyleChanged);
+
+        emit styleItemChanged(style);
+        emit styleChanged(BookItem::style());
+    }
+}
+
+void BookItem::onTextSettingsChanged()
+{
+    const auto style = BookItem::style();
+    emit styleChanged(style);
+    emit textSettingsChanged(style);
+}
+
+void BookItem::onStyleChanged()
+{
+    ++m_colorsGeneration;
+    emit styleChanged(BookItem::style());
 }
 
 QVariantList BookItem::positions() const

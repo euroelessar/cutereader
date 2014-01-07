@@ -269,7 +269,7 @@ void Config::componentComplete()
         if (it != m_data->config.end()) {
             property.write(this, it.value());
         } else {
-            m_data->config.insert(name, property.read(this));
+            m_data->updateConfig(name, property.read(this));
         }
 
         m_properties[name] = property;

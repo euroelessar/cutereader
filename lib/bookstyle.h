@@ -3,44 +3,69 @@
 
 #include <QObject>
 #include <QReadWriteLock>
-#include "booktextstyleitem.h"
 #include "bookblock.h"
-#include "config.h"
 
-#define PROPERTY_TEXT_STYLE(NAME, FORMAT) \
-        Q_PROPERTY(BookTextStyleItem *NAME READ NAME CONSTANT FINAL) \
-    public: \
-        BookTextStyleItem *NAME() const { return m_formats[Format::FORMAT]; } \
-    private:
+#define COLOR_PROPERTY(NAME) \
+    Q_PROPERTY(QColor NAME READ NAME WRITE set ## NAME NOTIFY changed) \
+public: \
+    QColor NAME() const \
+    { \
+        return value(QStringLiteral(#NAME)); \
+    } \
+ \
+    void set ## NAME(const QColor &arg) \
+    { \
+        updateValue(QStringLiteral(#NAME), arg); \
+    } \
+private:
 
 class BookStyleItem : public QObject
 {
     Q_OBJECT
-    PROPERTY_TEXT_STYLE(base, Base)
-    PROPERTY_TEXT_STYLE(standard, Standard)
-    PROPERTY_TEXT_STYLE(strong, Strong)
-    PROPERTY_TEXT_STYLE(emphasis, Emphasis)
-    PROPERTY_TEXT_STYLE(strikeThrough, StrikeThrough)
-    PROPERTY_TEXT_STYLE(sub, Sub)
-    PROPERTY_TEXT_STYLE(sup, Sup)
-    PROPERTY_TEXT_STYLE(title, Title)
-    PROPERTY_TEXT_STYLE(internalAnchor, InternalAnchor)
-    PROPERTY_TEXT_STYLE(noteAnchor, NoteAnchor)
-    PROPERTY_TEXT_STYLE(externalAnchor, ExternalAnchor)
+    Q_ENUMS(GenericColorType)
+    Q_ENUMS(ForegroundColorType)
+    COLOR_PROPERTY(background)
+    COLOR_PROPERTY(base)
+    COLOR_PROPERTY(standard)
+    COLOR_PROPERTY(title)
+    COLOR_PROPERTY(internalAnchor)
+    COLOR_PROPERTY(noteAnchor)
+    COLOR_PROPERTY(externalAnchor)
 public:
+    enum GenericColorType {
+        Background = 0
+    };
+
+    enum ForegroundColorType {
+        Base = Background + 1,
+        Standard,
+        Title,
+        InternalAnchor,
+        NoteAnchor,
+        ExternalAnchor
+    };
+
+    enum {
+        TotalCount = ExternalAnchor + 1
+    };
+
     explicit BookStyleItem(QObject *parent = 0);
 
-    BookStyle style() const;
+    QVector<QColor> colors() const;
 
-    void componentComplete();
+    static int indexForFormat(Format::Type type);
+
+protected:
+    QColor value(const QString &name) const;
+    void updateValue(const QString &name, const QColor &arg);
 
 signals:
-    void changed(const BookStyle &style);
+    void changed();
 
 private:
-    Config m_config;
-    QVector<BookTextStyleItem *> m_formats;
-    BookStyle m_style;
+    QColor *colorByName(const QString &name) const;
+
+    mutable QVector<QColor> m_formats;
     mutable QReadWriteLock m_lock;
 };
 

@@ -28,6 +28,7 @@ static bool isEqual(const QSizeF &first, const QSizeF &second)
 bool ItemId::operator ==(const ItemId &other) const
 {
     return m_style.generation == other.m_style.generation
+            && m_style.colorsGeneration == other.m_style.colorsGeneration
             && m_thread == other.m_thread
             && isEqual(m_size, other.m_size);
 }

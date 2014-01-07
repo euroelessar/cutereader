@@ -7,6 +7,8 @@ BookTextBlockFactory::BookTextBlockFactory(const QString &text, const QList<Form
     m_data->text = text;
     m_data->formats = formats;
 
+    m_data->text.replace(QLatin1Char('\n'), QChar::LineSeparator);
+
     TextHyphenator(QStringLiteral("ru")).hyphenate(m_data->text, m_data->formats);
 }
 
