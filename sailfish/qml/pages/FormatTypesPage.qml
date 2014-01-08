@@ -43,6 +43,8 @@ Page {
             title: qsTr("Format types")
         }
 
+        VerticalScrollDecorator {}
+
         model: settingsSource.formatsList()
 
         delegate: ListItem {

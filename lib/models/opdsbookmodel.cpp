@@ -5,7 +5,7 @@
 #include <QNetworkReply>
 
 OpdsBookModel::OpdsBookModel(QObject *parent) :
-    QAbstractListModel(parent), m_state(Null)
+    QAbstractListModel(parent), m_state(Null), m_busy(false)
 {
 }
 
@@ -32,20 +32,6 @@ QVariant OpdsBookModel::data(const QModelIndex &index, int role) const
         return entry.title;
     case BookSubtitle:
         return entry.textContent;
-//    case BookLinks: {
-//        QVariantList result;
-//        for (const OpdsLink &link : entry.links)
-//            result << link.toMap();
-//        return result;
-//    }
-//    case BookCatalogs: {
-//        QVariantList result;
-//        for (const OpdsLink &link : entry.links) {
-//            if (link.type == catalog)
-//                result << link.toMap();
-//        }
-//        return result;
-//    }
     case BookSource: {
         for (const OpdsLink &link : entry.links) {
             if (link.type == catalog && link.title.isEmpty())
@@ -55,14 +41,6 @@ QVariant OpdsBookModel::data(const QModelIndex &index, int role) const
     }
     case BookCover:
         return entry.cover();
-//    case BookAcquisitions: {
-//        QVariantList result;
-//        for (const OpdsLink &link : entry.links) {
-//            if (link.relation.startsWith(acquisition))
-//                result << link.toMap();
-//        }
-//        return result;
-//    }
     case BookIsBook: {
         for (const OpdsLink &link : entry.links) {
             if (link.relation.startsWith(acquisition))
@@ -76,21 +54,6 @@ QVariant OpdsBookModel::data(const QModelIndex &index, int role) const
         return QVariant();
     }
 }
-
-//QHash<int, QByteArray> OpdsBookModel::roleNames() const
-//{
-//    return {
-//        { BookTitle, "title" },
-//        { BookSubtitle, "subtitle" },
-//        { BookLinks, "links" },
-//        { BookSource, "source" },
-//        { BookCatalogs, "catalogs" },
-//        { BookCover, "cover" },
-//        { BookAcquisitions, "acquisitions" },
-//        { BookIsBook, "isBook" },
-//        { BookOpdsEntry, "opdsEntry" }
-//    };
-//}
 
 void OpdsBookModel::classBegin()
 {
@@ -129,11 +92,27 @@ void OpdsBookModel::setSource(const QUrl &source)
 
 void OpdsBookModel::load()
 {
+    load(m_source);
+}
+
+void OpdsBookModel::load(const QUrl &source)
+{
     QNetworkAccessManager *manager = qmlEngine(QObject::parent())->networkAccessManager();
 
-    QNetworkRequest request(m_source);
+    QNetworkRequest request(source);
     QNetworkReply *reply = manager->get(request);
     connect(reply, &QNetworkReply::finished, this, &OpdsBookModel::onReplyFinished);
+}
+
+void OpdsBookModel::loadNext()
+{
+    const QUrl next = m_data.next();
+    if (next.isValid()) {
+        m_busy = true;
+        emit busyChanged(m_busy);
+
+        load(next);
+    }
 }
 
 void OpdsBookModel::onReplyFinished()
@@ -142,12 +121,38 @@ void OpdsBookModel::onReplyFinished()
     Q_ASSERT(reply);
     reply->deleteLater();
 
-    beginResetModel();
-
     OpdsParser parser;
-    m_data = parser.parse(m_source, reply);
+    OpdsInfo data = parser.parse(reply->url(), reply);
 
-    endResetModel();
+    if (reply->url() == m_source) {
+        beginResetModel();
 
-    m_state = Ready;
+        m_data = data;
+
+        endResetModel();
+
+        m_state = Ready;
+    } else if (reply->url() == m_data.next()) {
+        beginInsertRows(QModelIndex(), m_data.entries.size(), m_data.entries.size() + data.entries.size() - 1);
+
+        m_data.entries.append(data.entries);
+        m_data.links = data.links;
+
+        endInsertRows();
+
+        m_busy = false;
+        emit busyChanged(m_busy);
+    }
+
+    emit hasNextPageChanged(hasNextPage());
+}
+
+bool OpdsBookModel::hasNextPage() const
+{
+    return m_data.next().isValid();
+}
+
+bool OpdsBookModel::busy() const
+{
+    return m_busy;
 }

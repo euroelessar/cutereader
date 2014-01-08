@@ -49,6 +49,8 @@ Page {
             title: page.title
         }
 
+        VerticalScrollDecorator {}
+
         model: settingsSource.formatSettingsList(page.type)
 
         delegate: ValuesComboBox {

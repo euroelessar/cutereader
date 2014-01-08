@@ -36,7 +36,7 @@ LibraryPageBase {
         anchors.fill: parent
 
         header: Column {
-            width: parent.width
+            width: parent ? parent.width : Screen.width
 
             PageHeader {
                 id: pageHeader
@@ -50,6 +50,18 @@ LibraryPageBase {
                     console.log('Filter changed:', text);
                     frontModel.filter = text;
                 }
+            }
+        }
+
+        VerticalScrollDecorator {}
+
+        PushUpMenu {
+            busy: frontModel.busy
+            visible: frontModel.hasNextPage
+
+            MenuItem {
+                text: "Load more"
+                onClicked: frontModel.loadNext()
             }
         }
 

@@ -75,6 +75,8 @@ class BookFrontModel : public QSortFilterProxyModel, public QQmlParserStatus
     Q_PROPERTY(QVariant data READ data WRITE setData NOTIFY dataChanged)
     Q_PROPERTY(QString filter READ filter WRITE setFilter NOTIFY filterChanged)
     Q_PROPERTY(LocalBookCollection *collection READ collection WRITE setCollection NOTIFY collectionChanged)
+    Q_PROPERTY(bool hasNextPage READ hasNextPage NOTIFY hasNextPageChanged)
+    Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
 public:
     explicit BookFrontModel(QObject *parent = 0);
     ~BookFrontModel();
@@ -91,6 +93,10 @@ public:
     void classBegin();
     void componentComplete();
 
+    bool hasNextPage() const;
+    bool busy() const;
+    Q_INVOKABLE void loadNext();
+
 public slots:
     void setData(const QVariant &data);
     void setFilter(const QString &filter);
@@ -100,6 +106,8 @@ signals:
     void dataChanged(const QVariant &data);
     void filterChanged(const QString &filter);
     void collectionChanged(LocalBookCollection *collection);
+    void hasNextPageChanged(bool hasNextPage);
+    void busyChanged(bool busy);
 
 private:
     ModelData m_data;

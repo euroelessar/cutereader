@@ -54,6 +54,8 @@ LibraryPageBase {
             }
         }
 
+        VerticalScrollDecorator {}
+
         Column {
             id: column
             width: scrollView.width

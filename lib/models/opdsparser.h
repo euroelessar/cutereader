@@ -133,7 +133,19 @@ struct OpdsEntry
 struct OpdsInfo
 {
     QString title;
+    QList<OpdsLink> links;
     QList<OpdsEntry> entries;
+
+    QUrl next() const
+    {
+        const auto catalog = QStringLiteral("application/atom+xml;profile=opds-catalog");
+
+        for (const OpdsLink &link : links) {
+            if (link.type == catalog && link.relation == QStringLiteral("next"))
+                return link.source;
+        }
+        return QUrl();
+    }
 };
 
 class OpdsParser
@@ -145,6 +157,7 @@ public:
 
 private:
     OpdsEntry readEntry(const QUrl &baseUrl, QXmlStreamReader &in);
+    OpdsLink readLink(const QUrl &baseUrl, QXmlStreamReader &in);
 };
 
 Q_DECLARE_METATYPE(OpdsEntry)

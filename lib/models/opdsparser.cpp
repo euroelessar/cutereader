@@ -25,6 +25,8 @@ OpdsInfo OpdsParser::parse(const QUrl &baseUrl, QIODevice *device)
                 } else if (in.name() == QStringLiteral("entry")) {
                     result.entries << readEntry(baseUrl, in);
                     --depth;
+                } else if (in.name() == QStringLiteral("link")) {
+                    result.links << readLink(baseUrl, in);
                 }
             }
             break;
@@ -64,14 +66,7 @@ OpdsEntry OpdsParser::readEntry(const QUrl &baseUrl, QXmlStreamReader &in)
                     result.htmlContent = in.readElementText(QXmlStreamReader::IncludeChildElements);
                     --depth;
                 } else if (in.name() == QStringLiteral("link")) {
-                    const QXmlStreamAttributes attributes = in.attributes();
-                    OpdsLink link;
-                    link.source = baseUrl.resolved(attributes.value(QStringLiteral("href")).toString());
-                    link.relation = attributes.value(QStringLiteral("rel")).toString();
-                    link.title = attributes.value(QStringLiteral("title")).toString();
-                    link.type = attributes.value(QStringLiteral("type")).toString();
-
-                    result.links << link;
+                    result.links << readLink(baseUrl, in);
                 }
             }
             break;
@@ -90,4 +85,17 @@ OpdsEntry OpdsParser::readEntry(const QUrl &baseUrl, QXmlStreamReader &in)
     }
 
     return result;
+}
+
+OpdsLink OpdsParser::readLink(const QUrl &baseUrl, QXmlStreamReader &in)
+{
+    Q_ASSERT(in.name() == QStringLiteral("link"));
+
+    const QXmlStreamAttributes attributes = in.attributes();
+    OpdsLink link;
+    link.source = baseUrl.resolved(attributes.value(QStringLiteral("href")).toString());
+    link.relation = attributes.value(QStringLiteral("rel")).toString();
+    link.title = attributes.value(QStringLiteral("title")).toString();
+    link.type = attributes.value(QStringLiteral("type")).toString();
+    return link;
 }

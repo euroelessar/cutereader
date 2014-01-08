@@ -111,6 +111,8 @@ void BookFrontModel::rebuild()
     case ModelData::Opds: {
         OpdsBookModel *model = new OpdsBookModel(this);
         model->setSource(m_data.source);
+        connect(model, &OpdsBookModel::busyChanged, this, &BookFrontModel::busyChanged);
+        connect(model, &OpdsBookModel::hasNextPageChanged, this, &BookFrontModel::hasNextPageChanged);
         setSourceModel(model);
         break;
     }
@@ -118,6 +120,9 @@ void BookFrontModel::rebuild()
         // TODO
         break;
     }
+
+    emit hasNextPageChanged(hasNextPage());
+    emit busyChanged(busy());
 }
 
 void BookFrontModel::classBegin()
@@ -128,4 +133,24 @@ void BookFrontModel::componentComplete()
 {
     m_inited = true;
     rebuild();
+}
+
+bool BookFrontModel::hasNextPage() const
+{
+    if (auto *model = qobject_cast<OpdsBookModel *>(sourceModel()))
+        return model->hasNextPage();
+    return false;
+}
+
+bool BookFrontModel::busy() const
+{
+    if (auto *model = qobject_cast<OpdsBookModel *>(sourceModel()))
+        return model->busy();
+    return false;
+}
+
+void BookFrontModel::loadNext()
+{
+    if (auto *model = qobject_cast<OpdsBookModel *>(sourceModel()))
+        model->loadNext();
 }
