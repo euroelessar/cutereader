@@ -49,10 +49,24 @@ struct BookTextPosition
     bool operator <(const BookTextPosition &other) const;
 };
 
+
+struct ContentNode
+{
+    ContentNode()
+    {
+        position = { -1, -1 };
+    }
+
+    QStringList title;
+    BodyPosition position;
+    QList<ContentNode> children;
+};
+
 struct BodyInfo
 {
     QString name;
     QList<BookBlockFactory::Ptr> blocks;
+    ContentNode contents;
     QHash<QString, BodyPosition> references;
 };
 

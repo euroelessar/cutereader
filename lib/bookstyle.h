@@ -28,6 +28,7 @@ class BookStyleItem : public QObject
     COLOR_PROPERTY(base)
     COLOR_PROPERTY(standard)
     COLOR_PROPERTY(title)
+    COLOR_PROPERTY(subtitle)
     COLOR_PROPERTY(internalAnchor)
     COLOR_PROPERTY(noteAnchor)
     COLOR_PROPERTY(externalAnchor)
@@ -40,6 +41,7 @@ public:
         Base = Background + 1,
         Standard,
         Title,
+        Subtitle,
         InternalAnchor,
         NoteAnchor,
         ExternalAnchor

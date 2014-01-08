@@ -36,7 +36,7 @@ private:
     };
 
     void readDescription(QXmlStreamReader &in, BookInfo &info, const QUrl &baseUrl);
-    BookBlockFactory::Ptr readParagraph(QXmlStreamReader &in, const QList<Format> &baseFormats, ReferencesList &references);
+    QPair<QString, BookBlockFactory::Ptr> readParagraph(QXmlStreamReader &in, const QList<Format> &baseFormats, ReferencesList &references);
     ImageInfo readImage(QXmlStreamReader &in, const QUrl &baseUrl);
     BodyInfo readBody(QXmlStreamReader &in, const QUrl &baseUrl);
 

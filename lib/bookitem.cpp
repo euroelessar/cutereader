@@ -162,6 +162,7 @@ void BookItem::setBookInfo(const BookInfo &book)
         m_info->setBookInfo(book);
         emit stateChanged(m_state);
         emit bookDataChanged(bookData());
+        emit contentsChanged(contents());
     }
 }
 
@@ -234,6 +235,28 @@ QUrl BookItem::configSource() const
 QVariant BookItem::bookData() const
 {
     return QVariant::fromValue(m_bookInfo.toData());
+}
+
+static QVariantMap contentToMap(const ContentNode &node)
+{
+    const BookTextPosition position = {
+        node.position.block >= 0 ? 0 : -1, node.position.block, node.position.position
+    };
+    QVariantList children;
+    for (auto child : node.children)
+        children << contentToMap(child);
+
+    return {
+        { QStringLiteral("title"), node.title.join(QLatin1Char(' ')) },
+        { QStringLiteral("titles"), node.title },
+        { QStringLiteral("position"), position.toMap() },
+        { QStringLiteral("children"), children }
+    };
+}
+
+QVariant BookItem::contents() const
+{
+    return contentToMap(m_bookInfo.bodies.value(0).contents);
 }
 
 BookStyleItem *BookItem::styleItem() const

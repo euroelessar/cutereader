@@ -21,6 +21,7 @@ class BookItem : public QObject, public QQmlParserStatus
     Q_PROPERTY(BookInfoItem *info READ info CONSTANT FINAL)
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
     Q_PROPERTY(QVariant bookData READ bookData NOTIFY bookDataChanged)
+    Q_PROPERTY(QVariant contents READ contents NOTIFY contentsChanged)
     Q_PROPERTY(QVariantList positions READ positions WRITE setPositions NOTIFY positionsChanged)
 public:
     enum State {
@@ -49,6 +50,7 @@ public:
 
     QUrl configSource() const;
     QVariant bookData() const;
+    QVariant contents() const;
 
     BookStyleItem *styleItem() const;
     void setStyleItem(BookStyleItem *style);
@@ -62,6 +64,7 @@ signals:
     void bookDataChanged(const QVariant &bookData);
     void configSourceChanged(const QUrl &configSource);
     void positionsChanged(const QVariantList &positions);
+    void contentsChanged(const QVariant &contents);
 
     void textSettingsChanged(const BookStyle &style);
     void styleChanged(const BookStyle &style);

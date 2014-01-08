@@ -51,6 +51,11 @@ public:
     {
     }
 
+    bool operator ==(const Format &other) const
+    {
+        return type == other.type && href == other.href;
+    }
+
     Type type;
     QString href;
 };

@@ -63,7 +63,16 @@ ApplicationWindow
     }
 
     function clickLink(positionValue) {
-        pageStack.push(bookPageComponent, { positionValue: positionValue, positionIndex: pageStack.depth })
+        var page = pageStack.find(function (page) {
+            return page.__book_page !== undefined;
+        });
+        var properties = { positionValue: positionValue, positionIndex: pageStack.depth };
+
+        if (page === pageStack.currentPage)
+            pageStack.push(bookPageComponent, properties);
+        else
+            pageStack.replaceAbove(page, bookPageComponent, properties);
+
         updatePositions();
     }
 
@@ -123,6 +132,7 @@ ApplicationWindow
             background: Qt.rgba(0, 0, 0, 0)
             base: Theme.primaryColor
             title: Theme.highlightColor
+            subtitle: Theme.highlightColor
             internalAnchor: Theme.highlightColor
             noteAnchor: Theme.highlightColor
             externalAnchor: Theme.highlightColor

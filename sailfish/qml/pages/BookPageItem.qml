@@ -33,6 +33,8 @@ Page {
     property int positionIndex: -1
     property alias positionValue: currentPageHelper.positionValue
 
+    property bool __book_page: true
+
     signal linkClicked(variant linkPosition)
     focus: true
 
@@ -145,6 +147,13 @@ Page {
             MenuItem {
                 text: qsTr("Library")
                 onClicked: pageStack.push(Qt.resolvedUrl("LocalView.qml"))
+            }
+            MenuItem {
+                visible: root.book.contents.title.length !== 0
+                text: qsTr("Contents")
+                onClicked: pageStack.push(Qt.resolvedUrl("ContentsListPage.qml"), {
+                                              contents: root.book.contents
+                                          })
             }
             MenuItem {
                 text: qsTr("About the book")

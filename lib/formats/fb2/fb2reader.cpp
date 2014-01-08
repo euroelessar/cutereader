@@ -145,7 +145,7 @@ void FB2Reader::readDescription(QXmlStreamReader &in, BookInfo &info, const QUrl
     Q_ASSERT(!"Impossible situation");
 }
 
-BookBlockFactory::Ptr FB2Reader::readParagraph(QXmlStreamReader &in, const QList<Format> &baseFormats, ReferencesList &references)
+QPair<QString, BookBlockFactory::Ptr> FB2Reader::readParagraph(QXmlStreamReader &in, const QList<Format> &baseFormats, ReferencesList &references)
 {
     const bool isStanza = in.name() == QStringLiteral("stanza");
 
@@ -208,7 +208,7 @@ BookBlockFactory::Ptr FB2Reader::readParagraph(QXmlStreamReader &in, const QList
                 for (int i = baseFormats.size() - 1; i >= 0; --i)
                     formats.prepend({ 0, text.size(), baseFormats[i] });
 
-                return BookTextBlockFactory::create(text, formats);
+                return qMakePair(text, BookTextBlockFactory::create(text, formats));
             }
 
             if (!changes.isEmpty() && changes.last().depth == depth) {
@@ -239,7 +239,7 @@ BookBlockFactory::Ptr FB2Reader::readParagraph(QXmlStreamReader &in, const QList
     }
 
     Q_ASSERT(!"Impossible situation");
-    return BookBlockFactory::Ptr();
+    return qMakePair(QString(), BookBlockFactory::Ptr());
 }
 
 FB2Reader::ImageInfo FB2Reader::readImage(QXmlStreamReader &in, const QUrl &baseUrl)
@@ -261,6 +261,8 @@ BodyInfo FB2Reader::readBody(QXmlStreamReader &in, const QUrl &baseUrl)
 {
     Q_ASSERT(in.name() == QStringLiteral("body") || in.name() == QStringLiteral("annotation"));
     BodyInfo info;
+    QStack<ContentNode *> nodes;
+    ContentNode *currentNode = &info.contents;
 
     if (in.name() == QStringLiteral("body")) {
         QStringRef name = in.attributes().value(QStringLiteral("name"));
@@ -278,6 +280,7 @@ BodyInfo FB2Reader::readBody(QXmlStreamReader &in, const QUrl &baseUrl)
     };
 
     const QMap<QString, FormatDescription> formatNames = {
+        { QStringLiteral("p"), { Format::Standard, true } },
         { QStringLiteral("title"), { Format::Title, false } },
         { QStringLiteral("subtitle"), { Format::Subtitle, true } },
         { QStringLiteral("epigraph"), { Format::Epigraph, false } },
@@ -301,24 +304,14 @@ BodyInfo FB2Reader::readBody(QXmlStreamReader &in, const QUrl &baseUrl)
                 info.references.insert(id.toString(), { info.blocks.size(), 0 });
 
             if (in.name() == QStringLiteral("section")) {
+                nodes.push(currentNode);
+                currentNode->children.append(ContentNode());
+                currentNode = &currentNode->children.last();
+                currentNode->position = { info.blocks.size(), 0 };
+
                 ++sectionsDepth;
             } else if (in.name() == QStringLiteral("title")) {
                 formats.append(Format::Title);
-            } else if (in.name() == QStringLiteral("p")) {
-                const bool standard = formats.size() == 1;
-
-                if (standard)
-                    formats.append(Format::Standard);
-
-                ReferencesList references;
-                info.blocks << readParagraph(in, formats, references);
-                --depth;
-
-                for (const auto &reference : references)
-                    info.references.insert(reference.first, { info.blocks.size() - 1, reference.second });
-
-                if (standard)
-                    formats.removeLast();
             } else if (in.name() == QStringLiteral("image")) {
                 info.blocks << readImage(in, baseUrl).toFactory();
                 --depth;
@@ -330,17 +323,28 @@ BodyInfo FB2Reader::readBody(QXmlStreamReader &in, const QUrl &baseUrl)
             } else {
                 auto it = formatNames.find(in.name().toString());
                 if (it != formatNames.end()) {
-                    formats.append(it.value().format);
+                    const auto format = it.value().format;
+
+                    const bool addFormat = (format == Format::Standard && formats.size() == 1)
+                            || (format != Format::Standard);
+
+                    if (addFormat)
+                        formats.append(format);
 
                     if (it.value().isParagraph) {
                         ReferencesList references;
-                        info.blocks << readParagraph(in, formats, references);
+                        const auto result = readParagraph(in, formats, references);
+                        info.blocks << result.second;
                         --depth;
+
+                        if (formats.size() == 1 + formats.count(Format::Title))
+                            currentNode->title << result.first;
 
                         for (const auto &reference : references)
                             info.references.insert(reference.first, { info.blocks.size() - 1, reference.second });
 
-                        formats.removeLast();
+                        if (addFormat)
+                            formats.removeLast();
                     }
                 }
             }
@@ -353,12 +357,14 @@ BodyInfo FB2Reader::readBody(QXmlStreamReader &in, const QUrl &baseUrl)
                 return info;
             }
 
-            if (in.name() == QStringLiteral("section"))
+            if (in.name() == QStringLiteral("section")) {
+                currentNode = nodes.takeLast();
                 --sectionsDepth;
-            else if (in.name() == QStringLiteral("title"))
+            } else if (in.name() == QStringLiteral("title")) {
                 formats.removeLast();
-            else if (formatNames.contains(in.name().toString()))
+            } else if (formatNames.contains(in.name().toString())) {
                 formats.removeLast();
+            }
             break;
         case QXmlStreamReader::Characters:
             break;
