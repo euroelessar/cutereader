@@ -63,7 +63,6 @@ Page {
                     return;
                 }
 
-                console.log('calced next page', JSON.stringify(position))
                 pagesModel.append({ positionValue: position });
 
                 root.nextPositionId = -1;
@@ -86,8 +85,8 @@ Page {
     property int nextPositionId: -1
 
     function rebuildModel(type) {
-        nextPositionId = -1;
-        previousPositionId = -1;
+        nextPositionId = -3;
+        previousPositionId = -3;
 
         console.log('rebuildModel', type)
         pagesModel.clear()
@@ -112,6 +111,9 @@ Page {
 
         pagesView.contentX = positionIndex * pagesView.width;
         console.log(JSON.stringify(positions))
+
+        nextPositionId = -1;
+        previousPositionId = -1;
     }
 
     function appendItem() {
@@ -123,7 +125,7 @@ Page {
     }
 
     function prependItem() {
-        if (nextPositionId !== -1)
+        if (previousPositionId !== -1)
             return;
 
         var position = pagesModel.get(0).positionValue;
@@ -171,7 +173,7 @@ Page {
             onContentXBy10Changed: {
                 if (pagesModel.count > 0 && index >= pagesModel.count - 2)
                     root.appendItem();
-                if (pagesModel.count > 0 && index === 0)
+                if (pagesModel.count > 0 && index <= 2)
                     root.prependItem();
             }
 

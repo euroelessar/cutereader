@@ -33,7 +33,9 @@ OTHER_FILES += qml/cutereader.qml \
     qml/pages/FontSettingsPage.qml \
     qml/pages/ColorsSettingsPage.qml \
     qml/pages/ColorChooserDialog.qml \
-    qml/pages/ColorChooser.qml
+    qml/pages/ColorChooser.qml \
+    qml/pages/ValuesComboBox.qml \
+    qml/pages/FormatTypesPage.qml
 
 INCLUDEPATH += ../
 

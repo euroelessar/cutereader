@@ -25,9 +25,14 @@
 
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import org.qutim 0.3
 
 Page {
     id: page
+
+    BookSettingsSource {
+        id: settingsSource
+    }
 
     SilicaListView {
         id: listView
@@ -35,50 +40,27 @@ Page {
 
         header: PageHeader {
             id: pageHeader
-            title: qsTr("Settings")
+            title: qsTr("Format types")
         }
 
-        model: ListModel {
-            id: listModel
-        }
+        model: settingsSource.formatsList()
 
         delegate: ListItem {
             id: listItem
-            contentHeight: Theme.itemSizeMedium
+            contentHeight: Theme.itemSizeSmall
             x: Theme.paddingLarge
             width: page.width - 2 * Theme.paddingLarge
 
             Label {
                 id: label
-                text: model.title
+                text: modelData.title
                 color: listItem.highlighted ? Theme.highlightColor : Theme.primaryColor
             }
-            Label {
-                anchors.top: label.bottom
-                text: model.subtitle
-                font.pixelSize: Theme.fontSizeSmall
-                color: listItem.highlighted ? Theme.highlightColor : Theme.secondaryColor
-            }
 
-            onClicked: {
-                pageStack.push(url)
-                if (attachedUrl !== undefined)
-                    pageStack.pushAttached(attachedUrl)
-            }
-        }
-
-        Component.onCompleted: {
-            function addItem(title, subtitle, url, attachedUrl) {
-                listModel.append({
-                    title: title,
-                    subtitle: subtitle,
-                    url: url,
-                    attachedUrl: attachedUrl
-                })
-            }
-
-            addItem(qsTr("Texts"), qsTr("Font size, borders, etc"), Qt.resolvedUrl("FontSettingsPage.qml"), Qt.resolvedUrl("FormatTypesPage.qml"))
-//            addItem(qsTr("Colors"), qsTr("Background and foreground colors"), Qt.resolvedUrl("ColorsSettingsPage.qml"))
+            onClicked: pageStack.push(Qt.resolvedUrl("FontSettingsPage.qml"), {
+                                          title: modelData.title,
+                                          type: modelData.value
+                                      });
         }
     }
 }

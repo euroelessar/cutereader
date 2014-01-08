@@ -9,6 +9,7 @@ class BookTextSettings : public QObject
 {
     Q_OBJECT
     Q_ENUMS(CharFormatType)
+    Q_ENUMS(BlockFormatType)
     Q_ENUMS(VerticalAlignment)
 public:
     explicit BookTextSettings(QObject *parent = 0);
@@ -21,6 +22,16 @@ public:
         FontStrikeOut = QTextCharFormat::FontStrikeOut,
         VerticalAlignment = QTextCharFormat::TextVerticalAlignment,
         UnderlineStyle = QTextCharFormat::TextUnderlineStyle
+    };
+
+    enum BlockFormatType {
+        Alignment = QTextBlockFormat::BlockAlignment,
+        TopMargin = QTextBlockFormat::BlockTopMargin,
+        BottomMargin = QTextBlockFormat::BlockBottomMargin,
+        LeftMargin = QTextBlockFormat::BlockLeftMargin,
+        RightMargin = QTextBlockFormat::BlockRightMargin,
+        TextIndent = QTextBlockFormat::TextIndent,
+        NonBreakableLines = QTextBlockFormat::BlockNonBreakableLines
     };
 
     // Keep in sync with QTextCharFormat

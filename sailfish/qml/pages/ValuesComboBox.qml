@@ -27,36 +27,48 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import org.qutim 0.3
 
-Page {
-    id: page
+ComboBox {
+    id: comboBox
 
-    property string title: qsTr("Font settings")
-    property string type: "base"
+    width: parent === null ? 0 : parent.width
 
-    Config {
-        id: styleConfig
-        path: "text." + page.type
+    property variant values
+    property Config config
+    property string configName
+
+    menu: ContextMenu {
+        Repeater {
+            id: fontFamilyRepeater
+            model: comboBox.values
+
+            MenuItem {
+                text: modelData.title
+            }
+        }
     }
 
-    BookSettingsSource {
-        id: settingsSource
+    property bool inited: false
+
+    Component.onCompleted: {
+        var allValues = fontFamilyRepeater.model;
+
+        var value = config.value(configName);
+        if (value === undefined) {
+            currentIndex = 0;
+        } else {
+            for (var i = 0; i < allValues.length; ++i) {
+                if (allValues[i].value === value) {
+                    currentIndex = i;
+                    break;
+                }
+            }
+        }
+
+        inited = true;
     }
 
-    SilicaListView {
-        anchors.fill: parent
-
-        header: PageHeader {
-            title: page.title
-        }
-
-        model: settingsSource.formatSettingsList(page.type)
-
-        delegate: ValuesComboBox {
-            label: modelData.title
-            values: modelData.values
-
-            config: styleConfig
-            configName: modelData.configName
-        }
+    onCurrentIndexChanged: {
+        if (inited)
+            config.setValue(configName, values[currentIndex].value);
     }
 }
