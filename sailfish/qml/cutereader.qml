@@ -33,6 +33,13 @@ ApplicationWindow
     id: application
     property Book book: rootBook
     property BookStyle style: book.style
+    property DownloadBookList downloads: rootDownloads
+
+    DownloadBookList {
+        id: rootDownloads
+
+        baseDir: Qt.resolvedUrl(StandardPaths.documents) + '/Books'
+    }
 
     function openBook(source) {
         if (book.source === source)

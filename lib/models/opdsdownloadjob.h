@@ -4,8 +4,10 @@
 #include "downloadbookjob.h"
 #include "opdsparser.h"
 #include <QNetworkAccessManager>
+#include <QDir>
 
 class DownloadBookList;
+class QSaveFile;
 
 class OpdsDownloadJob : public DownloadBookJob
 {
@@ -13,8 +15,12 @@ class OpdsDownloadJob : public DownloadBookJob
 public:
     explicit OpdsDownloadJob(DownloadBookList *parent, QNetworkAccessManager *manager, const OpdsEntry &entry, const QUrl &source);
 
+    void setReply(QNetworkReply *reply);
+
 private:
     QNetworkReply *m_reply;
+    QDir m_baseDir;
+    QSaveFile *m_file;
 };
 
 #endif // OPDSDOWNLOADJOB_H

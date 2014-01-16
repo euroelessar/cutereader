@@ -1,4 +1,6 @@
 #include "downloadbooklist.h"
+#include "opdsdownloadjob.h"
+#include <QQmlEngine>
 
 DownloadBookList::DownloadBookList(QObject *parent) :
     QObject(parent)
@@ -27,6 +29,21 @@ void DownloadBookList::setBaseDir(const QUrl &baseDir)
         m_baseDir = baseDir;
         emit baseDirChanged(baseDir);
     }
+}
+
+void DownloadBookList::download(const QVariantMap &info)
+{
+    const QString type = info.value(QStringLiteral("type")).toString();
+    Q_ASSERT(type == QStringLiteral("opds"));
+
+    const QUrl source = info.value(QStringLiteral("source")).toUrl();
+    Q_ASSERT(source.isValid());
+
+    Q_ASSERT(info.value(QStringLiteral("entry")).canConvert(qMetaTypeId<OpdsEntry>()));
+    const OpdsEntry entry = info.value(QStringLiteral("entry")).value<OpdsEntry>();
+
+    auto manager = qmlEngine(this)->networkAccessManager();
+    addJob(new OpdsDownloadJob(this, manager, entry, source));
 }
 
 int DownloadBookList::jobsCount(QQmlListProperty<DownloadBookJob> *list)

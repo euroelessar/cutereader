@@ -57,6 +57,8 @@ Page {
 
     function downloadBook(entry) {
         console.log("Download request:", JSON.stringify(entry), entry.toString())
+
+        application.downloads.download(entry);
     }
 
     function processAction(data) {

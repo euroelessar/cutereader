@@ -38,9 +38,6 @@ public:
     DownloadBookList *downloadList() const;
 
 public slots:
-    void download(const QUrl &source);
-
-public slots:
     void setEntry(const QVariant &entry);
     void setDownloadList(DownloadBookList *downloadList);
 

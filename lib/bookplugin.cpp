@@ -5,6 +5,7 @@
 #include "providers/fb2imageprovider.h"
 #include "models/localbookcollection.h"
 #include "models/opdsentryitem.h"
+#include "models/downloadbooklist.h"
 #include "fontlistmodel.h"
 #include "config.h"
 #include "bookstyle.h"
@@ -35,4 +36,6 @@ void BookPlugin::registerQmlTypes(QQmlEngine *engine)
     qmlRegisterType<Config>("org.qutim", 0, 3, "Config");
     qmlRegisterType<BookSettingsSource>("org.qutim", 0, 3, "BookSettingsSource");
     qmlRegisterUncreatableType<BookTextSettings>("org.qutim", 0, 3, "TextSettings", "This object only provides enum values");
+    qmlRegisterType<DownloadBookList>("org.qutim", 0, 3, "DownloadBookList");
+    qmlRegisterUncreatableType<DownloadBookJob>("org.qutim", 0, 3, "DownloadBookJob", "This object is always DownloadBookList's child");
 }

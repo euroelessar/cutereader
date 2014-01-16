@@ -40,14 +40,6 @@ DownloadBookList *OpdsEntryItem::downloadList() const
     return m_downloadList;
 }
 
-void OpdsEntryItem::download(const QUrl &source)
-{
-    Q_ASSERT(m_downloadList);
-
-//    auto manager = qmlEngine(this)->networkAccessManager();
-//    m_downloadList->addJob(new OpdsDownloadJob(m_downloadList, manager, m_entry, source));
-}
-
 void OpdsEntryItem::setEntry(const QVariant &entry)
 {
     m_entry = entry.value<ModelData>();

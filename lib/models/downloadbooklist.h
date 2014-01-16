@@ -18,6 +18,8 @@ public:
     QUrl baseDir() const;
     void setBaseDir(const QUrl &baseDir);
 
+    Q_INVOKABLE void download(const QVariantMap &info);
+
 signals:
     void modelChanged(const QQmlListProperty<DownloadBookJob> &model);
     void baseDirChanged(const QUrl &baseDir);
