@@ -1,5 +1,7 @@
 #include "bookpageiterator.h"
 
+namespace CuteReader {
+
 static BookTextPosition createPosition(int body, int block, int blockPosition)
 {
     return {
@@ -175,3 +177,5 @@ ItemId BookPageIterator::id() const
 {
     return ItemId(m_size, m_style);
 }
+
+} //namespace CuteReader

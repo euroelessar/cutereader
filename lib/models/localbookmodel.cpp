@@ -2,6 +2,8 @@
 #include "frontmodel.h"
 #include <algorithm>
 
+namespace CuteReader {
+
 LocalBookModel::LocalBookModel(LocalBookCollection *parent) :
     QAbstractListModel(parent), m_collection(parent)
 {
@@ -79,3 +81,5 @@ void LocalBookModel::rebuildModel()
     m_books = m_collection->books();
     endResetModel();
 }
+
+} //namespace CuteReader

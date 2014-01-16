@@ -1,5 +1,7 @@
 #include "bookimageblockfactory.h"
 
+namespace CuteReader {
+
 BookImageBlockFactory::BookImageBlockFactory(const QUrl &source)
     : m_data(BookImageBlockData::Ptr::create())
 {
@@ -25,3 +27,5 @@ BookBlock::Ptr BookImageBlockFactory::doCreate(const QSizeF &size, const BookSty
     (void) style;
     return QSharedPointer<BookImageBlock>::create(m_data, size, m_pointer);
 }
+
+} //namespace CuteReader

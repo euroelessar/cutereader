@@ -2,6 +2,8 @@
 #include "opdsdownloadjob.h"
 #include <QQmlEngine>
 
+namespace CuteReader {
+
 DownloadBookList::DownloadBookList(QObject *parent) :
     QObject(parent)
 {
@@ -55,3 +57,5 @@ DownloadBookJob *DownloadBookList::jobAt(QQmlListProperty<DownloadBookJob> *list
 {
     return reinterpret_cast<DownloadBookList*>(list->data)->m_jobs.value(index);
 }
+
+} //namespace CuteReader

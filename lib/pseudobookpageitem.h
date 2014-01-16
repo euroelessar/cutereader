@@ -3,6 +3,8 @@
 
 #include "bookpageitem.h"
 
+namespace CuteReader {
+
 class PseudoBookPageItem : public BookPageItem
 {
     Q_OBJECT
@@ -20,5 +22,7 @@ signals:
 private:
     int m_calulationId;
 };
+
+} //namespace CuteReader
 
 #endif // PSEUDOBOOKPAGEITEM_H

@@ -7,6 +7,8 @@
 #include <QQuickItem>
 #include <QTextCharFormat>
 
+namespace CuteReader {
+
 class BookBlockFactory;
 
 class Format
@@ -118,7 +120,9 @@ private:
     QWeakPointer<BookBlockFactory> m_factory;
 };
 
-Q_DECLARE_METATYPE(QList<BookBlock::ItemInfo>)
-Q_DECLARE_METATYPE(QList<BookBlock::Ptr>)
+} //namespace CuteReader
+
+Q_DECLARE_METATYPE(QList<CuteReader::BookBlock::ItemInfo>)
+Q_DECLARE_METATYPE(QList<CuteReader::BookBlock::Ptr>)
 
 #endif // BOOKBLOCK_H

@@ -2,6 +2,8 @@
 #include <QStringBuilder>
 #include <cmath>
 
+namespace CuteReader {
+
 static QString fixedName(const char *str)
 {
     QString result = QString::fromLatin1(str);
@@ -106,3 +108,5 @@ BookStyle BookTextSettings::style() const
     QReadLocker locker(&m_lock);
     return m_style;
 }
+
+} //namespace CuteReader

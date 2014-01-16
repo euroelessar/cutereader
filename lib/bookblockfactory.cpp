@@ -2,6 +2,8 @@
 #include "bookitem.h"
 #include <QThread>
 
+namespace CuteReader {
+
 ItemId::ItemId(const QSizeF &size, const BookStyle &style) :
     m_size(size),
     m_style(style),
@@ -86,3 +88,5 @@ void BookBlockFactory::clearDeadBlocks()
             it.remove();
     }
 }
+
+} //namespace CuteReader

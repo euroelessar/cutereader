@@ -2,6 +2,8 @@
 #include <QXmlStreamReader>
 #include <QDebug>
 
+namespace CuteReader {
+
 OpdsParser::OpdsParser()
 {
 }
@@ -222,3 +224,5 @@ QUrl OpdsInfo::next() const
     }
     return QUrl();
 }
+
+} //namespace CuteReader

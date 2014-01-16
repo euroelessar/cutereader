@@ -2,6 +2,8 @@
 #include "models/frontmodel.h"
 #include <QCoreApplication>
 
+namespace CuteReader {
+
 QStringList BookInfo::authorsList() const
 {
     QStringList result;
@@ -98,3 +100,5 @@ bool BookTextPosition::operator <(const BookTextPosition &other) const
 {
     return std::tie(body, block, position) < std::tie(other.body, other.block, other.position);
 }
+
+} //namespace CuteReader

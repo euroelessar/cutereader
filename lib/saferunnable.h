@@ -5,6 +5,8 @@
 #include <QRunnable>
 #include <QPointer>
 
+namespace CuteReader {
+
 class SafeRunnable : public QObject, public QRunnable
 {
     Q_OBJECT
@@ -26,5 +28,7 @@ private:
     Task m_task;
     Handler m_handler;
 };
+
+} //namespace CuteReader
 
 #endif // SAFERUNNABLE_H

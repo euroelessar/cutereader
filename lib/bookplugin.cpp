@@ -12,6 +12,8 @@
 #include "booktextsettings.h"
 #include "booksettingssource.h"
 
+namespace CuteReader {
+
 BookPlugin::BookPlugin(QObject *parent) :
     QObject(parent)
 {
@@ -39,3 +41,5 @@ void BookPlugin::registerQmlTypes(QQmlEngine *engine)
     qmlRegisterType<DownloadBookList>("org.qutim", 0, 3, "DownloadBookList");
     qmlRegisterUncreatableType<DownloadBookJob>("org.qutim", 0, 3, "DownloadBookJob", "This object is always DownloadBookList's child");
 }
+
+} //namespace CuteReader

@@ -7,6 +7,8 @@
 #include <QFile>
 #include "../archivereader.h"
 
+namespace CuteReader {
+
 FB2ImageProvider::FB2ImageProvider()
     : QQuickImageProvider(QQuickImageProvider::Image,
                           QQuickImageProvider::ForceAsynchronousImageLoading)
@@ -62,3 +64,5 @@ QImage FB2ImageProvider::requestImage(const QString &id, QSize *size, const QSiz
 
     return QImage();
 }
+
+} //namespace CuteReader

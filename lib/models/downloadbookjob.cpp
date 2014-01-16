@@ -1,5 +1,7 @@
 #include "downloadbookjob.h"
 
+namespace CuteReader {
+
 DownloadBookJob::DownloadBookJob(QObject *parent) :
     QObject(parent), m_progress(0)
 {
@@ -24,3 +26,5 @@ QUrl DownloadBookJob::source() const
 {
     return m_source;
 }
+
+} //namespace CuteReader

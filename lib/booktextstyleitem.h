@@ -5,6 +5,8 @@
 #include <QTextCharFormat>
 #include <QDebug>
 
+namespace CuteReader {
+
 #define FORMAT_PROPERTY(NAME, FORMAT) \
     Q_PROPERTY(QVariant NAME READ NAME NOTIFY changed) \
 public: \
@@ -44,5 +46,7 @@ private:
 };
 
 #undef PROPERTY_REAL
+
+} //namespace CuteReader
 
 #endif // BOOKTEXTSTYLEITEM_H

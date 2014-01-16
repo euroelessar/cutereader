@@ -12,6 +12,8 @@
 class QXmlStreamReader;
 class OpdsEntry;
 
+namespace CuteReader {
+
 struct OpdsLink
 {
     QUrl source;
@@ -58,6 +60,8 @@ private:
     OpdsLink readLink(const QUrl &baseUrl, QXmlStreamReader &in);
 };
 
-Q_DECLARE_METATYPE(OpdsEntry)
+} //namespace CuteReader
+
+Q_DECLARE_METATYPE(CuteReader::OpdsEntry)
 
 #endif // OPDSPARSER_H

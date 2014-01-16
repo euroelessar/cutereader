@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QVariantList>
 
+namespace CuteReader {
+
 class BookSettingsSource : public QObject
 {
     Q_OBJECT
@@ -29,5 +31,7 @@ signals:
 public slots:
 
 };
+
+} //namespace CuteReader
 
 #endif // BOOKSETTINGSSOURCE_H

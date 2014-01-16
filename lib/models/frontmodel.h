@@ -5,6 +5,8 @@
 #include <QQmlParserStatus>
 #include "bookcategoriesmodel.h"
 
+namespace CuteReader {
+
 struct ModelAction
 {
     // Keep in sync with OpdsEntryItem::ActionType
@@ -74,7 +76,7 @@ class BookFrontModel : public QSortFilterProxyModel, public QQmlParserStatus
     Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(QVariant data READ data WRITE setData NOTIFY dataChanged)
     Q_PROPERTY(QString filter READ filter WRITE setFilter NOTIFY filterChanged)
-    Q_PROPERTY(LocalBookCollection *collection READ collection WRITE setCollection NOTIFY collectionChanged)
+    Q_PROPERTY(CuteReader::LocalBookCollection *collection READ collection WRITE setCollection NOTIFY collectionChanged)
     Q_PROPERTY(bool hasNextPage READ hasNextPage NOTIFY hasNextPageChanged)
     Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
 public:
@@ -116,6 +118,8 @@ private:
     LocalBookCollection * m_collection;
 };
 
-Q_DECLARE_METATYPE(ModelData)
+} //namespace CuteReader
+
+Q_DECLARE_METATYPE(CuteReader::ModelData)
 
 #endif // FRONTMODEL_H

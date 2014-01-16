@@ -6,6 +6,8 @@
 #include <qqml.h>
 #include <QQmlEngine>
 
+namespace CuteReader {
+
 BookFrontModel::BookFrontModel(QObject *parent) :
     QSortFilterProxyModel(parent)
 {
@@ -154,3 +156,5 @@ void BookFrontModel::loadNext()
     if (auto *model = qobject_cast<OpdsBookModel *>(sourceModel()))
         model->loadNext();
 }
+
+} //namespace CuteReader

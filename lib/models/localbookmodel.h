@@ -4,6 +4,8 @@
 #include <QAbstractListModel>
 #include "localbookcollection.h"
 
+namespace CuteReader {
+
 enum RoleNames {
     BookTitle = Qt::UserRole,
     BookSubtitle,
@@ -36,5 +38,7 @@ private:
     QList<BookInfo> m_books;
     LocalBookCollection *m_collection;
 };
+
+} //namespace CuteReader
 
 #endif // LOCALBOOKMODEL_H

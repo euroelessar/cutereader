@@ -2,6 +2,8 @@
 #include <QStringBuilder>
 #include <QQmlProperty>
 
+namespace CuteReader {
+
 BookStyleItem::BookStyleItem(QObject *parent) :
     QObject(parent), m_formats(TotalCount, QColor())
 {
@@ -63,3 +65,5 @@ QColor *BookStyleItem::colorByName(const QString &name) const
 
     return NULL;
 }
+
+} //namespace CuteReader

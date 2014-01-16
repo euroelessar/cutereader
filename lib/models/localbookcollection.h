@@ -8,6 +8,8 @@
 
 class QAbstractListModel;
 
+namespace CuteReader {
+
 class LocalBookCollection : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
@@ -66,5 +68,7 @@ private:
     QPointer<LocalBookCollection> m_collection;
     QUrl m_baseDir;
 };
+
+} //namespace CuteReader
 
 #endif // LOCALBOOKCOLLECTION_H

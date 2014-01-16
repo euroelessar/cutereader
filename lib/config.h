@@ -8,6 +8,8 @@
 #include <QQmlParserStatus>
 #include <QSharedPointer>
 
+namespace CuteReader {
+
 class ConfigData;
 
 class Config : public QObject, public QQmlParserStatus
@@ -58,5 +60,7 @@ public slots:
 signals:
     void propertyChanged();
 };
+
+} //namespace CuteReader
 
 #endif // CONFIG_H

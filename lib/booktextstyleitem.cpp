@@ -1,5 +1,7 @@
 #include "booktextstyleitem.h"
 
+namespace CuteReader {
+
 BookTextStyleItem::BookTextStyleItem(const QTextCharFormat &format, QObject *parent) :
     QObject(parent), m_format(format)
 {
@@ -34,3 +36,5 @@ QVariant BookTextStyleItem::value(QTextFormat::Property key) const
 
     return tmp;
 }
+
+} //namespace CuteReader

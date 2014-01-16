@@ -7,6 +7,8 @@
 #include <QSGSimpleTextureNode>
 #include <QQuickWindow>
 
+namespace CuteReader {
+
 BookPageItem::BookPageItem(QQuickItem *parent) :
     QQuickItem(parent),
     m_book(NULL),
@@ -276,3 +278,5 @@ void BookPageItem::handleSubItems(const ItemId &id, const QImage &image, const Q
         m_subItems << subItem;
     }
 }
+
+} //namespace CuteReader

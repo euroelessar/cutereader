@@ -6,6 +6,8 @@
 #include <QMimeType>
 #include "../karchive/src/karchive.h"
 
+namespace CuteReader {
+
 class ArchiveReader
 {
 public:
@@ -28,5 +30,7 @@ private:
     QList<QObject *> m_objects;
     QList<KArchive *> m_archives;
 };
+
+} //namespace CuteReader
 
 #endif // ARCHIVEREADER_H

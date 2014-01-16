@@ -15,6 +15,8 @@
 #include <QDir>
 #include <QCryptographicHash>
 
+namespace CuteReader {
+
 static QDir bookmarksDir()
 {
     const QDir path = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
@@ -299,3 +301,5 @@ QVariantList BookItem::positions() const
         result << position.toMap();
     return result;
 }
+
+} //namespace CuteReader

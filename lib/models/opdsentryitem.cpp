@@ -5,6 +5,8 @@
 #include <QQmlEngine>
 #include <qqml.h>
 
+namespace CuteReader {
+
 OpdsEntryItem::OpdsEntryItem(QObject *parent) :
     QObject(parent), m_downloadList(NULL)
 {
@@ -53,3 +55,5 @@ void OpdsEntryItem::setDownloadList(DownloadBookList *downloadList)
         emit downloadListChanged(downloadList);
     }
 }
+
+} //namespace CuteReader

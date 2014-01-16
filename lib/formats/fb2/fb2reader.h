@@ -7,6 +7,9 @@
 #include <QTextCharFormat>
 
 class QXmlStreamReader;
+
+namespace CuteReader {
+
 class Format;
 
 class FB2Reader
@@ -48,5 +51,7 @@ private:
 
     QList<FormatDescription> m_descriptions;
 };
+
+} //namespace CuteReader
 
 #endif // FB2READER_H

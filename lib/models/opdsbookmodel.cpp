@@ -4,6 +4,8 @@
 #include <QQmlEngine>
 #include <QNetworkReply>
 
+namespace CuteReader {
+
 OpdsBookModel::OpdsBookModel(QObject *parent) :
     QAbstractListModel(parent), m_state(Null), m_busy(false)
 {
@@ -156,3 +158,5 @@ bool OpdsBookModel::busy() const
 {
     return m_busy;
 }
+
+} //namespace CuteReader

@@ -1,6 +1,8 @@
 #include "saferunnable.h"
 #include <QThreadPool>
 
+namespace CuteReader {
+
 SafeRunnable::SafeRunnable(QObject *target, const Task &task)
     : m_target(target), m_task(task)
 {
@@ -27,3 +29,5 @@ void SafeRunnable::runHandler()
 
     deleteLater();
 }
+
+} //namespace CuteReader

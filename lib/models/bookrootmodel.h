@@ -4,6 +4,8 @@
 #include <QAbstractListModel>
 #include "frontmodel.h"
 
+namespace CuteReader {
+
 struct RootModelData : public ModelData
 {
     RootModelData(Type type, const QString &title, const QString &subtitle, const QString &section) :
@@ -30,5 +32,7 @@ public:
 private:
     QList<RootModelData> m_entries;
 };
+
+} //namespace CuteReader
 
 #endif // BOOKROOTMODEL_H

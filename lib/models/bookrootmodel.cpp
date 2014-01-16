@@ -1,6 +1,8 @@
 #include "bookrootmodel.h"
 #include "localbookmodel.h"
 
+namespace CuteReader {
+
 BookRootModel::BookRootModel(QObject *parent) :
     QAbstractListModel(parent)
 {
@@ -65,3 +67,5 @@ QVariant BookRootModel::data(const QModelIndex &index, int role) const
         return QVariant();
     }
 }
+
+} //namespace CuteReader

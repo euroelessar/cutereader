@@ -3,6 +3,8 @@
 
 #include <QQuickImageProvider>
 
+namespace CuteReader {
+
 class FB2ImageProvider : public QQuickImageProvider
 {
 public:
@@ -10,5 +12,7 @@ public:
     
     virtual QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize);
 };
+
+} //namespace CuteReader
 
 #endif // FB2IMAGEPROVIDER_H

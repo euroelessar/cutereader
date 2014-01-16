@@ -4,6 +4,8 @@
 #include <QAbstractListModel>
 #include "localbookmodel.h"
 
+namespace CuteReader {
+
 class BookCategoriesModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -53,5 +55,7 @@ private:
     QList<TypeInfo> m_data;
     LocalBookCollection *m_collection;
 };
+
+} //namespace CuteReader
 
 #endif // BOOKCATEGORIESMODEL_H

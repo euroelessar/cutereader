@@ -28,6 +28,8 @@ static QString createBookPath(const QUrl &source)
 
 //static QString path = createBookPath(QUrl(QStringLiteral("http://flibusta.net/b/331129/fb2")));
 
+namespace CuteReader {
+
 OpdsDownloadJob::OpdsDownloadJob(DownloadBookList *parent, QNetworkAccessManager *manager,
                                  const OpdsEntry &entry, const QUrl &source) :
     DownloadBookJob(parent)
@@ -97,3 +99,5 @@ void OpdsDownloadJob::setReply(QNetworkReply *reply)
             m_file->write(reply->readAll());
     });
 }
+
+} //namespace CuteReader

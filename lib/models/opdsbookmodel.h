@@ -7,6 +7,8 @@
 #include <QNetworkAccessManager>
 #include "opdsparser.h"
 
+namespace CuteReader {
+
 class OpdsBookModel : public QAbstractListModel, public QQmlParserStatus
 {
     Q_OBJECT
@@ -61,5 +63,7 @@ private:
     bool m_hasNextPage;
     bool m_busy;
 };
+
+} //namespace CuteReader
 
 #endif // OPDSBOOKMODEL_H

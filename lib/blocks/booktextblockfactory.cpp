@@ -1,6 +1,8 @@
 #include "booktextblockfactory.h"
 #include "texthyphenator.h"
 
+namespace CuteReader {
+
 BookTextBlockFactory::BookTextBlockFactory(const QString &text, const QList<FormatRange> &formats)
     : m_data(BookTextBlockData::Ptr::create())
 {
@@ -23,3 +25,5 @@ BookBlock::Ptr BookTextBlockFactory::doCreate(const QSizeF &size, const BookStyl
 {
     return QSharedPointer<BookTextBlock>::create(m_data, size, style, m_pointer);
 }
+
+} //namespace CuteReader

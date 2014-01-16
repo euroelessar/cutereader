@@ -4,6 +4,8 @@
 #include <QSortFilterProxyModel>
 #include "localbookmodel.h"
 
+namespace CuteReader {
+
 class SortedLocalBookModel : public QSortFilterProxyModel
 {
     Q_OBJECT
@@ -30,5 +32,7 @@ private:
     LocalBookCollection *m_collection;
     QVariantMap m_filter;
 };
+
+} //namespace CuteReader
 
 #endif // SORTEDLOCALBOOKMODEL_H

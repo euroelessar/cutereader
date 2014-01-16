@@ -5,6 +5,8 @@
 #include <QReadWriteLock>
 #include "bookblock.h"
 
+namespace CuteReader {
+
 #define COLOR_PROPERTY(NAME) \
     Q_PROPERTY(QColor NAME READ NAME WRITE set ## NAME NOTIFY changed) \
 public: \
@@ -72,5 +74,7 @@ private:
 };
 
 #undef PROPERTY_TEXT_STYLE
+
+} //namespace CuteReader
 
 #endif // BOOKSTYLE_H

@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QQmlParserStatus>
 
+namespace CuteReader {
+
 class OpdsBookCollection : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
@@ -14,5 +16,7 @@ public:
     void classBegin();
     void componentComplete();
 };
+
+} //namespace CuteReader
 
 #endif // OPDSBOOKCOLLECTION_H

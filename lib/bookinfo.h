@@ -4,6 +4,8 @@
 #include <QMetaType>
 #include "bookblockfactory.h"
 
+namespace CuteReader {
+
 class ModelData;
 
 struct AuthorInfo
@@ -93,7 +95,9 @@ struct BookInfo
     ModelData toData() const;
 };
 
-Q_DECLARE_METATYPE(BookInfo)
-Q_DECLARE_METATYPE(QList<BookInfo>)
+} //namespace CuteReader
+
+Q_DECLARE_METATYPE(CuteReader::BookInfo)
+Q_DECLARE_METATYPE(QList<CuteReader::BookInfo>)
 
 #endif // BOOKINFO_H

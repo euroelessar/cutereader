@@ -4,6 +4,8 @@
 #include <QMimeDatabase>
 #include <QDebug>
 
+namespace CuteReader {
+
 ArchiveReader::ArchiveReader(const QString &filePath) :
     m_files(filePath.split(QLatin1Char(':'))),
     m_device(NULL)
@@ -81,3 +83,5 @@ KArchive *ArchiveReader::create(const QMimeType &mimeType, QIODevice *data)
 
     return NULL;
 }
+
+} //namespace CuteReader

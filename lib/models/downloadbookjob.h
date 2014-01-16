@@ -4,6 +4,8 @@
 #include <QObject>
 #include <qqml.h>
 
+namespace CuteReader {
+
 class DownloadBookJob : public QObject
 {
     Q_OBJECT
@@ -29,6 +31,8 @@ protected:
     QUrl m_source;
 };
 
-QML_DECLARE_TYPE(DownloadBookJob)
+} //namespace CuteReader
+
+QML_DECLARE_TYPE(CuteReader::DownloadBookJob)
 
 #endif // DOWNLOADBOOKJOB_H

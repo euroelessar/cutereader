@@ -2,6 +2,8 @@
 #include <QQuickView>
 #include <QDebug>
 
+namespace CuteReader {
+
 BookImageBlock::BookImageBlock(const BookImageBlockData::Ptr &data, const QSizeF &size, const QWeakPointer<BookBlockFactory> &factory)
     : BookBlock(size, factory), m_data(data)
 {
@@ -74,3 +76,5 @@ void BookImageBlock::doSetSize(const QSizeF &size)
         m_imageSize = QSize(0, 0);
     }
 }
+
+} //namespace CuteReader

@@ -4,6 +4,8 @@
 #include "../bookblockfactory.h"
 #include "bookimageblock.h"
 
+namespace CuteReader {
+
 class BookImageBlockFactory : public BookBlockFactory
 {
 public:
@@ -19,5 +21,7 @@ protected:
 private:
     BookImageBlockData::Ptr m_data;
 };
+
+} //namespace CuteReader
 
 #endif // BOOKIMAGEBLOCKFACTORY_H

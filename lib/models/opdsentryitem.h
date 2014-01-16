@@ -6,12 +6,14 @@
 #include "downloadbooklist.h"
 #include "frontmodel.h"
 
+namespace CuteReader {
+
 class OpdsEntryItem : public QObject
 {
     Q_OBJECT
     Q_ENUMS(ActionType)
     Q_PROPERTY(QVariant entry READ entry WRITE setEntry NOTIFY entryChanged)
-    Q_PROPERTY(DownloadBookList *downloadList READ downloadList WRITE setDownloadList NOTIFY downloadListChanged)
+    Q_PROPERTY(CuteReader::DownloadBookList *downloadList READ downloadList WRITE setDownloadList NOTIFY downloadListChanged)
     Q_PROPERTY(QUrl cover READ cover NOTIFY entryChanged)
     Q_PROPERTY(QString title READ title NOTIFY entryChanged)
     Q_PROPERTY(QString content READ content NOTIFY entryChanged)
@@ -49,5 +51,7 @@ private:
     ModelData m_entry;
     DownloadBookList *m_downloadList;
 };
+
+} //namespace CuteReader
 
 #endif // OPDSENTRYITEM_H

@@ -4,6 +4,8 @@
 #include <QStringListModel>
 #include <QFontDatabase>
 
+namespace CuteReader {
+
 class FontListModel : public QStringListModel
 {
     Q_OBJECT
@@ -16,5 +18,7 @@ public:
 private:
     QFontDatabase m_db;
 };
+
+} //namespace CuteReader
 
 #endif // FONTLISTMODEL_H

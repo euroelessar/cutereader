@@ -2,6 +2,8 @@
 #include "booktextsettings.h"
 #include <QFontDatabase>
 
+namespace CuteReader {
+
 BookSettingsSource::BookSettingsSource(QObject *parent) :
     QObject(parent)
 {
@@ -260,3 +262,5 @@ QVariantMap BookSettingsSource::defaultFontSettings() const
         { QStringLiteral("noteAnchor.verticalAlignment"), BookTextSettings::AlignSuperScript }
     };
 }
+
+} //namespace CuteReader

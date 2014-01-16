@@ -1,5 +1,7 @@
 #include "sortedlocalbookmodel.h"
 
+namespace CuteReader {
+
 SortedLocalBookModel::SortedLocalBookModel(QObject *parent) :
     QSortFilterProxyModel(parent), m_collection(NULL)
 {
@@ -88,3 +90,5 @@ void SortedLocalBookModel::setFilter(const QVariantMap &filter)
 
     }
 }
+
+} //namespace CuteReader

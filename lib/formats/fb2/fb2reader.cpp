@@ -16,6 +16,8 @@
 # error Lambda support is required
 #endif
 
+namespace CuteReader {
+
 FB2Reader::FB2Reader()
 {
     using namespace std::placeholders;
@@ -444,3 +446,5 @@ BookBlockFactory::Ptr FB2Reader::ImageInfo::toFactory()
 {
     return BookImageBlockFactory::create(source);
 }
+
+} //namespace CuteReader

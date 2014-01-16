@@ -2,6 +2,8 @@
 #include "bookpageiterator.h"
 #include "saferunnable.h"
 
+namespace CuteReader {
+
 PseudoBookPageItem::PseudoBookPageItem(QQuickItem *parent) :
     BookPageItem(parent), m_calulationId(0)
 {
@@ -45,3 +47,5 @@ int PseudoBookPageItem::calculatePreviousPage(const QVariantMap &arg)
 
     return id;
 }
+
+} //namespace CuteReader

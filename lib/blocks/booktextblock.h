@@ -7,6 +7,8 @@
 #include <QSharedPointer>
 #include <QMutex>
 
+namespace CuteReader {
+
 struct BookTextBlockData
 {
     typedef QSharedPointer<BookTextBlockData> Ptr;
@@ -42,5 +44,7 @@ private:
     QTextLayout m_textLayout;
     const QList<FormatRange> m_formats;
 };
+
+} //namespace CuteReader
 
 #endif // BOOKTEXTBLOCK_H

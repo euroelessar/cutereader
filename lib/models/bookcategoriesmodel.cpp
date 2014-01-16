@@ -1,6 +1,8 @@
 #include "bookcategoriesmodel.h"
 #include "frontmodel.h"
 
+namespace CuteReader {
+
 BookCategoriesModel::BookCategoriesModel(QObject *parent) :
     QAbstractListModel(parent), m_type(None), m_collection(NULL)
 {
@@ -138,3 +140,5 @@ void BookCategoriesModel::setCollection(LocalBookCollection *collection)
         }
     }
 }
+
+} //namespace CuteReader

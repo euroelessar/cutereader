@@ -7,6 +7,8 @@
 #include "bookinfoitem.h"
 #include "bookinfo.h"
 
+namespace CuteReader {
+
 class BookTextSettings;
 class BookStyleItem;
 
@@ -17,8 +19,8 @@ class BookItem : public QObject, public QQmlParserStatus
     Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(QUrl configSource READ configSource WRITE setConfigSource NOTIFY configSourceChanged)
-    Q_PROPERTY(BookStyleItem *style READ styleItem WRITE setStyleItem NOTIFY styleItemChanged)
-    Q_PROPERTY(BookInfoItem *info READ info CONSTANT FINAL)
+    Q_PROPERTY(CuteReader::BookStyleItem *style READ styleItem WRITE setStyleItem NOTIFY styleItemChanged)
+    Q_PROPERTY(CuteReader::BookInfoItem *info READ info CONSTANT FINAL)
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
     Q_PROPERTY(QVariant bookData READ bookData NOTIFY bookDataChanged)
     Q_PROPERTY(QVariant contents READ contents NOTIFY contentsChanged)
@@ -91,5 +93,7 @@ private:
     QUrl m_configSource;
     QList<BookTextPosition> m_positions;
 };
+
+} //namespace CuteReader
 
 #endif // BOOKITEM_H

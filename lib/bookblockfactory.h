@@ -3,8 +3,11 @@
 
 #include "bookblock.h"
 
-class BookItem;
 class QThread;
+
+namespace CuteReader {
+
+class BookItem;
 
 class ItemId
 {
@@ -48,5 +51,7 @@ protected:
     QMutex m_lock;
     WeakPtr m_pointer;
 };
+
+} //namespace CuteReader
 
 #endif // BOOKBLOCKFACTORY_H

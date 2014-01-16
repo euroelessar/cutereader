@@ -5,6 +5,8 @@
 #include "bookinfo.h"
 #include "bookpageitem.h"
 
+namespace CuteReader {
+
 class BookPageIterator
 {
 public:
@@ -33,5 +35,7 @@ private:
     const QSizeF m_size;
     const BookStyle m_style;
 };
+
+} //namespace CuteReader
 
 #endif // BOOKPAGEITERATOR_H

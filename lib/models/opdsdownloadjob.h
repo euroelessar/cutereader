@@ -6,6 +6,8 @@
 #include <QNetworkAccessManager>
 #include <QDir>
 
+namespace CuteReader {
+
 class DownloadBookList;
 class QSaveFile;
 
@@ -22,5 +24,7 @@ private:
     QDir m_baseDir;
     QSaveFile *m_file;
 };
+
+} //namespace CuteReader
 
 #endif // OPDSDOWNLOADJOB_H

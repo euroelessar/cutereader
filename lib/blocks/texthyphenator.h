@@ -3,6 +3,8 @@
 
 #include "booktextblockfactory.h"
 
+namespace CuteReader {
+
 struct TextHyphenDict
 {
     QHash<QString, QVector<quint8>> data;
@@ -21,5 +23,7 @@ public:
 private:
     TextHyphenDict m_dict;
 };
+
+} //namespace CuteReader
 
 #endif // TEXTHYPHENATOR_H

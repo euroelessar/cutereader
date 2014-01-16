@@ -1,6 +1,8 @@
 #include "bookblock.h"
 #include "bookblockfactory.h"
 
+namespace CuteReader {
+
 BookBlock::BookBlock(const QSizeF &size, const QWeakPointer<BookBlockFactory> &factory)
     : m_pageSize(size), m_factory(factory)
 {
@@ -29,3 +31,5 @@ QList<BookBlock::ItemInfo> BookBlock::createItems(const QPointF &position, int l
     Q_UNUSED(line);
     return QList<BookBlock::ItemInfo>();
 }
+
+} //namespace CuteReader

@@ -5,6 +5,8 @@
 #include "config.h"
 #include <QReadWriteLock>
 
+namespace CuteReader {
+
 class BookTextSettings : public QObject
 {
     Q_OBJECT
@@ -55,5 +57,7 @@ private:
     mutable QReadWriteLock m_lock;
     BookStyle m_style;
 };
+
+} //namespace CuteReader
 
 #endif // BOOKTEXTSETTINGS_H

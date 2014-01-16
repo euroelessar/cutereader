@@ -4,6 +4,8 @@
 #include "../bookblock.h"
 #include <QUrl>
 
+namespace CuteReader {
+
 struct BookImageBlockData
 {
     typedef QSharedPointer<BookImageBlockData> Ptr;
@@ -39,5 +41,8 @@ private:
     BookImageBlockData::Ptr m_data;
     QSize m_imageSize;
 };
+
+
+} //namespace CuteReader
 
 #endif // BOOKIMAGEBLOCK_H

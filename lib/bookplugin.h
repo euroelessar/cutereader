@@ -5,6 +5,8 @@
 
 class QQmlEngine;
 
+namespace CuteReader {
+
 class BookPlugin : public QObject
 {
     Q_OBJECT
@@ -13,5 +15,7 @@ public:
 
     static void registerQmlTypes(QQmlEngine *engine);
 };
+
+} //namespace CuteReader
 
 #endif // BOOKPLUGIN_H

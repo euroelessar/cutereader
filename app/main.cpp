@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 #endif
 
     QQmlApplicationEngine engine;
-    BookPlugin::registerQmlTypes(&engine);
+    CuteReader::BookPlugin::registerQmlTypes(&engine);
     engine.load(url);
     return app.exec();
 }

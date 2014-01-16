@@ -6,6 +6,8 @@
 #include <QElapsedTimer>
 #include <QDebug>
 
+namespace CuteReader {
+
 BookTextBlock::BookTextBlock(const BookTextBlockData::Ptr &data, const QSizeF &size, const BookStyle &style, const QWeakPointer<BookBlockFactory> &factory)
     : BookBlock(size, factory), m_textLayout(data->text), m_formats(data->formats)
 {
@@ -128,3 +130,5 @@ void BookTextBlock::buildLayout(const QSizeF &size)
     }
     m_textLayout.endLayout();
 }
+
+} //namespace CuteReader

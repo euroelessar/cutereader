@@ -4,6 +4,8 @@
 #include <QObject>
 #include "bookinfo.h"
 
+namespace CuteReader {
+
 class BookInfoItem : public QObject
 {
     Q_OBJECT
@@ -27,5 +29,7 @@ private:
     QString m_title;
     QUrl m_cover;
 };
+
+} //namespace CuteReader
 
 #endif // BOOKINFOITEM_H

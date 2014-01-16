@@ -21,6 +21,8 @@
 #define CONFIG_PATH QStringLiteral("/cutereader")
 #define CONFIG_FILE QStringLiteral("/cutereader/config.json")
 
+namespace CuteReader {
+
 static void populateConfig(QVariantHash &data, QString &prefix, const QJsonObject &object)
 {
     if (!prefix.isEmpty())
@@ -305,3 +307,5 @@ void ConfigEntry::onPropertyChanged()
 {
     emit propertyChanged();
 }
+
+} //namespace CuteReader

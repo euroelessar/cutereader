@@ -3,6 +3,8 @@
 #include <QTextBoundaryFinder>
 #include <QCache>
 
+namespace CuteReader {
+
 TextHyphenDict readDict(const QString &path)
 {
     TextHyphenDict result;
@@ -175,3 +177,5 @@ void TextHyphenator::hyphenate(QString &text, QList<FormatRange> &formats) const
 
     text = result;
 }
+
+} //namespace CuteReader

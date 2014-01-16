@@ -6,12 +6,14 @@
 #include <QSGTexture>
 #include "bookitem.h"
 
+namespace CuteReader {
+
 class BookPageIterator;
 
 class BookPageItem : public QQuickItem
 {
     Q_OBJECT
-    Q_PROPERTY(BookItem *book READ book WRITE setBook NOTIFY bookChanged)
+    Q_PROPERTY(CuteReader::BookItem *book READ book WRITE setBook NOTIFY bookChanged)
     Q_PROPERTY(QVariantMap positionValue READ positionValue WRITE setPositionValue NOTIFY positionValueChanged)
     Q_PROPERTY(QQmlComponent *imageDelegate READ imageDelegate WRITE setImageDelegate NOTIFY imageDelegateChanged)
     Q_PROPERTY(QQmlComponent *linkDelegate READ linkDelegate WRITE setLinkDelegate NOTIFY linkDelegateChanged)
@@ -68,5 +70,7 @@ private:
     QImage m_cachedImage;
     QSGTexture *m_texture;
 };
+
+} //namespace CuteReader
 
 #endif // BOOKPAGEITEM_H

@@ -1,5 +1,7 @@
 #include "fontlistmodel.h"
 
+namespace CuteReader {
+
 FontListModel::FontListModel(QObject *parent) :
     QStringListModel(parent)
 {
@@ -30,3 +32,5 @@ QStringList FontListModel::families() const
 {
     return stringList();
 }
+
+} //namespace CuteReader

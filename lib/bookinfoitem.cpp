@@ -1,5 +1,7 @@
 #include "bookinfoitem.h"
 
+namespace CuteReader {
+
 BookInfoItem::BookInfoItem(QObject *parent) :
     QObject(parent)
 {
@@ -27,3 +29,5 @@ void BookInfoItem::setBookInfo(const BookInfo &info)
         emit coverChanged(m_cover);
     }
 }
+
+} //namespace CuteReader

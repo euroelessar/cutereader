@@ -11,6 +11,7 @@
 #include "../archivereader.h"
 #include "localbookmodel.h"
 
+namespace CuteReader {
 
 struct LocalBookCollectionData
 {
@@ -309,3 +310,5 @@ void LocalBookNotifier::setBooks(const QList<BookInfo> &books)
         m_collection->setBooks(m_baseDir, books);
     deleteLater();
 }
+
+} //namespace CuteReader

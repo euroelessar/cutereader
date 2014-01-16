@@ -4,6 +4,8 @@
 #include <QObject>
 #include "downloadbookjob.h"
 
+namespace CuteReader {
+
 class DownloadBookList : public QObject
 {
     Q_OBJECT
@@ -31,5 +33,7 @@ private:
     QList<DownloadBookJob*> m_jobs;
     QUrl m_baseDir;
 };
+
+} //namespace CuteReader
 
 #endif // DOWNLOADLIST_H
