@@ -6,10 +6,11 @@
 #include <QNetworkAccessManager>
 #include <QDir>
 
+class QSaveFile;
+
 namespace CuteReader {
 
 class DownloadBookList;
-class QSaveFile;
 
 class OpdsDownloadJob : public DownloadBookJob
 {

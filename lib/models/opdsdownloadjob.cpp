@@ -1,5 +1,6 @@
 #include "opdsdownloadjob.h"
 #include "downloadbooklist.h"
+#include <cstdlib>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QPointer>
@@ -22,7 +23,7 @@ static QString createBookPath(const QUrl &source)
 
     qDebug() << "path" << path;
 
-    std::_Exit(0);
+    std::exit(0);
     return QString();
 }
 

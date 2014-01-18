@@ -6,7 +6,7 @@
 
 namespace CuteReader {
 
-class ModelData;
+struct ModelData;
 
 struct AuthorInfo
 {
