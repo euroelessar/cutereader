@@ -24,7 +24,10 @@ ApplicationWindow {
                 text: qsTr("Collection")
             }
             MenuItem {
-                text: qsTr("Bookmarks")
+                text: qsTr("Contents")
+            }
+            MenuItem {
+                text: qsTr("About the book")
             }
         }
     }
@@ -64,9 +67,9 @@ ApplicationWindow {
             book: rootBook
             onLinkClicked: {
                 bookStackTab.item.stackView.push({
-                    item: bookSurfaceComponent,
-                    properties: { positionValue: linkPosition }
-                });
+                                                     item: bookSurfaceComponent,
+                                                     properties: { positionValue: linkPosition }
+                                                 });
             }
         }
     }

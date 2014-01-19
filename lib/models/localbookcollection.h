@@ -33,7 +33,7 @@ public:
     QUrl baseDir() const;
     void setBaseDir(QUrl baseDir);
 
-    void setBooks(const QUrl &baseDir, const QList<BookInfo> &books);
+    void setBooks(const QUrl &baseDir, const QList<CuteReader::BookInfo> &books);
     QList<BookInfo> books() const;
 
     void classBegin();
@@ -62,7 +62,7 @@ class LocalBookNotifier : public QObject
 public:
     LocalBookNotifier(LocalBookCollection *collection);
 
-    Q_INVOKABLE void setBooks(const QList<BookInfo> &books);
+    Q_INVOKABLE void setBooks(const QList<CuteReader::BookInfo> &books);
 
 private:
     QPointer<LocalBookCollection> m_collection;

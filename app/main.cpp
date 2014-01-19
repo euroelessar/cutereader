@@ -3,9 +3,21 @@
 #include "../qtquick2applicationviewer/qtquick2applicationviewer.h"
 #include "../lib/bookplugin.h"
 
+#ifdef QT_WIDGETS_LIB
+#include <QtWidgets/QApplication>
+#else
+#include <QtGui/QGuiApplication>
+#endif
+
+#ifdef QT_WIDGETS_LIB
+#define Application QApplication
+#else
+#define Application QGuiApplication
+#endif
+
 int main(int argc, char *argv[])
 {
-    QGuiApplication app(argc, argv);
+    Application app(argc, argv);
 
 #ifdef Q_OS_ANDROID
     QUrl url("assets:/qml/cutereader/qml/main.qml");

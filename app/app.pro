@@ -10,6 +10,7 @@ android {
     UI_TYPE = android
 } else {
     UI_TYPE = desktop
+    #QT += widgets
 }
 #UI_TYPE = android
 

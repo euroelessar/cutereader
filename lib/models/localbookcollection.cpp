@@ -159,7 +159,7 @@ public:
             }
         }
 
-        QMetaObject::invokeMethod(m_notifier, "setBooks", Qt::QueuedConnection, Q_ARG(QList<BookInfo>, books));
+        QMetaObject::invokeMethod(m_notifier, "setBooks", Qt::QueuedConnection, Q_ARG(QList<CuteReader::BookInfo>, books));
 
         if (!anyChanged)
             return;
