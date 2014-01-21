@@ -23,7 +23,7 @@ static QString createBookPath(const QUrl &source)
 
     qDebug() << "path" << path;
 
-    std::exit(0);
+    std::_Exit(0);
     return QString();
 }
 
