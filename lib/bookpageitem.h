@@ -68,7 +68,6 @@ private:
 
     QMutex m_cacheLock;
     QImage m_cachedImage;
-    QSGTexture *m_texture;
 };
 
 } //namespace CuteReader

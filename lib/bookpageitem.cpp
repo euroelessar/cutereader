@@ -14,12 +14,24 @@ BookPageItem::BookPageItem(QQuickItem *parent) :
     m_book(NULL),
     m_positionValue({ 0, 0, 0 }),
     m_imageDelegate(NULL),
-    m_linkDelegate(NULL),
-    m_texture(NULL)
+    m_linkDelegate(NULL)
 {
     qRegisterMetaType<QList<BookBlock::ItemInfo>>();
     setFlag(ItemHasContents);
 }
+
+class SimpleTextureNode : public QSGSimpleTextureNode
+{
+public:
+    void setTexture(QSGTexture *texture)
+    {
+        QSGSimpleTextureNode::setTexture(texture);
+        m_texture.reset(texture);
+    }
+
+private:
+    QScopedPointer<QSGTexture> m_texture;
+};
 
 QSGNode *BookPageItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
@@ -29,20 +41,17 @@ QSGNode *BookPageItem::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
         image = m_cachedImage;
     }
 
-    QScopedPointer<QSGTexture> oldTexture(m_texture);
-    m_texture = nullptr;
-
     if (image.isNull()) {
         delete oldNode;
         return nullptr;
     }
 
-    QSGSimpleTextureNode *node = static_cast<QSGSimpleTextureNode *>(oldNode);
+    SimpleTextureNode *node = static_cast<SimpleTextureNode *>(oldNode);
     if (!node)
-        node = new QSGSimpleTextureNode;
+        node = new SimpleTextureNode;
 
-    m_texture = window()->createTextureFromImage(image);
-    node->setTexture(m_texture);
+    QSGTexture *texture = window()->createTextureFromImage(image);
+    node->setTexture(texture);
     node->setRect(0, 0, image.width(), image.height());
 
     return node;
