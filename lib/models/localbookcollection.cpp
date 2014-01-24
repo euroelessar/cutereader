@@ -15,7 +15,7 @@ namespace CuteReader {
 
 struct LocalBookCollectionData
 {
-    const static int VERSION = 4;
+    const static int magicVersion = 4;
 
     struct Dir
     {
@@ -110,7 +110,7 @@ public:
                 int version;
                 in >> version;
 
-                if (version == LocalBookCollectionData::VERSION)
+                if (version == LocalBookCollectionData::magicVersion)
                     in >> cachedData;
             }
         }
@@ -171,7 +171,7 @@ public:
         QFile file(dir.filePath(QStringLiteral("local.cache")));
         if (file.open(QFile::WriteOnly)) {
             QDataStream out(&file);
-            out << LocalBookCollectionData::VERSION << cachedData;
+            out << LocalBookCollectionData::magicVersion << cachedData;
         } else {
             qWarning() << "Can't open" << file.fileName() << "for writing";
         }

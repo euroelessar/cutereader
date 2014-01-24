@@ -4,6 +4,7 @@
 # MOBILITY +=
 
 include(../karchive.pri)
+include(../3rdparty/fbreader.pri)
 
 QT += concurrent
 CONFIG += c++11

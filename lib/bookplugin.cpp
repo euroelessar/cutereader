@@ -11,6 +11,7 @@
 #include "bookstyle.h"
 #include "booktextsettings.h"
 #include "booksettingssource.h"
+#include "../3rdparty/fbreader-ui/qtzlthread.h"
 
 namespace CuteReader {
 
@@ -40,6 +41,10 @@ void BookPlugin::registerQmlTypes(QQmlEngine *engine)
     qmlRegisterUncreatableType<BookTextSettings>("org.qutim", 0, 3, "TextSettings", "This object only provides enum values");
     qmlRegisterType<DownloadBookList>("org.qutim", 0, 3, "DownloadBookList");
     qmlRegisterUncreatableType<DownloadBookJob>("org.qutim", 0, 3, "DownloadBookJob", "This object is always DownloadBookList's child");
+
+    QtZLThread *thread = new QtZLThread;
+    thread->start(QThread::LowPriority);
+    thread->waitForInitialization();
 }
 
 } //namespace CuteReader
