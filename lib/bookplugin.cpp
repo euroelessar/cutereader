@@ -3,6 +3,7 @@
 #include "bookpageitem.h"
 #include "pseudobookpageitem.h"
 #include "providers/fb2imageprovider.h"
+#include "providers/fbcoverimageprovider.h"
 #include "models/localbookcollection.h"
 #include "models/opdsentryitem.h"
 #include "models/downloadbooklist.h"
@@ -27,6 +28,7 @@ void BookPlugin::registerQmlTypes(QQmlEngine *engine)
     qRegisterMetaType<BookInfo>();
     qRegisterMetaType<QList<BookInfo>>();
     engine->addImageProvider("fb2", new FB2ImageProvider);
+    engine->addImageProvider("fbcover", new FBCoverImageProvider);
     qmlRegisterUncreatableType<BookInfoItem>("org.qutim", 0, 3, "BookInfo", "This object is always Book property");
     qmlRegisterType<BookItem>("org.qutim", 0, 3, "Book");
     qmlRegisterType<BookStyleItem>("org.qutim", 0, 3, "BookStyle");

@@ -47,7 +47,8 @@ SOURCES += ../lib/blocks/booktextblock.cpp \
     ../lib/fontlistmodel.cpp \
     ../lib/blocks/texthyphenator.cpp \
     ../lib/booktextsettings.cpp \
-    ../lib/booksettingssource.cpp
+    ../lib/booksettingssource.cpp \
+    ../lib/providers/fbcoverimageprovider.cpp
 
 HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/bookblockitem.h \
@@ -86,4 +87,5 @@ HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/fontlistmodel.h \
     ../lib/blocks/texthyphenator.h \
     ../lib/booktextsettings.h \
-    ../lib/booksettingssource.h
+    ../lib/booksettingssource.h \
+    ../lib/providers/fbcoverimageprovider.h

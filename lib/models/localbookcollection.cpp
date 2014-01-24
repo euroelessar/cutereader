@@ -10,6 +10,7 @@
 #include "../formats/fb2/fb2reader.h"
 #include "../archivereader.h"
 #include "localbookmodel.h"
+#include "../3rdparty/fbreader-ui/qtzlworker.h"
 
 namespace CuteReader {
 
@@ -288,9 +289,15 @@ void LocalBookCollection::loadBooks()
 {
     if (m_baseDir.isLocalFile()) {
         m_state = Loading;
-        QThreadPool::globalInstance()->start(
-                    new LocalBookScanner(new LocalBookNotifier(this),
-                                         m_baseDir.toLocalFile()));
+        auto dir = m_baseDir;
+        
+        QtZLWorker::instance().loadBooks(this, [this, dir] (const QList<BookInfo> &books) {
+            setBooks(dir, books);
+        });
+        
+//        QThreadPool::globalInstance()->start(
+//                    new LocalBookScanner(new LocalBookNotifier(this),
+//                                         m_baseDir.toLocalFile()));
     } else {
         m_state = Error;
     }
