@@ -78,10 +78,10 @@ BookTextPosition BookPageIterator::nextPage(QList<BookBlock::Ptr> &cache) const
     qreal heightDelta = m_size.height();
     const ItemId id(m_size, m_style);
 
-    for (int i = m_position.block; i < m_blocks.size(); ++i) {
+    for (int i = m_position.paragraph; i < m_blocks.size(); ++i) {
         const BookBlock::Ptr &block = fetchBlock(i, m_blocks, id, cache);
 
-        int lineNumber = (m_position.block == i ? block->lineForPosition(m_position.position) : 0);
+        int lineNumber = (m_position.paragraph == i ? block->lineForPosition(m_position.word) : 0);
         const int linesCount = block->linesCount();
         for (int j = lineNumber; j < linesCount; ++j) {
             const BookBlock::LineInfo info = block->lineInfo(j);
@@ -96,17 +96,17 @@ BookTextPosition BookPageIterator::nextPage(QList<BookBlock::Ptr> &cache) const
 
 BookTextPosition BookPageIterator::previousPage(QList<BookBlock::Ptr> &cache) const
 {
-    if (!m_position || (m_position.block == 0 && m_position.position == 0))
+    if (!m_position || (m_position.paragraph == 0 && m_position.word == 0))
         return invalidPosition();
 
     qreal heightDelta = m_size.height();
     const ItemId id(m_size, m_style);
 
-    if (m_position.block >= m_blocks.size() || m_position.block < 0)
+    if (m_position.paragraph >= m_blocks.size() || m_position.paragraph < 0)
         return invalidPosition();
 
-    int startBlock = m_position.block;
-    int startLine = fetchBlock(m_position.block, m_blocks, id, cache)->lineForPosition(m_position.position);
+    int startBlock = m_position.paragraph;
+    int startLine = fetchBlock(m_position.paragraph, m_blocks, id, cache)->lineForPosition(m_position.word);
 
     if (startBlock == 0 && startLine == 0)
         return invalidPosition();
@@ -154,11 +154,11 @@ QList<BookPageIterator::Line> BookPageIterator::pageLines(QList<BookBlock::Ptr> 
 
     QList<Line> result;
 
-    for (int i = m_position.block; i < m_blocks.size(); ++i) {
+    for (int i = m_position.paragraph; i < m_blocks.size(); ++i) {
         const BookBlock::Ptr &block = m_blocks[i]->item(id);
         cache << block;
 
-        int lineNumber = (m_position.block == i ? block->lineForPosition(m_position.position) : 0);
+        int lineNumber = (m_position.paragraph == i ? block->lineForPosition(m_position.word) : 0);
         const int linesCount = block->linesCount();
         for (int j = lineNumber; j < linesCount; ++j) {
             const BookBlock::LineInfo info = block->lineInfo(j);

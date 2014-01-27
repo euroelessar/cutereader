@@ -18,6 +18,8 @@
 int main(int argc, char *argv[])
 {
     Application app(argc, argv);
+    app.setOrganizationName(QStringLiteral("cutereader"));
+    app.setApplicationName(QStringLiteral("cutereader"));
 
 #ifdef Q_OS_ANDROID
     QUrl url("assets:/qml/cutereader/qml/main.qml");

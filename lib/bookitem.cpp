@@ -15,6 +15,8 @@
 #include <QDir>
 #include <QCryptographicHash>
 
+#include "../3rdparty/fbreader-ui/qtzlworker.h"
+
 namespace CuteReader {
 
 static QDir bookmarksDir()
@@ -36,49 +38,6 @@ static QString bookmarkFilePath(const QUrl &source)
     return bookmarksDir().filePath(fileName);
 }
 
-static QList<BookTextPosition> loadPositions(const QUrl &source)
-{
-    QString filePath = bookmarkFilePath(source);
-
-    QFile file(filePath);
-    if (!file.open(QFile::ReadOnly))
-        return QList<BookTextPosition>();
-
-    QList<BookTextPosition> result;
-
-    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    QVariantMap data = doc.toVariant().toMap();
-    QVariantList list = data.value(QStringLiteral("positions")).toList();
-    for (const auto &item : list) {
-        auto position = BookTextPosition::fromMap(item.toMap());
-        if (!position)
-            continue;
-        result << position;
-    }
-
-    return result;
-}
-
-static void savePositions(const QUrl &source, const QList<BookTextPosition> &positions)
-{
-    QVariantList list;
-    for (const auto &position : positions)
-        list << position.toMap();
-    QVariantMap result;
-    result.insert(QStringLiteral("source"), source);
-    result.insert(QStringLiteral("positions"), list);
-
-    QJsonDocument document = QJsonDocument::fromVariant(result);
-
-    QString filePath = bookmarkFilePath(source);
-    QSaveFile file(filePath);
-    if (!file.open(QFile::WriteOnly))
-        return;
-
-    file.write(document.toJson());
-    file.commit();
-}
-
 BookItem::BookItem(QObject *parent) :
     QObject(parent), m_state(Null), m_info(new BookInfoItem(this)),
     m_colorsGeneration(0), m_style(nullptr), m_textSettings(new BookTextSettings(this))
@@ -97,35 +56,28 @@ void BookItem::setSource(const QUrl &source)
         m_bookInfo = BookInfo();
         m_source = source;
         m_state = Loading;
-        m_positions = loadPositions(source);
+        m_positions.clear();
+        
         emit stateChanged(m_state);
         emit sourceChanged(source);
         emit bookDataChanged(bookData());
         emit positionsChanged(positions());
-
-        SafeRunnable::start(this, [this, source] () -> SafeRunnable::Handler {
-            auto send_error = [this, source] () {
-                setError(source);
-            };
-
-            if (!source.isLocalFile())
-                return send_error;
-
-            ArchiveReader reader(source.toLocalFile());
-
-            if (!reader.open())
-                return send_error;
-
-            QMimeDatabase mimeDataBase;
-            QMimeType mime = mimeDataBase.mimeTypeForFileNameAndData(reader.fileName(), reader.device());
-            FB2Reader fb2Reader;
-            if (!fb2Reader.canRead(mime))
-                return send_error;
-
-            BookInfo book = fb2Reader.read(m_source, reader.device(), FB2Reader::All);
-            return [this, source, book] () {
-                setBookInfo(book);
-            };
+        
+        QtZLWorker::instance().openBook(this, source.toLocalFile(), [this] (const BookInfo &book, const QList<BookTextPosition> &positions) {
+            m_bookInfo = book;
+            m_positions = positions;
+            m_info->setBookInfo(m_bookInfo);
+            
+            m_state = Ready;
+            emit stateChanged(m_state);
+            emit bookDataChanged(bookData());
+            emit positionsChanged(BookItem::positions());
+            emit contentsChanged(contents());
+        }, [this] (const QString &error) {
+            qDebug("Failed to open book: \"%s\"", qPrintable(error));
+            
+            m_state = Error;
+            emit stateChanged(m_state);
         });
     }
 }
@@ -151,7 +103,7 @@ void BookItem::setPositions(const QVariantList &positions)
     if (m_positions != tmp) {
         m_positions = tmp;
         if (m_bookInfo.source.isValid())
-            savePositions(m_bookInfo.source, m_positions);
+            QtZLWorker::instance().savePositions(m_bookInfo.source.toLocalFile(), m_positions);
         emit positionsChanged(BookItem::positions());
     }
 }

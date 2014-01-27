@@ -4,8 +4,8 @@
 #include <QDebug>
 
 QtZLConfig::QtZLConfig() :
-    m_globalSettings(new QSettings(QSettings::SystemScope, QCoreApplication::organizationName(), QCoreApplication::applicationName())),
-    m_settings(new QSettings(QSettings::UserScope, QCoreApplication::organizationName(), QCoreApplication::applicationName()))
+    m_globalSettings(new QSettings(QSettings::IniFormat, QSettings::SystemScope, QCoreApplication::organizationName(), QCoreApplication::applicationName())),
+    m_settings(new QSettings(QSettings::IniFormat, QSettings::UserScope, QCoreApplication::organizationName(), QCoreApplication::applicationName()))
 {
 }
 

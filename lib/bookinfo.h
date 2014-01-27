@@ -36,8 +36,9 @@ struct BodyPosition
 struct BookTextPosition
 {
     int body;
-    int block;
-    int position;
+    int paragraph;
+    int word;
+    int character;
 
     QVariantMap toMap() const;
     static BookTextPosition fromMap(const QVariantMap &arg);

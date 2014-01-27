@@ -7,12 +7,14 @@
 #include <QSGSimpleTextureNode>
 #include <QQuickWindow>
 
+#include "../3rdparty/fbreader-ui/qtzlworker.h"
+
 namespace CuteReader {
 
 BookPageItem::BookPageItem(QQuickItem *parent) :
     QQuickItem(parent),
     m_book(NULL),
-    m_positionValue({ 0, 0, 0 }),
+    m_positionValue({ 0, 0, 0, 0 }),
     m_imageDelegate(NULL),
     m_linkDelegate(NULL)
 {
@@ -209,35 +211,41 @@ void BookPageItem::recreateSubItems()
 
     for (auto object : m_subItems)
         object->setProperty("visible", false);
-
-    const BookPageIterator it(this);
-    const ItemId id = it.id();
-
-    SafeRunnable::start(this, [this, it, id] () -> SafeRunnable::Handler {
-        QList<BookBlock::Ptr> cache;
-        QList<BookBlock::ItemInfo> items;
-
-        QSize size = it.id().size().toSize();
-
-        if (size.isEmpty())
-            return [] () {};
-
-        size.rwidth() *= 1.1;
-        QImage image(size, QImage::Format_ARGB32_Premultiplied);
-        image.fill(Qt::transparent);
-
-        QPainter painter(&image);
-        painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
-
-        for (const auto &line : it.pageLines(cache)) {
-            items << line.block->createItems(line.position, line.index);
-            line.block->draw(&painter, line.position, line.index);
-        }
-
-        return [this, image, items, id] () {
-            handleSubItems(id, image, items);
-        };
+    
+    QtZLWorker::instance().renderPage(this, QSize(width(), height()), m_positionValue, [this] (const QImage &image) {
+        QMutexLocker locker(&m_cacheLock);
+        m_cachedImage = image;
+        update();
     });
+
+//    const BookPageIterator it(this);
+//    const ItemId id = it.id();
+
+//    SafeRunnable::start(this, [this, it, id] () -> SafeRunnable::Handler {
+//        QList<BookBlock::Ptr> cache;
+//        QList<BookBlock::ItemInfo> items;
+
+//        QSize size = it.id().size().toSize();
+
+//        if (size.isEmpty())
+//            return [] () {};
+
+//        size.rwidth() *= 1.1;
+//        QImage image(size, QImage::Format_ARGB32_Premultiplied);
+//        image.fill(Qt::transparent);
+
+//        QPainter painter(&image);
+//        painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
+
+//        for (const auto &line : it.pageLines(cache)) {
+//            items << line.block->createItems(line.position, line.index);
+//            line.block->draw(&painter, line.position, line.index);
+//        }
+
+//        return [this, image, items, id] () {
+//            handleSubItems(id, image, items);
+//        };
+//    });
 }
 
 void BookPageItem::handleSubItems(const ItemId &id, const QImage &image, const QList<BookBlock::ItemInfo> &infos)

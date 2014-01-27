@@ -7,6 +7,23 @@ ApplicationWindow {
     width: 360
     height: 360
     visible: true
+    title: {
+        switch (rootBook.state) {
+            case Book.Loading:
+                return "Loading";
+            case Book.Error:
+                return "Error";
+            case Book.Null:
+                return "No book";
+            default:
+                break;
+        }
+        
+        if (rootBook.info.title === "")
+            return "Unknown book";
+        else
+            return rootBook.info.title
+    }
 
     Config {
         id: genericConfig
@@ -77,7 +94,7 @@ ApplicationWindow {
 
         Tab {
             id: bookStackTab
-            title: rootBook.info.title
+            title: "Book"
 
             Item {
                 property StackView stackView: bookStack

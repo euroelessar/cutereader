@@ -32,7 +32,7 @@ void QtZLPaintContext::clear(ZLColor color)
 void QtZLPaintContext::setFont(const std::string &family, int size, bool bold, bool italic)
 {
     QFont font(QString::fromStdString(family));
-    font.setPixelSize(size);
+    font.setPointSize(size);
     font.setBold(bold);
     font.setItalic(italic);
 
