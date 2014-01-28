@@ -38,6 +38,9 @@ QtZLWorker::QtZLWorker(QObject *parent) :
     QObject(parent), m_data(new QtZLWorkerPrivate)
 {
     qRegisterMetaType<QtZLWork>();
+
+    FBTextStyle::Instance().FontSizeOption.setValue(14);
+    FBTextStyle::Instance().FontFamilyOption.setValue("Arial");
 }
 
 QtZLWorker::~QtZLWorker()
@@ -83,7 +86,7 @@ static const CuteReader::BookInfo toBookInfo(const shared_ptr<Book> &book)
     if (!book->seriesTitle().empty()) {
         CuteReader::SequenceInfo sequenceInfo;
         sequenceInfo.name = QString::fromStdString(book->seriesTitle());
-        sequenceInfo.number = book->indexInSeries();
+        sequenceInfo.number = QString::fromStdString(book->indexInSeries().value());
         result.sequences << sequenceInfo;
     }
 
@@ -111,8 +114,6 @@ void QtZLWorker::openBook(QObject *object, const QString &path,
 {
     run(object, [this, path, handler, error] () -> QtZLWork {
         ZLFile file(path.toStdString());
-        FBTextStyle::Instance().FontSizeOption.setValue(10);
-        FBTextStyle::Instance().FontFamilyOption.setValue("Arial");
         
         shared_ptr<FormatPlugin> plugin = PluginCollection::Instance().plugin(file, false);
         if (!plugin.isNull()) {
@@ -214,7 +215,7 @@ QImage QtZLWorker::loadCover(const QString &id)
         shared_ptr<FormatPlugin> plugin = PluginCollection::Instance().plugin(file, false);
         
         if (!plugin.isNull()) {
-            shared_ptr<ZLImage> image = plugin->coverImage(file);
+            shared_ptr<const ZLImage> image = plugin->coverImage(file);
             
             if (!image.isNull()) {
                 shared_ptr<ZLImageData> data = ZLImageManager::Instance().imageData(*image);

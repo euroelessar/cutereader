@@ -76,7 +76,7 @@ struct BodyInfo
 struct SequenceInfo
 {
     QString name;
-    int number;
+    QString number;
 };
 
 struct BookInfo

@@ -1,0 +1,11 @@
+INCLUDEPATH += \
+    ../3rdparty/fbreader/zlibrary/core/include \
+    ../3rdparty/fbreader/zlibrary/text/include
+
+include(fbreader-ui/fbreader-ui.pri)
+
+QMAKE_CXXFLAGS += -DVERSION=\"\\\"0.12.0\\\"\"
+
+LIBS += -ldl -lexpat -lfribidi -llinebreak -lsqlite3
+DEFINES += NO_BZIP2_SUPPORT
+

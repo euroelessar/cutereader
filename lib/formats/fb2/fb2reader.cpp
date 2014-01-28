@@ -107,9 +107,7 @@ void FB2Reader::readDescription(QXmlStreamReader &in, BookInfo &info, const QUrl
                 } else if (in.name() == QStringLiteral("sequence")) {
                     QStringRef name = in.attributes().value(QStringLiteral("name"));
                     QStringRef numberStr = in.attributes().value(QStringLiteral("number"));
-                    bool ok = false;
-                    int number = numberStr.toInt(&ok);
-                    info.sequences.append({ name.toString(), ok ? number : -1 });
+                    info.sequences.append({ name.toString(), numberStr.toString() });
                 }
             } else if (depth == 4 && inCoverPage && in.name() == QStringLiteral("image")) {
                 info.cover = readImage(in, baseUrl).source;

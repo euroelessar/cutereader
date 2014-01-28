@@ -83,6 +83,7 @@ FocusScope {
         snapMode: PathView.SnapOneItem
         clip: true
         model: pagesModel
+        pixelAligned: true
 
         onContentXChanged: {
             function index() {

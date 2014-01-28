@@ -2,6 +2,7 @@
 #include <ZLDialog.h>
 #include <ZLProgressDialog.h>
 #include <ZLOptionsDialog.h>
+#include <ZLTreeDialog.h>
 
 QtZLDialogManager::QtZLDialogManager()
 {
@@ -12,22 +13,9 @@ void QtZLDialogManager::createInstance()
     ourInstance = new QtZLDialogManager;
 }
 
-void QtZLDialogManager::createApplicationWindow(ZLApplication *application) const
-{
-    (void) application;
-}
-
 shared_ptr<ZLDialog> QtZLDialogManager::createDialog(const ZLResourceKey &key) const
 {
     (void) key;
-    return nullptr;
-}
-
-shared_ptr<ZLOptionsDialog> QtZLDialogManager::createOptionsDialog(const ZLResourceKey &key, shared_ptr<ZLRunnable> applyAction, bool showApplyButton) const
-{
-    (void) key;
-    (void) applyAction;
-    (void) showApplyButton;
     return nullptr;
 }
 
@@ -62,6 +50,43 @@ int QtZLDialogManager::questionBox(const ZLResourceKey &key, const std::string &
     return 0;
 }
 
+bool QtZLDialogManager::isClipboardSupported(ZLDialogManager::ClipboardType type) const
+{
+    (void) type;
+    return false;
+}
+
+void QtZLDialogManager::setClipboardText(const std::string &text, ZLDialogManager::ClipboardType type) const
+{
+    (void) text;
+    (void) type;
+}
+
+void QtZLDialogManager::setClipboardImage(const ZLImageData &imageData, ZLDialogManager::ClipboardType type) const
+{
+    (void) imageData;
+    (void) type;
+}
+
+
+void QtZLDialogManager::showSearchBox() const
+{
+}
+
+shared_ptr<ZLOptionsDialog> QtZLDialogManager::createOptionsDialog(const ZLResourceKey &key, shared_ptr<ZLRunnable> applyAction) const
+{
+    (void) key;
+    (void) applyAction;
+    return nullptr;
+}
+
+shared_ptr<ZLTreeDialog> QtZLDialogManager::createTreeDialog(const std::string &windowName, const ZLResource &resource) const
+{
+    (void) windowName;
+    (void) resource;
+    return nullptr;
+}
+
 class QtZLProgressDialogDummy : public ZLProgressDialog
 {
 public:
@@ -80,25 +105,8 @@ public:
     }
 };
 
-shared_ptr<ZLProgressDialog> QtZLDialogManager::createProgressDialog(const ZLResourceKey &key) const
+shared_ptr<ZLProgressDialog> QtZLDialogManager::createProgressDialog(const ZLResourceKey &key, bool network) const
 {
+    (void) network;
     return new QtZLProgressDialogDummy(key);
-}
-
-bool QtZLDialogManager::isClipboardSupported(ZLDialogManager::ClipboardType type) const
-{
-    (void) type;
-    return false;
-}
-
-void QtZLDialogManager::setClipboardText(const std::string &text, ZLDialogManager::ClipboardType type) const
-{
-    (void) text;
-    (void) type;
-}
-
-void QtZLDialogManager::setClipboardImage(const ZLImageData &imageData, ZLDialogManager::ClipboardType type) const
-{
-    (void) imageData;
-    (void) type;
 }

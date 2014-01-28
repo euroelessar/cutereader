@@ -91,11 +91,11 @@ std::string QtZLFSManager::convertFilenameToUtf8(const std::string &name) const
     return QFile::decodeName(name.c_str()).toStdString();
 }
 
-std::string QtZLFSManager::mimeType(const std::string &path) const
+shared_ptr<ZLMimeType> QtZLFSManager::mimeType(const std::string &path) const
 {
     QMimeDatabase database;
     QMimeType type = database.mimeTypeForFile(QString::fromStdString(path));
-    return type.name().toStdString();
+    return ZLMimeType::get(type.name().toStdString());
 }
 
 int QtZLFSManager::findArchiveFileNameDelimiter(const std::string &path) const

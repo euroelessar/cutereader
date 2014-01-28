@@ -5,7 +5,7 @@ import org.qutim 0.3
 ApplicationWindow {
     id: rootItem
     width: 360
-    height: 360
+    height: 480
     visible: true
     title: {
         switch (rootBook.state) {

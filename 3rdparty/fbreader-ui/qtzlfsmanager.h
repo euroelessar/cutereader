@@ -22,7 +22,7 @@ protected:
     ZLFileInfo fileInfo(const std::string &path) const;
     bool removeFile(const std::string &path) const;
     std::string convertFilenameToUtf8(const std::string &name) const;
-    std::string mimeType(const std::string &path) const;
+    shared_ptr<ZLMimeType> mimeType(const std::string &path) const;
     int findArchiveFileNameDelimiter(const std::string &path) const;
     shared_ptr<ZLDir> rootDirectory() const;
     const std::string &rootDirectoryPath() const;

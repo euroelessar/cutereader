@@ -10,7 +10,9 @@
 #include <ZLEncodingConverter.h>
 #include <QLocale>
 #include <QStandardPaths>
-#include <QCoreApplication>
+#include <QGuiApplication>
+#include <QDesktopServices>
+#include <QScreen>
 
 const std::string ZLibrary::FileNameDelimiter = "/";
 const std::string ZLibrary::PathDelimiter = ":";
@@ -43,8 +45,11 @@ bool ZLibrary::init(int &argc, char **&argv)
     ourApplicationName = qApp->applicationName().toStdString();
     ourApplicationDirectory = QStandardPaths::standardLocations(QStandardPaths::DataLocation).value(0).toStdString();
     ourApplicationWritableDirectory = QStandardPaths::writableLocation(QStandardPaths::DataLocation).toStdString();
+    ourDefaultFilesPathPrefix = QStandardPaths::standardLocations(QStandardPaths::DataLocation).value(0).toStdString() + '/';
     
+    qDebug("data locations: \"%s\"", qPrintable(QStandardPaths::standardLocations(QStandardPaths::DataLocation).join("\", \"")));
     qDebug("ourApplicationWritableDirectory: \"%s\"", ourApplicationWritableDirectory.c_str());
+    qDebug("ourDefaultFilesPathPrefix: \"%s\"", ourDefaultFilesPathPrefix.c_str());
 
     QtZLFSManager::createInstance();
     QtZLTimeManager::createInstance();
@@ -105,4 +110,27 @@ void ZLibrary::initApplication(const std::string &name)
 
 ZLibrary::ZLibrary()
 {
+}
+
+bool ZLibrary::openUrl(const std::string &url)
+{
+    return QDesktopServices::openUrl(QUrl(QString::fromStdString(url)));
+}
+
+std::size_t ZLibrary::displayDPI()
+{
+    QScreen *screen = QGuiApplication::screens().value(0);
+    return screen->logicalDotsPerInch();
+}
+
+std::size_t ZLibrary::displayPixelsHeight()
+{
+    QScreen *screen = QGuiApplication::screens().value(0);
+    return screen->availableSize().height();
+}
+
+std::size_t ZLibrary::displayPixelsWidth()
+{
+    QScreen *screen = QGuiApplication::screens().value(0);
+    return screen->availableSize().width();
 }
