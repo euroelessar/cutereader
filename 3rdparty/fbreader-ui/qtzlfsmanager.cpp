@@ -6,6 +6,10 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMimeDatabase>
+#include <QStandardPaths>
+
+#define DATA_PATH "data:/"
+#define DATA_PATH_SIZE (sizeof(DATA_PATH) - 1)
 
 QtZLFSManager::QtZLFSManager()
 {
@@ -16,14 +20,23 @@ void QtZLFSManager::createInstance()
     ourInstance = new QtZLFSManager;
 }
 
+QString QtZLFSManager::dataPath()
+{
+    return QStringLiteral(DATA_PATH);
+}
+
 static bool hasSeveralDrives()
 {
 #ifdef Q_OS_WIN
-# error Fuck off
     return true;
 #else
     return false;
 #endif
+}
+
+static bool isDataPath(const std::string &path)
+{
+    return path.compare(0, DATA_PATH_SIZE, DATA_PATH) == 0;
 }
 
 std::string QtZLFSManager::resolveSymlink(const std::string &path) const
@@ -35,8 +48,23 @@ std::string QtZLFSManager::resolveSymlink(const std::string &path) const
 void QtZLFSManager::normalizeRealPath(std::string &path) const
 {
     QString oldPath = QString::fromStdString(path);
-    if (oldPath.startsWith(QStringLiteral("~/")) || oldPath == QStringLiteral("~"))
+
+    if (isDataPath(path)) {
+        const size_t offset = path.find_first_not_of('/', DATA_PATH_SIZE - 1);
+        const QString fileName = oldPath.mid(offset);
+
+        oldPath = QStandardPaths::locate(QStandardPaths::DataLocation, fileName, QStandardPaths::LocateDirectory);
+        if (oldPath.isEmpty())
+            oldPath = QStandardPaths::locate(QStandardPaths::DataLocation, fileName, QStandardPaths::LocateFile);
+
+        if (oldPath.isEmpty()) {
+            qWarning("data path not found: \"%s\"", qPrintable(fileName));
+            oldPath = QStandardPaths::writableLocation(QStandardPaths::DataLocation) + QLatin1Char('/') + fileName;
+        }
+
+    } else if (oldPath.startsWith(QStringLiteral("~/")) || oldPath == QStringLiteral("~")) {
         oldPath.replace(0, 1, QDir::homePath());
+    }
     
     const QFileInfo info = oldPath;
     const QDir dir = info.absolutePath();
@@ -101,6 +129,15 @@ shared_ptr<ZLMimeType> QtZLFSManager::mimeType(const std::string &path) const
 int QtZLFSManager::findArchiveFileNameDelimiter(const std::string &path) const
 {
     size_t result = path.rfind(':');
+
+    if (isDataPath(path) && result == 4)
+        return -1;
+
+#ifdef Q_OS_WIN
+    if (result == 1)
+        return -1;
+#endif
+
     return result == std::string::npos ? -1 : int(result);
 }
 

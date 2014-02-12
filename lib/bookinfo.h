@@ -69,7 +69,6 @@ struct BodyInfo
 {
     QString name;
     QList<BookBlockFactory::Ptr> blocks;
-    ContentNode contents;
     QHash<QString, BodyPosition> references;
 };
 
@@ -89,6 +88,7 @@ struct BookInfo
     QUrl cover;
     BodyInfo annotation;
     QList<BodyInfo> bodies;
+    ContentNode contents;
 
     QStringList authorsList() const;
     QStringList sequencesList() const;

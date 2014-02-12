@@ -11,6 +11,12 @@ typedef std::function<void()> QtZLWork;
 
 class QtZLWorkerPrivate;
 
+struct QtZLBookInfo
+{
+    CuteReader::BookInfo book;
+    QList<CuteReader::BookTextPosition> positions;
+};
+
 class QtZLWorker : public QObject
 {
     Q_OBJECT
@@ -24,12 +30,14 @@ public:
     
     void loadBooks(QObject *object, const std::function<void (const QList<CuteReader::BookInfo> &)> &handler);
     void openBook(QObject *object, const QString &path,
-                  const std::function<void (const CuteReader::BookInfo &, const QList<CuteReader::BookTextPosition> &)> &handler,
+                  const std::function<void (const QtZLBookInfo &)> &handler,
                   const std::function<void (const QString &)> &error);
     void savePositions(const QString &path, const QList<CuteReader::BookTextPosition> &positions);
     QImage loadCover(const QString &id);
     void renderPage(QObject *object, const QSize &size, const CuteReader::BookTextPosition &position,
                     const std::function<void (const QImage &image)> &handler);
+    void findNextPage(QObject *object, const QSize &size, const CuteReader::BookTextPosition &position, int delta,
+                      const std::function<void (const CuteReader::BookTextPosition &image)> &handler);
 
 private:
     void run(QObject *object, const std::function<QtZLWork ()> &work);

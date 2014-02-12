@@ -26,8 +26,6 @@ public:
     QVariantMap positionValue() const;
 
     Q_INVOKABLE QVariant positionForId(const QString &id) const;
-    Q_INVOKABLE QVariantMap nextPageForPosition(const QVariantMap &position);
-    Q_INVOKABLE QVariantMap previousPageForPosition(const QVariantMap &position);
 
     QQmlComponent *imageDelegate() const;
     QQmlComponent *linkDelegate() const;

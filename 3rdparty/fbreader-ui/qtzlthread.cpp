@@ -24,50 +24,50 @@ QtZLThread::QtZLThread(QObject *parent) :
 {
 }
 
-//void contentsGames()
-//{
-//    ZLFile file("/home/elessar/gitgames/cutereader/books/the_three_musketeers.fb2");
-//    shared_ptr<FormatPlugin> plugin = PluginCollection::Instance().plugin(file, false);
-//    qDebug() << file.path().c_str() << plugin.isNull();
+void contentsGames()
+{
+    ZLFile file("/home/elessar/.local/share/books/Valentinov_Alyumen_1_Mehanizm_Vremeni.133431.fb2.zip:Valentinov_Alyumen_1_Mehanizm_Vremeni.133431.fb2");
+    shared_ptr<FormatPlugin> plugin = PluginCollection::Instance().plugin(file, false);
+    qDebug() << file.path().c_str() << plugin.isNull();
 
-//    shared_ptr<Book> book = Book::loadFromFile(file);
-//    qDebug() << book->title().c_str() << book->encoding().c_str() << book->language().c_str();
+    shared_ptr<Book> book = Book::loadFromFile(file);
+    qDebug() << book->title().c_str() << book->encoding().c_str() << book->language().c_str();
 
-//    BookModel model(book);
-//    qDebug() << "model" << plugin->readModel(model);
+    BookModel model(book);
+    qDebug() << "model" << plugin->readModel(model);
 
-//    shared_ptr<ZLTextModel> contents = model.contentsModel();
-//    ContentsModel &contentsModel = static_cast<ContentsModel &>(*contents);
-//    for (size_t i = 0; i < contents->paragraphsNumber(); ++i) {
-//        ZLTextParagraph *paragraph = (*contents)[i];
-//        qDebug() << "========";
+    shared_ptr<ZLTextModel> contents = model.contentsModel();
+    ContentsModel &contentsModel = static_cast<ContentsModel &>(*contents);
+    for (size_t i = 0; i < contents->paragraphsNumber(); ++i) {
+        ZLTextParagraph *paragraph = (*contents)[i];
+        qDebug() << "========";
 
-//        for (ZLTextParagraph::Iterator it = *paragraph; !it.isEnd(); it.next()) {
-//            const shared_ptr<ZLTextParagraphEntry> entry = it.entry();
-//            switch (it.entryKind()) {
-//            case ZLTextParagraphEntry::TEXT_ENTRY: {
-//                ZLTextEntry &textEntry = static_cast<ZLTextEntry &>(*entry);
-//                qDebug() << it.entryKind() << QString::fromUtf8(textEntry.data(), textEntry.dataLength())
-//                         << contentsModel.reference(static_cast<ZLTextTreeParagraph *>(paragraph));
-//                break;
-//            }
-//            case ZLTextParagraphEntry::CONTROL_ENTRY: {
-//                ZLTextControlEntry &controlEntry = static_cast<ZLTextControlEntry &>(*entry);
-//                if (controlEntry.isHyperlink()) {
-//                    ZLTextHyperlinkControlEntry &hyperlinkEntry = static_cast<ZLTextHyperlinkControlEntry &>(*entry);
-//                    qDebug() << it.entryKind() << hyperlinkEntry.hyperlinkType().c_str() << hyperlinkEntry.label().c_str();
-//                    break;
-//                } else {
-//                    qDebug() << it.entryKind() << controlEntry.isStart();
-//                    break;
-//                }
-//            }
-//            default:
-//                qDebug() << it.entryKind();
-//            }
-//        }
-//    }
-//}
+        for (ZLTextParagraph::Iterator it = *paragraph; !it.isEnd(); it.next()) {
+            const shared_ptr<ZLTextParagraphEntry> entry = it.entry();
+            switch (it.entryKind()) {
+            case ZLTextParagraphEntry::TEXT_ENTRY: {
+                ZLTextEntry &textEntry = static_cast<ZLTextEntry &>(*entry);
+                qDebug() << it.entryKind() << QString::fromUtf8(textEntry.data(), textEntry.dataLength())
+                         << contentsModel.reference(static_cast<ZLTextTreeParagraph *>(paragraph));
+                break;
+            }
+            case ZLTextParagraphEntry::CONTROL_ENTRY: {
+                ZLTextControlEntry &controlEntry = static_cast<ZLTextControlEntry &>(*entry);
+                if (controlEntry.isHyperlink()) {
+                    ZLTextHyperlinkControlEntry &hyperlinkEntry = static_cast<ZLTextHyperlinkControlEntry &>(*entry);
+                    qDebug() << it.entryKind() << hyperlinkEntry.hyperlinkType() << hyperlinkEntry.label().c_str();
+                    break;
+                } else {
+                    qDebug() << it.entryKind() << controlEntry.isStart();
+                    break;
+                }
+            }
+            default:
+                qDebug() << it.entryKind();
+            }
+        }
+    }
+}
 
 void do_smth()
 {
@@ -91,7 +91,8 @@ void QtZLThread::run()
         m_condition.wakeAll();
     }
 
-    do_smth();
+//    do_smth();
+//    contentsGames();
 
 //    const BookSet &books = Library::Instance().books();
 //    qDebug() << "Books" << books.size();

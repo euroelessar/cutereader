@@ -69,42 +69,6 @@ QVariant BookPageItem::positionForId(const QString &id) const
     return m_book->positionForId(id).toMap();
 }
 
-QVariantMap BookPageItem::nextPageForPosition(const QVariantMap &position)
-{
-    if (!m_book)
-        return QVariantMap();
-
-    static quint64 nsecs = 0;
-    static quint64 calls = 0;
-
-    QElapsedTimer timer;
-    timer.start();
-
-    BookPageIterator it(this);
-    it.setPosition(BookTextPosition::fromMap(position));
-
-    QList<BookBlock::Ptr> cache;
-    QVariantMap result = it.nextPage(cache).toMap();
-
-    nsecs += timer.nsecsElapsed();
-    ++calls;
-    qDebug() << "nextPage total:" << nsecs / 1000000. << "ms, average: " << nsecs / 1000000. / calls << "ms";
-
-    return result;
-}
-
-QVariantMap BookPageItem::previousPageForPosition(const QVariantMap &position)
-{
-    if (!m_book)
-        return QVariantMap();
-
-    BookPageIterator it(this);
-    it.setPosition(BookTextPosition::fromMap(position));
-
-    QList<BookBlock::Ptr> cache;
-    return it.previousPage(cache).toMap();
-}
-
 QQmlComponent *BookPageItem::imageDelegate() const
 {
     return m_imageDelegate;
@@ -217,35 +181,6 @@ void BookPageItem::recreateSubItems()
         m_cachedImage = image;
         update();
     });
-
-//    const BookPageIterator it(this);
-//    const ItemId id = it.id();
-
-//    SafeRunnable::start(this, [this, it, id] () -> SafeRunnable::Handler {
-//        QList<BookBlock::Ptr> cache;
-//        QList<BookBlock::ItemInfo> items;
-
-//        QSize size = it.id().size().toSize();
-
-//        if (size.isEmpty())
-//            return [] () {};
-
-//        size.rwidth() *= 1.1;
-//        QImage image(size, QImage::Format_ARGB32_Premultiplied);
-//        image.fill(Qt::transparent);
-
-//        QPainter painter(&image);
-//        painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
-
-//        for (const auto &line : it.pageLines(cache)) {
-//            items << line.block->createItems(line.position, line.index);
-//            line.block->draw(&painter, line.position, line.index);
-//        }
-
-//        return [this, image, items, id] () {
-//            handleSubItems(id, image, items);
-//        };
-//    });
 }
 
 void BookPageItem::handleSubItems(const ItemId &id, const QImage &image, const QList<BookBlock::ItemInfo> &infos)

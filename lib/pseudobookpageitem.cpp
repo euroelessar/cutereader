@@ -1,6 +1,7 @@
 #include "pseudobookpageitem.h"
 #include "bookpageiterator.h"
 #include "saferunnable.h"
+#include "../3rdparty/fbreader-ui/qtzlworker.h"
 
 namespace CuteReader {
 
@@ -16,35 +17,24 @@ void PseudoBookPageItem::recreateSubItems()
 
 int PseudoBookPageItem::calculateNextPage(const QVariantMap &arg)
 {
-    int id = ++m_calulationId;
-    BookPageIterator it(this);
-    it.setPosition(BookTextPosition::fromMap(arg));
-
-    SafeRunnable::start(this, [this, it, id] () -> SafeRunnable::Handler {
-        QList<BookBlock::Ptr> cache;
-        auto result = it.nextPage(cache).toMap();
-        return [this, id, result] () {
-            emit positionCalculationReady(id, result);
-        };
-    });
-
-    return id;
+    return calculatePage(arg, 1);
 }
 
 int PseudoBookPageItem::calculatePreviousPage(const QVariantMap &arg)
 {
+    return calculatePage(arg, -1);
+}
+
+int PseudoBookPageItem::calculatePage(const QVariantMap &position, int delta)
+{
     int id = ++m_calulationId;
-    BookPageIterator it(this);
-    it.setPosition(BookTextPosition::fromMap(arg));
-
-    SafeRunnable::start(this, [this, it, id] () -> SafeRunnable::Handler {
-        QList<BookBlock::Ptr> cache;
-        auto result = it.previousPage(cache).toMap();
-        return [this, id, result] () {
-            emit positionCalculationReady(id, result);
-        };
+    
+    QSize size(width(), height());
+    QtZLWorker::instance().findNextPage(this, size, BookTextPosition::fromMap(position), delta,
+                                        [this, id] (const BookTextPosition &result) {
+        emit positionCalculationReady(id, result.toMap());
     });
-
+    
     return id;
 }
 

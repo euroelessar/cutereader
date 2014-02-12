@@ -15,6 +15,7 @@ public:
 
     Q_INVOKABLE int calculateNextPage(const QVariantMap &position);
     Q_INVOKABLE int calculatePreviousPage(const QVariantMap &position);
+    int calculatePage(const QVariantMap &position, int delta);
 
 signals:
     void positionCalculationReady(int calculationId, const QVariantMap &position);

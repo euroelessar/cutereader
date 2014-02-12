@@ -16,7 +16,6 @@ SOURCES += ../lib/blocks/booktextblock.cpp \
     ../lib/bookitem.cpp \
     ../lib/bookblock.cpp \
     ../lib/blocks/bookimageblock.cpp \
-    ../lib/formats/fb2/fb2reader.cpp \
     ../lib/providers/fb2imageprovider.cpp \
     ../lib/archivereader.cpp \
     ../lib/bookinfo.cpp \
@@ -56,7 +55,6 @@ HEADERS += ../lib/blocks/booktextblock.h \
     ../lib/bookitem.h \
     ../lib/bookblock.h \
     ../lib/blocks/bookimageblock.h \
-    ../lib/formats/fb2/fb2reader.h \
     ../lib/providers/fb2imageprovider.h \
     ../lib/archivereader.h \
     ../lib/bookinfo.h \

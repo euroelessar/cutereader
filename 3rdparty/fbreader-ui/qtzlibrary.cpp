@@ -40,12 +40,12 @@ bool ZLibrary::init(int &argc, char **&argv)
     ourCountry = locale.section(QLatin1Char('_'), 1, 1).toStdString();
     ourLocaleIsInitialized = true;
 
-    ourZLibraryDirectory = QStandardPaths::standardLocations(QStandardPaths::DataLocation).value(0).toStdString();
+    ourZLibraryDirectory = QtZLFSManager::dataPath().toStdString();
     ourApplicationImageDirectory = QStandardPaths::writableLocation(QStandardPaths::CacheLocation).toStdString() + "/images";
     ourApplicationName = qApp->applicationName().toStdString();
-    ourApplicationDirectory = QStandardPaths::standardLocations(QStandardPaths::DataLocation).value(0).toStdString();
+    ourApplicationDirectory = QtZLFSManager::dataPath().toStdString();
     ourApplicationWritableDirectory = QStandardPaths::writableLocation(QStandardPaths::DataLocation).toStdString();
-    ourDefaultFilesPathPrefix = QStandardPaths::standardLocations(QStandardPaths::DataLocation).value(0).toStdString() + '/';
+    ourDefaultFilesPathPrefix = QtZLFSManager::dataPath().toStdString();
     
     qDebug("data locations: \"%s\"", qPrintable(QStandardPaths::standardLocations(QStandardPaths::DataLocation).join("\", \"")));
     qDebug("ourApplicationWritableDirectory: \"%s\"", ourApplicationWritableDirectory.c_str());

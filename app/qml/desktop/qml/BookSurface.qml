@@ -14,6 +14,34 @@ FocusScope {
         anchors.fill: parent
         anchors.margins: 15
         book: root.book
+
+        onPositionCalculationReady: {
+            if (root.previousPositionId === calculationId) {
+                if (position.block === undefined) {
+                    root.previousPositionId = -2;
+                    return;
+                }
+
+                var horizontalVelocity = pagesView.horizontalVelocity;
+
+                pagesView.contentX += pagesView.width;
+                pagesModel.insert(0, { positionValue: position });
+
+                root.previousPositionId = -1;
+
+                pagesView.flick(horizontalVelocity, 0);
+            }
+            if (root.nextPositionId === calculationId) {
+                if (position.block === undefined) {
+                    root.nextPositionId = -2;
+                    return;
+                }
+
+                pagesModel.append({ positionValue: position });
+
+                root.nextPositionId = -1;
+            }
+        }
     }
 
     onWidthChanged: rebuildModel(1)
@@ -25,51 +53,34 @@ FocusScope {
         onStyleChanged: root.rebuildModel(3)
     }
 
+    property int previousPositionId: -1
+    property int nextPositionId: -1
+
     function rebuildModel(type) {
-        pagesModel.clear()
+        nextPositionId = -3;
+        previousPositionId = -3;
 
-        var positions = new Array(5);
-        var i;
-        var positionIndex = 2;
+        pagesModel.clear();
+        pagesModel.append({ positionValue: currentPageHelper.positionValue });
 
-        positions[2] = currentPageHelper.positionValue;
-        for (i = 1; i >= 0; --i) {
-            positions[i] = currentPageHelper.previousPageForPosition(positions[i + 1]);
-            if (positions[i].block === undefined)
-                --positionIndex;
-        }
-        for (i = 3; i < 5; ++i)
-            positions[i] = currentPageHelper.nextPageForPosition(positions[i - 1]);
-
-        positions = positions.filter(function (a) { return a.block !== undefined });
-
-        for (i = 0; i < positions.length; ++i)
-            pagesModel.append({ positionValue: positions[i] })
-
-        pagesView.contentX = positionIndex * pagesView.width;
-        console.log(JSON.stringify(positions))
+        nextPositionId = -1;
+        previousPositionId = -1;
     }
 
     function appendItem() {
-        var position = pagesModel.get(pagesModel.count - 1).positionValue;
-        var newPosition = currentPageHelper.nextPageForPosition(position);
-        if (newPosition.block === undefined)
-            return false;
+        if (nextPositionId !== -1)
+            return;
 
-        pagesModel.append({ positionValue: newPosition })
-        return true;
+        var position = pagesModel.get(pagesModel.count - 1).positionValue;
+        nextPositionId = currentPageHelper.calculateNextPage(position);
     }
 
     function prependItem() {
-        var position = pagesModel.get(0).positionValue;
-        var newPosition = currentPageHelper.previousPageForPosition(position);
-        if (newPosition.block === undefined)
-            return false;
+        if (previousPositionId !== -1)
+            return;
 
-        console.log('prependItem', pagesView.contentX, pagesView.originX, Math.floor((pagesView.contentX - pagesView.originX) / width))
-        pagesView.contentX += pagesView.width;
-        pagesModel.insert(0, { positionValue: newPosition });
-        return true;
+        var position = pagesModel.get(0).positionValue;
+        previousPositionId = currentPageHelper.calculatePreviousPage(position);
     }
 
     ListModel {

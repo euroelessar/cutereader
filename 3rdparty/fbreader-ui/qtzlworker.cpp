@@ -22,6 +22,7 @@
 
 #include "qtzlimagedata.h"
 #include "qtzlpaintcontext.h"
+#include "qtzlnullpaintcontext.h"
 
 class QtZLWorkerPrivate
 {
@@ -109,7 +110,7 @@ void QtZLWorker::loadBooks(QObject *object, const std::function<void (const QLis
 }
 
 void QtZLWorker::openBook(QObject *object, const QString &path,
-                          const std::function<void (const CuteReader::BookInfo &, const QList<CuteReader::BookTextPosition> &)> &handler,
+                          const std::function<void (const QtZLBookInfo &)> &handler,
                           const std::function<void (const QString &)> &error)
 {
     run(object, [this, path, handler, error] () -> QtZLWork {
@@ -150,12 +151,20 @@ void QtZLWorker::openBook(QObject *object, const QString &path,
         m_data->bodies.clear();
         m_data->bodies << m_data->model->bookTextModel();
 
+        shared_ptr<ZLTextModel> contents = m_data->model->contentsModel();
+        ContentsModel &contentsModel = static_cast<ContentsModel &>(*contents);
+
+        for (size_t i = 0; i < contentsModel.paragraphsNumber(); ++i) {
+
+        }
+
 //        BooksDB::Instance().insertIntoBookList(*book);
         
         ZLTextHyphenator::Instance().load(book->language());
 
-        CuteReader::BookInfo info = toBookInfo(book);
-        QList<CuteReader::BookTextPosition> positions;
+        QtZLBookInfo result;
+
+        result.book = toBookInfo(book);
         
         std::deque<ReadingState> states;
         if (!BooksDB::Instance().loadBookStateStack(*book, states))
@@ -169,7 +178,7 @@ void QtZLWorker::openBook(QObject *object, const QString &path,
                 state.Character
             };
 
-            positions << position;
+            result.positions << position;
         }
 
 //        if (book.isNull()) {
@@ -177,8 +186,8 @@ void QtZLWorker::openBook(QObject *object, const QString &path,
 //            shared_ptr<BookModel> model = new BookModel(book);
 //        }
 
-        return [info, positions, handler] () {
-            handler(info, positions);
+        return [result, handler] () {
+            handler(result);
         };
     });
 }
@@ -268,54 +277,75 @@ void QtZLWorker::renderPage(QObject *object, const QSize &size, const CuteReader
         
         shared_ptr<ZLTextModel> model = m_data->bodies.value(position.body);
         if (!model.isNull()) {
-            QElapsedTimer timer;
-            timer.start();
-            
             image = QImage(size, QImage::Format_ARGB32_Premultiplied);
-            
-            auto z = timer.nsecsElapsed(); timer.restart();
-            
             image.fill(Qt::transparent);
-            
-            auto a = timer.nsecsElapsed(); timer.restart();
-            
+
             QtZLPaintContext context;
             context.init(image);
-            
-            auto b = timer.nsecsElapsed(); timer.restart();
-        
+
             QtProperties properties;
-        
+
             ZLTextAreaController controller(context, properties);
-            
-            auto c = timer.nsecsElapsed(); timer.restart();
-            
+
             controller.setModel(model);
-            
-            auto d = timer.nsecsElapsed(); timer.restart();
-        
+
             controller.area().setOffsets(0, 0);
             controller.area().setSize(size.width(), size.height());
-            
-            auto e = timer.nsecsElapsed(); timer.restart();
-            
+
             controller.moveStartCursor(position.paragraph, position.word, position.character);
-            
-            auto f = timer.nsecsElapsed(); timer.restart();
-            
             controller.preparePaintInfo();
-            
-            auto g = timer.nsecsElapsed(); timer.restart();
-    
             controller.area().paint();
-            
-            auto h = timer.nsecsElapsed(); timer.restart();
-            
-            qDebug() << z << a << b << c << d << e << f << g << h;
         }
         
         return [handler, image] () {
             handler(image);
+        };
+    });
+}
+
+void QtZLWorker::findNextPage(QObject *object, const QSize &size, const CuteReader::BookTextPosition &position, int delta, const std::function<void (const CuteReader::BookTextPosition &)> &handler)
+{
+    run(object, [this, handler, position, size, delta] () {
+        const CuteReader::BookTextPosition invalidResult = {
+            -1, -1, -1, -1
+        };
+        CuteReader::BookTextPosition result = invalidResult;
+
+        shared_ptr<ZLTextModel> model = m_data->bodies.value(position.body);
+        do {
+            if (model.isNull())
+                break;
+
+            QtZLNullPaintContext context;
+            context.init(size);
+
+            QtProperties properties;
+
+            ZLTextAreaController controller(context, properties);
+
+            controller.setModel(model);
+
+            controller.area().setOffsets(0, 0);
+            controller.area().setSize(size.width(), size.height());
+
+            controller.moveStartCursor(position.paragraph, position.word, position.character);
+            controller.preparePaintInfo();
+
+            controller.scrollPage(delta > 0, ZLTextAreaController::NO_OVERLAPPING, std::abs(delta));
+            controller.preparePaintInfo();
+
+            const ZLTextWordCursor &cursor = controller.area().startCursor();
+            result.body = position.body;
+            result.paragraph = cursor.paragraphCursor().index();
+            result.word = cursor.elementIndex();
+            result.character = cursor.charIndex();
+
+            if (result == position)
+                result = invalidResult;
+        } while (false);
+
+        return [handler, result] {
+            handler(result);
         };
     });
 }

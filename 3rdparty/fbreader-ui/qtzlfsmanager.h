@@ -3,12 +3,15 @@
 
 #include "../fbreader/zlibrary/core/src/filesystem/ZLFSManager.h"
 
+class QString;
+
 class QtZLFSManager : public ZLFSManager
 {
 public:
     QtZLFSManager();
 
     static void createInstance();
+    static QString dataPath();
 
 public:
     std::string resolveSymlink(const std::string &path) const;

@@ -9,13 +9,13 @@ QtZLPaintContext::QtZLPaintContext()
 
 void QtZLPaintContext::init(QImage &image)
 {
-    m_size = image.size();
+    QtZLBasePaintContext::init(image.size());
     m_painter.reset(new QPainter(&image));
 }
 
 void QtZLPaintContext::deinit()
 {
-    m_size = QSize();
+    QtZLBasePaintContext::init(QSize());
     m_painter.reset();
 }
 
@@ -26,17 +26,7 @@ static QColor toQColor(const ZLColor &color)
 
 void QtZLPaintContext::clear(ZLColor color)
 {
-    m_painter->fillRect(0, 0, m_size.width(), m_size.height(), toQColor(color));
-}
-
-void QtZLPaintContext::setFont(const std::string &family, int size, bool bold, bool italic)
-{
-    QFont font(QString::fromStdString(family));
-    font.setPointSize(size);
-    font.setBold(bold);
-    font.setItalic(italic);
-
-    m_painter->setFont(font);
+    m_painter->fillRect(0, 0, width(), height(), toQColor(color));
 }
 
 void QtZLPaintContext::setColor(ZLColor color, ZLPaintContext::LineStyle style)
@@ -51,38 +41,6 @@ void QtZLPaintContext::setFillColor(ZLColor color, ZLPaintContext::FillStyle sty
     QBrush brush(toQColor(color), style == SOLID_FILL ? Qt::SolidPattern : Qt::Dense4Pattern);
 
     m_painter->setBrush(brush);
-}
-
-int QtZLPaintContext::width() const
-{
-    return m_size.width();
-}
-
-int QtZLPaintContext::height() const
-{
-    return m_size.width();
-}
-
-int QtZLPaintContext::stringWidth(const char *str, int len, bool rtl) const
-{
-    (void) rtl;
-
-    return m_painter->fontMetrics().width(QString::fromUtf8(str, len));
-}
-
-int QtZLPaintContext::spaceWidth() const
-{
-    return m_painter->fontMetrics().width(QLatin1Char(' '));
-}
-
-int QtZLPaintContext::stringHeight() const
-{
-    return m_painter->fontMetrics().height();
-}
-
-int QtZLPaintContext::descent() const
-{
-    return m_painter->fontMetrics().descent();
 }
 
 void QtZLPaintContext::drawString(int x, int y, const char *str, int len, bool rtl)
@@ -130,16 +88,13 @@ void QtZLPaintContext::drawFilledCircle(int x, int y, int r)
     m_painter->drawEllipse(x, y, 2 * r, 2 * r);
 }
 
-const std::string QtZLPaintContext::realFontFamilyName(std::string &fontFamily) const
+
+void QtZLPaintContext::doSetFont(const QFont &font)
 {
-    QFont font(QString::fromStdString(fontFamily));
-    QFontInfo info(font);
-    return info.family().toStdString();
+    m_painter->setFont(font);
 }
 
-void QtZLPaintContext::fillFamiliesList(std::vector<std::string> &families) const
+QFontMetrics QtZLPaintContext::fontMetrics() const
 {
-    QFontDatabase database;
-    for (auto family : database.families())
-        families.push_back(family.toStdString());
+    return m_painter->fontMetrics();
 }

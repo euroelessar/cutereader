@@ -6,7 +6,6 @@
 #include "bookstyle.h"
 #include <QPointer>
 #include <QMimeDatabase>
-#include "formats/fb2/fb2reader.h"
 #include "archivereader.h"
 #include "models/frontmodel.h"
 #include <QJsonDocument>
@@ -63,9 +62,9 @@ void BookItem::setSource(const QUrl &source)
         emit bookDataChanged(bookData());
         emit positionsChanged(positions());
         
-        QtZLWorker::instance().openBook(this, source.toLocalFile(), [this] (const BookInfo &book, const QList<BookTextPosition> &positions) {
-            m_bookInfo = book;
-            m_positions = positions;
+        QtZLWorker::instance().openBook(this, source.toLocalFile(), [this] (const QtZLBookInfo &result) {
+            m_bookInfo = result.book;
+            m_positions = result.positions;
             m_info->setBookInfo(m_bookInfo);
             
             m_state = Ready;
@@ -210,7 +209,7 @@ static QVariantMap contentToMap(const ContentNode &node)
 
 QVariant BookItem::contents() const
 {
-    return contentToMap(m_bookInfo.bodies.value(0).contents);
+    return contentToMap(m_bookInfo.contents);
 }
 
 BookStyleItem *BookItem::styleItem() const
