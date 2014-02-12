@@ -57,6 +57,9 @@ FocusScope {
     property int nextPositionId: -1
 
     function rebuildModel(type) {
+        currentPageHelper.dismiss(nextPositionId);
+        currentPageHelper.dismiss(previousPositionId);
+
         nextPositionId = -3;
         previousPositionId = -3;
 

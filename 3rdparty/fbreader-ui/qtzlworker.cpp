@@ -94,9 +94,11 @@ static const CuteReader::BookInfo toBookInfo(const shared_ptr<Book> &book)
     return result;
 }
 
-void QtZLWorker::loadBooks(QObject *object, const std::function<void (const QList<CuteReader::BookInfo> &)> &handler)
+QtZLGuard QtZLWorker::loadBooks(QObject *object, const std::function<void (const QList<CuteReader::BookInfo> &)> &handler)
 {
-    run(object, [handler] () {
+    QtZLGuard guard = QtZLGuard::create();
+
+    run(object, guard, [handler] () {
         QList<CuteReader::BookInfo> books;
         for (const shared_ptr<Book> &book : Library::Instance().books())
             books << toBookInfo(book);
@@ -107,13 +109,17 @@ void QtZLWorker::loadBooks(QObject *object, const std::function<void (const QLis
             handler(books);
         };
     });
+
+    return guard;
 }
 
-void QtZLWorker::openBook(QObject *object, const QString &path,
-                          const std::function<void (const QtZLBookInfo &)> &handler,
-                          const std::function<void (const QString &)> &error)
+QtZLGuard QtZLWorker::openBook(QObject *object, const QString &path,
+                               const std::function<void (const QtZLBookInfo &)> &handler,
+                               const std::function<void (const QString &)> &error)
 {
-    run(object, [this, path, handler, error] () -> QtZLWork {
+    QtZLGuard guard = QtZLGuard::create();
+
+    run(object, guard, [this, path, handler, error] () -> QtZLWork {
         ZLFile file(path.toStdString());
         
         shared_ptr<FormatPlugin> plugin = PluginCollection::Instance().plugin(file, false);
@@ -190,6 +196,8 @@ void QtZLWorker::openBook(QObject *object, const QString &path,
             handler(result);
         };
     });
+
+    return guard;
 }
 
 void QtZLWorker::savePositions(const QString &path, const QList<CuteReader::BookTextPosition> &positions)
@@ -259,8 +267,15 @@ public:
 
     ZLColor color(const std::string &style) const
     {
+        static QMap<std::string, ZLColor> map;
+
+        if (!map.contains(style)) {
+            qDebug() << style.c_str();
+            map.insert(style, ZLColor(0, 0, 0));
+        }
+
         (void) style;
-        return ZLColor(0, 0, 0);
+        return map.value(style);
     }
 
     bool isSelectionEnabled() const
@@ -269,10 +284,12 @@ public:
     }
 };
 
-void QtZLWorker::renderPage(QObject *object, const QSize &size, const CuteReader::BookTextPosition &position,
-                            const std::function<void (const QImage &image)> &handler)
+QtZLGuard QtZLWorker::renderPage(QObject *object, const QSize &size, const CuteReader::BookTextPosition &position,
+                                 const std::function<void (const QImage &image)> &handler)
 {
-    run(object, [this, handler, position, size] () {
+    QtZLGuard guard = QtZLGuard::create();
+
+    run(object, guard, [this, handler, position, size] () {
         QImage image;
         
         shared_ptr<ZLTextModel> model = m_data->bodies.value(position.body);
@@ -301,11 +318,16 @@ void QtZLWorker::renderPage(QObject *object, const QSize &size, const CuteReader
             handler(image);
         };
     });
+
+    return guard;
 }
 
-void QtZLWorker::findNextPage(QObject *object, const QSize &size, const CuteReader::BookTextPosition &position, int delta, const std::function<void (const CuteReader::BookTextPosition &)> &handler)
+QtZLGuard QtZLWorker::findNextPage(QObject *object, const QSize &size, const CuteReader::BookTextPosition &position,
+                                   int delta, const std::function<void (const CuteReader::BookTextPosition &)> &handler)
 {
-    run(object, [this, handler, position, size, delta] () {
+    QtZLGuard guard = QtZLGuard::create();
+
+    run(object, guard, [this, handler, position, size, delta] () {
         const CuteReader::BookTextPosition invalidResult = {
             -1, -1, -1, -1
         };
@@ -348,9 +370,11 @@ void QtZLWorker::findNextPage(QObject *object, const QSize &size, const CuteRead
             handler(result);
         };
     });
+
+    return guard;
 }
 
-void QtZLWorker::run(QObject *object, const std::function<QtZLWork ()> &work)
+void QtZLWorker::run(QObject *object, const QtZLWeakGuard &guard, const std::function<QtZLWork ()> &work)
 {
     if (!object) {
         selfMethod.invoke(this, Qt::QueuedConnection, Q_ARG(QtZLWork, work));
@@ -359,9 +383,14 @@ void QtZLWorker::run(QObject *object, const std::function<QtZLWork ()> &work)
     
     QtZLWorkerHelper *helper = new QtZLWorkerHelper(object);
     
-    auto realWork = [helper, work] () {
-        QtZLWork result = work();
-        helperMethod.invoke(helper, Qt::QueuedConnection, Q_ARG(QtZLWork, result));
+    auto realWork = [helper, work, guard] () {
+        if (guard) {
+            QtZLWork result = work();
+            helperMethod.invoke(helper, Qt::QueuedConnection, Q_ARG(QtZLWork, result));
+        } else {
+            QtZLWork noop = [] () {};
+            helperMethod.invoke(helper, Qt::QueuedConnection, Q_ARG(QtZLWork, noop));
+        }
     };
     
     selfMethod.invoke(this, Qt::QueuedConnection, Q_ARG(QtZLWork, realWork));

@@ -5,6 +5,8 @@
 #include <functional>
 #include <QPointer>
 
+#include "qtzlguard.h"
+
 #include "../lib/bookinfo.h"
 
 typedef std::function<void()> QtZLWork;
@@ -17,6 +19,8 @@ struct QtZLBookInfo
     QList<CuteReader::BookTextPosition> positions;
 };
 
+typedef QWeakPointer<Implemenation::QtZLGuard> QtZLWeakGuard;
+
 class QtZLWorker : public QObject
 {
     Q_OBJECT
@@ -28,19 +32,19 @@ public:
     static void createInstance();
     static void deleteInstance();
     
-    void loadBooks(QObject *object, const std::function<void (const QList<CuteReader::BookInfo> &)> &handler);
-    void openBook(QObject *object, const QString &path,
-                  const std::function<void (const QtZLBookInfo &)> &handler,
-                  const std::function<void (const QString &)> &error);
+    QtZLGuard loadBooks(QObject *object, const std::function<void (const QList<CuteReader::BookInfo> &)> &handler) Q_REQUIRED_RESULT;
+    QtZLGuard openBook(QObject *object, const QString &path,
+                       const std::function<void (const QtZLBookInfo &)> &handler,
+                       const std::function<void (const QString &)> &error) Q_REQUIRED_RESULT;
     void savePositions(const QString &path, const QList<CuteReader::BookTextPosition> &positions);
-    QImage loadCover(const QString &id);
-    void renderPage(QObject *object, const QSize &size, const CuteReader::BookTextPosition &position,
-                    const std::function<void (const QImage &image)> &handler);
-    void findNextPage(QObject *object, const QSize &size, const CuteReader::BookTextPosition &position, int delta,
-                      const std::function<void (const CuteReader::BookTextPosition &image)> &handler);
+    QImage loadCover(const QString &id) Q_REQUIRED_RESULT;
+    QtZLGuard renderPage(QObject *object, const QSize &size, const CuteReader::BookTextPosition &position,
+                         const std::function<void (const QImage &image)> &handler) Q_REQUIRED_RESULT;
+    QtZLGuard findNextPage(QObject *object, const QSize &size, const CuteReader::BookTextPosition &position, int delta,
+                           const std::function<void (const CuteReader::BookTextPosition &image)> &handler) Q_REQUIRED_RESULT;
 
 private:
-    void run(QObject *object, const std::function<QtZLWork ()> &work);
+    void run(QObject *object, const QtZLWeakGuard &guard, const std::function<QtZLWork ()> &work);
     Q_INVOKABLE void runInternal(const QtZLWork &work);
     
     static QtZLWorker *self;

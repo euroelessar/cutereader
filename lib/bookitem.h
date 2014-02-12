@@ -6,6 +6,7 @@
 #include "bookblockfactory.h"
 #include "bookinfoitem.h"
 #include "bookinfo.h"
+#include "../3rdparty/fbreader-ui/qtzlguard.h"
 
 namespace CuteReader {
 
@@ -92,6 +93,7 @@ private:
     BookTextSettings *m_textSettings;
     QUrl m_configSource;
     QList<BookTextPosition> m_positions;
+    QtZLGuard m_openGuard;
 };
 
 } //namespace CuteReader

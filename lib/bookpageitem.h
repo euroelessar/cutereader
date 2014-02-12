@@ -5,6 +5,7 @@
 #include <QQmlComponent>
 #include <QSGTexture>
 #include "bookitem.h"
+#include "../3rdparty/fbreader-ui/qtzlguard.h"
 
 namespace CuteReader {
 
@@ -66,6 +67,7 @@ private:
 
     QMutex m_cacheLock;
     QImage m_cachedImage;
+    QtZLGuard m_renderGuard;
 };
 
 } //namespace CuteReader

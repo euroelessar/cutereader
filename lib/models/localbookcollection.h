@@ -5,6 +5,7 @@
 #include <QUrl>
 #include <QPointer>
 #include "../bookinfo.h"
+#include "../3rdparty/fbreader-ui/qtzlguard.h"
 
 class QAbstractListModel;
 
@@ -54,6 +55,7 @@ private:
     QList<BookInfo> m_books;
     QUrl m_cacheDir;
     QAbstractListModel *m_model;
+    QtZLGuard m_loadGuard;
 };
 
 class LocalBookNotifier : public QObject

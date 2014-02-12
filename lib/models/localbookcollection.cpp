@@ -82,7 +82,7 @@ void LocalBookCollection::loadBooks()
         m_state = Loading;
         auto dir = m_baseDir;
         
-        QtZLWorker::instance().loadBooks(this, [this, dir] (const QList<BookInfo> &books) {
+        m_loadGuard = QtZLWorker::instance().loadBooks(this, [this, dir] (const QList<BookInfo> &books) {
             setBooks(dir, books);
         });
     } else {

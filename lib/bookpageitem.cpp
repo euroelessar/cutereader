@@ -176,7 +176,7 @@ void BookPageItem::recreateSubItems()
     for (auto object : m_subItems)
         object->setProperty("visible", false);
     
-    QtZLWorker::instance().renderPage(this, QSize(width(), height()), m_positionValue, [this] (const QImage &image) {
+    m_renderGuard = QtZLWorker::instance().renderPage(this, QSize(width(), height()), m_positionValue, [this] (const QImage &image) {
         QMutexLocker locker(&m_cacheLock);
         m_cachedImage = image;
         update();

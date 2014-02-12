@@ -56,13 +56,13 @@ void BookItem::setSource(const QUrl &source)
         m_source = source;
         m_state = Loading;
         m_positions.clear();
-        
+
         emit stateChanged(m_state);
         emit sourceChanged(source);
         emit bookDataChanged(bookData());
         emit positionsChanged(positions());
-        
-        QtZLWorker::instance().openBook(this, source.toLocalFile(), [this] (const QtZLBookInfo &result) {
+
+        m_openGuard = QtZLWorker::instance().openBook(this, source.toLocalFile(), [this] (const QtZLBookInfo &result) {
             m_bookInfo = result.book;
             m_positions = result.positions;
             m_info->setBookInfo(m_bookInfo);
@@ -74,7 +74,7 @@ void BookItem::setSource(const QUrl &source)
             emit contentsChanged(contents());
         }, [this] (const QString &error) {
             qDebug("Failed to open book: \"%s\"", qPrintable(error));
-            
+
             m_state = Error;
             emit stateChanged(m_state);
         });

@@ -30,12 +30,19 @@ int PseudoBookPageItem::calculatePage(const QVariantMap &position, int delta)
     int id = ++m_calulationId;
     
     QSize size(width(), height());
-    QtZLWorker::instance().findNextPage(this, size, BookTextPosition::fromMap(position), delta,
+    QtZLGuard guard = QtZLWorker::instance().findNextPage(this, size, BookTextPosition::fromMap(position), delta,
                                         [this, id] (const BookTextPosition &result) {
+        m_guards.remove(id);
         emit positionCalculationReady(id, result.toMap());
     });
+    m_guards.insert(id, guard);
     
     return id;
+}
+
+void PseudoBookPageItem::dismiss(int id)
+{
+    m_guards.remove(id);
 }
 
 } //namespace CuteReader
